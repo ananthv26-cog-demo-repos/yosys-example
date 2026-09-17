@@ -39,7 +39,7 @@ class DiffSimUnitTests(unittest.TestCase):
         self.assertEqual((clocks, resets, ins), (["clk"], {"clk_reset_n": True}, []))
         tb = diff_sim.gen_testbench("top", ports, 10, 1)
         self.assertNotIn("clk_reset_n = ~clk_reset_n", tb)
-        self.assertIn("clk_reset_n <= (cycle <= 4", tb)
+        self.assertIn("clk_reset_n <= (cycle < 4", tb)
 
     def test_parse_result_statuses(self) -> None:
         line = "DIFFSIM cycles=20 compared_bits={c} mismatches={m} gate_x_bits={x}"
@@ -87,7 +87,7 @@ class DiffSimUnitTests(unittest.TestCase):
         tb = diff_sim.gen_testbench("top", ports, 10, 1, reset_cycles=4)
         # a secondary clock edge that coincides with the primary falling edge must not race the stimulus
         self.assertIn("    d <= $random(seed)", tb)
-        self.assertIn("    rst_n <= (cycle <= 4 ||", tb)
+        self.assertIn("    rst_n <= (cycle < 4 ||", tb)
         self.assertNotIn("    d = $random", tb)
         self.assertNotIn("    rst_n = (", tb)
 

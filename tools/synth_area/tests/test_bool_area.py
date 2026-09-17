@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import filecmp
 import json
+import os
 import shutil
 import subprocess
 import sys
@@ -273,6 +274,14 @@ class BoolAreaFlowTests(unittest.TestCase):
         self.assertEqual((code, m["stage"]), (2, "tools"), err)
         self.assertNotIn("Traceback", err)
         self.assertIn("sv2v not executable", m["errors"][0])
+        # a stale $SV2V that the slang frontend never uses does not block synthesis
+        proc = subprocess.run([sys.executable, str(RUNNER), str(CORPUS / "inv.sv"), "--top", "inv", "-o",
+                               str(self.tmp / "stale_sv2v"), "-q", "--frontend", "slang", "--no-equiv",
+                               "--sim-cycles", "0"], capture_output=True, text=True, check=False,
+                              env={**os.environ, "SV2V": str(not_exec)})
+        m = json.loads((self.tmp / "stale_sv2v" / "metrics.json").read_text())
+        self.assertEqual((proc.returncode, m["status"]), (0, "ok"), proc.stderr)
+        self.assertNotIn("sv2v_version", m["tools"])
 
     def test_source_identity_in_metrics(self) -> None:
         code, m = self.flow("inv", CORPUS / "inv.sv", "--no-equiv", "--sim-cycles", "0")

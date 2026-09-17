@@ -473,13 +473,17 @@ def main(argv: list[str] | None = None) -> int:
     if not yosys or not shutil.which(yosys):
         return fail("tools", "yosys binary not found or not executable (build the repo, set $YOSYS, or pass --yosys)", 2)
     metrics["tools"] = {"yosys": yosys, "yosys_version": tool_version(yosys, "-V")}
+    frontend = args.frontend or profile["frontend"]["name"]
     sv2v = find_sv2v(args.sv2v)
     if sv2v and not shutil.which(sv2v):
-        return fail("tools", f"sv2v not executable: {sv2v}", 2)
+        # sv2v is only required by --frontend sv2v (the simulation falls back to reading the RTL directly);
+        # an explicit --sv2v or a frontend that needs it must not be silently ignored
+        if args.sv2v or frontend == "sv2v":
+            return fail("tools", f"sv2v not executable: {sv2v}", 2)
+        sv2v = None
     if sv2v:
         metrics["tools"]["sv2v_version"] = tool_version(sv2v, "--version")
 
-    frontend = args.frontend or profile["frontend"]["name"]
     includes = [str(Path(i).resolve()) for i in args.include]
     metrics["frontend"] = {"name": frontend, "slang_args": None, "include_dirs": includes, "defines": list(args.define)}
     read_sources = sources

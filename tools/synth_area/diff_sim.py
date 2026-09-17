@@ -144,10 +144,10 @@ def gen_testbench(top: str, ports: dict[str, dict], cycles: int, seed: int, rese
     for n in data_in:
         lines.append(f"    {n} <= {rand_expr(w[n])};")
     for r, low in resets.items():
-        # hold reset through the first `reset_cycles` rising edges, then pulse it rarely so reset
-        # logic is also compared
+        # reset is active from time 0 and released at falling edge `reset_cycles`, i.e. exactly the first
+        # `reset_cycles` rising edges see it; afterwards it pulses rarely so reset logic is also compared
         active, inactive = ("0", "1") if low else ("1", "0")
-        lines.append(f"    {r} <= (cycle <= {reset_cycles} || ($random(seed) & 63) == 0) ? 1'b{active} : 1'b{inactive};")
+        lines.append(f"    {r} <= (cycle < {reset_cycles} || ($random(seed) & 63) == 0) ? 1'b{active} : 1'b{inactive};")
     lines.append(f"    if (cycle == {cycles}) begin")
     lines.append('      $display("DIFFSIM cycles=%0d compared_bits=%0d mismatches=%0d gate_x_bits=%0d", '
                  "cycle, compared_bits, mismatches, gate_x_bits);")

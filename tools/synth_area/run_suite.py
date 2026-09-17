@@ -37,6 +37,19 @@ from bool_area import purge_outputs
 TABLE_COLS = ("gate_total", "dff", "edge_total", "max_depth", "max_fanout", "mapped_cell_total", "mapped_cell_area")
 
 
+def metrics_schema_error(metrics: object) -> str | None:
+    """Why `metrics` does not have the bool_area.py shape run_block reads, or None if it does."""
+    if not isinstance(metrics, dict):
+        return "not a JSON object"
+    for key, typ in (("status", str), ("stage", (str, type(None))), ("errors", list)):
+        if not isinstance(metrics.get(key), typ):
+            return f"missing or malformed '{key}'"
+    for key in ("summary", "equivalence", "simulation"):
+        if not isinstance(metrics.get(key), (dict, type(None))):
+            return f"'{key}' is not an object"
+    return None
+
+
 def run_block(entry: dict, out_dir: Path, extra: list[str], python: str) -> dict:
     sources = [str((HERE / s).resolve()) for s in entry["sources"]]
     block_out = out_dir / entry["name"]
@@ -66,10 +79,10 @@ def run_block(entry: dict, out_dir: Path, extra: list[str], python: str) -> dict
     metrics, bad_metrics = None, None
     try:
         metrics = json.loads(metrics_path.read_text()) if metrics_path.exists() else None
-        if metrics is not None and not isinstance(metrics, dict):
-            raise ValueError("not a JSON object")
     except (OSError, ValueError) as e:
         metrics, bad_metrics = None, f"unreadable {metrics_path}: {e}"
+    if metrics is not None and (schema_error := metrics_schema_error(metrics)):
+        metrics, bad_metrics = None, f"unreadable {metrics_path}: {schema_error}"
     res["status"] = metrics["status"] if metrics else ("bad-metrics" if bad_metrics else "no-metrics")
     res["stage"] = metrics["stage"] if metrics else None
     res["errors"] = (metrics["errors"] if metrics else [bad_metrics] if bad_metrics else []) or (
