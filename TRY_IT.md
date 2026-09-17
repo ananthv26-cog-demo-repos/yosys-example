@@ -17,10 +17,10 @@ A completed run is committed under [`tools/synth_area/examples/output/`](tools/s
 | Directory | What it is |
 |---|---|
 | `counter8_en/` | Every artifact of one run on an 8-bit counter (30 gates, 8 flops) — small enough to read end to end: `metrics.json`, `boolean_graph.json`, generic and ASAP7 netlists, the exact Yosys scripts, proof logs, the simulation testbench. |
-| `sync_fifo/` | The headline block (16×32 FIFO, 1275 gates, 525 flops, 2383 ASAP7 cells, 323.08 µm²): `metrics.json`, ASAP7 netlist, scripts, simulation log. Large logs/graph omitted; regenerate with the command in §2. |
+| `sync_fifo/` | The headline block (16×32 FIFO, 1275 gates, 525 flops, 2383 ASAP7 cells, 323.08 µm²): `metrics.json`, ASAP7 netlist, scripts, simulation log. The 1.6 MB graph and the multi-MB Yosys/proof logs are omitted; regenerate with the command in §2. |
 | `suite/` | `suite_table.md` / `suite_summary.json`: all 36 corpus blocks, 36/36 pass, median 1.4 s per block. |
 
-Absolute paths in the committed copies were replaced by `<repo>` / `<out>`; nothing else was edited.
+Absolute paths in the committed copies were replaced by `<repo>` / `<out>` and the pre-commit hook trimmed trailing whitespace in the logs; nothing else was edited.
 
 Start with [`counter8_en/metrics.json`](tools/synth_area/examples/output/counter8_en/metrics.json): `summary` is the one-screen answer, `boolean` the graph metrics, `mapped` the ASAP7 cells, `equivalence` and `simulation` the correctness evidence, `profile`/`tools`/`sources` the provenance (sha256 of the RTL, the profile and every Liberty file).
 
@@ -54,7 +54,7 @@ Expected (one core, this machine):
 [suite] 36/36 blocks passed -> out/suite/suite_summary.json
 ```
 
-Your numbers should match the committed ones exactly: same RTL + same profile ⇒ byte-identical `boolean_graph.json` and netlists (tested in `tests/test_bool_area.py::test_determinism`). If they differ, `metrics.json → profile.sha256` / `tools.yosys_version` will say why.
+With the Yosys built from this repo your numbers should match the committed ones: on one Yosys build, same RTL + same profile ⇒ byte-identical `boolean_graph.json` and netlists (`tests/test_bool_area.py::test_determinism` checks two runs against each other). A different Yosys/ABC version can legitimately produce a different, equally correct netlist; `metrics.json → tools.yosys_version` and `profile.sha256` record what each run used, so compare like with like.
 
 ## 3. What one run produces
 

@@ -22,6 +22,8 @@
 *.err
 *.log
 *.tmp
+# committed example run keeps its (small) yosys / proof / simulation logs
+!tools/synth_area/examples/output/**/*.log
 
 # compiler output files
 /kernel/version_*.cc

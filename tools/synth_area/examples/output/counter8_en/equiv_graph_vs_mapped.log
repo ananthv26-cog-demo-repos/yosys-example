@@ -1,0 +1,391 @@
+
+ /----------------------------------------------------------------------------\
+ |  yosys -- Yosys Open SYnthesis Suite                                       |
+ |  Copyright (C) 2012 - 2026  Claire Xenia Wolf <claire@yosyshq.com>         |
+ |  Distributed under an ISC-like license, type "license" to see terms        |
+ \----------------------------------------------------------------------------/
+ Yosys 0.69+ (git sha1 150c32b03, Release, GNU /usr/bin/g++-11 11.4.0) [github.com/ananthv26-cog-demo-repos/yosys-example at main]
+
+-- Executing script file `<out>/equiv_graph_vs_mapped.ys' --
+
+1. Executing JSON frontend.
+Importing module counter8_en from JSON tree.
+
+2. Executing HIERARCHY pass (managing design hierarchy).
+
+2.1. Analyzing design hierarchy..
+Top module:  \counter8_en
+
+2.2. Analyzing design hierarchy..
+Top module:  \counter8_en
+Removed 0 unused modules.
+
+3. Executing ASYNC2SYNC pass.
+
+4. Executing JSON frontend.
+Importing module counter8_en from JSON tree.
+Found gzip magic in file `<repo>/tools/synth_area/lib/asap7/asap7sc7p5t_AO_RVT_TT_nldm_211120.lib.gz', decompressing using zlib.
+
+5. Executing Liberty frontend: <repo>/tools/synth_area/lib/asap7/asap7sc7p5t_AO_RVT_TT_nldm_211120.lib.gz
+Imported 42 cell types from liberty file.
+Found gzip magic in file `<repo>/tools/synth_area/lib/asap7/asap7sc7p5t_INVBUF_RVT_TT_nldm_220122.lib.gz', decompressing using zlib.
+
+6. Executing Liberty frontend: <repo>/tools/synth_area/lib/asap7/asap7sc7p5t_INVBUF_RVT_TT_nldm_220122.lib.gz
+Imported 37 cell types from liberty file.
+Found gzip magic in file `<repo>/tools/synth_area/lib/asap7/asap7sc7p5t_OA_RVT_TT_nldm_211120.lib.gz', decompressing using zlib.
+
+7. Executing Liberty frontend: <repo>/tools/synth_area/lib/asap7/asap7sc7p5t_OA_RVT_TT_nldm_211120.lib.gz
+Imported 34 cell types from liberty file.
+Found gzip magic in file `<repo>/tools/synth_area/lib/asap7/asap7sc7p5t_SEQ_RVT_TT_nldm_220123.lib.gz', decompressing using zlib.
+
+8. Executing Liberty frontend: <repo>/tools/synth_area/lib/asap7/asap7sc7p5t_SEQ_RVT_TT_nldm_220123.lib.gz
+Ignoring cell ICGx1_ASAP7_75t_R with missing function on output IQ.
+Ignoring cell ICGx2_ASAP7_75t_R with missing function on output IQ.
+Ignoring cell ICGx2p67DC_ASAP7_75t_R with missing function on output IQ.
+Ignoring cell ICGx3_ASAP7_75t_R with missing function on output IQ.
+Ignoring cell ICGx4DC_ASAP7_75t_R with missing function on output IQ.
+Ignoring cell ICGx4_ASAP7_75t_R with missing function on output IQ.
+Ignoring cell ICGx5_ASAP7_75t_R with missing function on output IQ.
+Ignoring cell ICGx5p33DC_ASAP7_75t_R with missing function on output IQ.
+Ignoring cell ICGx6p67DC_ASAP7_75t_R with missing function on output IQ.
+Ignoring cell ICGx8DC_ASAP7_75t_R with missing function on output IQ.
+Imported 23 cell types from liberty file.
+<suppressed ~2 debug messages>
+Found gzip magic in file `<repo>/tools/synth_area/lib/asap7/asap7sc7p5t_SIMPLE_RVT_TT_nldm_211120.lib.gz', decompressing using zlib.
+
+9. Executing Liberty frontend: <repo>/tools/synth_area/lib/asap7/asap7sc7p5t_SIMPLE_RVT_TT_nldm_211120.lib.gz
+Imported 56 cell types from liberty file.
+
+10. Executing HIERARCHY pass (managing design hierarchy).
+
+10.1. Analyzing design hierarchy..
+Top module:  \counter8_en
+Used module:     \INVx1_ASAP7_75t_R
+Used module:     \AND3x1_ASAP7_75t_R
+Used module:     \AND4x1_ASAP7_75t_R
+Used module:     \AOI31xp33_ASAP7_75t_R
+Used module:     \NOR3xp33_ASAP7_75t_R
+Used module:     \AOI21xp33_ASAP7_75t_R
+Used module:     \OAI21xp33_ASAP7_75t_R
+Used module:     \NOR2xp33_ASAP7_75t_R
+Used module:     \A2O1A1Ixp33_ASAP7_75t_R
+Used module:     \DFFHQx4_ASAP7_75t_R
+
+10.2. Analyzing design hierarchy..
+Top module:  \counter8_en
+Used module:     \INVx1_ASAP7_75t_R
+Used module:     \AND3x1_ASAP7_75t_R
+Used module:     \AND4x1_ASAP7_75t_R
+Used module:     \AOI31xp33_ASAP7_75t_R
+Used module:     \NOR3xp33_ASAP7_75t_R
+Used module:     \AOI21xp33_ASAP7_75t_R
+Used module:     \OAI21xp33_ASAP7_75t_R
+Used module:     \NOR2xp33_ASAP7_75t_R
+Used module:     \A2O1A1Ixp33_ASAP7_75t_R
+Used module:     \DFFHQx4_ASAP7_75t_R
+Removing unused module `\XOR2xp5_ASAP7_75t_R'.
+Removing unused module `\XOR2x2_ASAP7_75t_R'.
+Removing unused module `\XOR2x1_ASAP7_75t_R'.
+Removing unused module `\XNOR2xp5_ASAP7_75t_R'.
+Removing unused module `\XNOR2x2_ASAP7_75t_R'.
+Removing unused module `\XNOR2x1_ASAP7_75t_R'.
+Removing unused module `\TIELOx1_ASAP7_75t_R'.
+Removing unused module `\TIEHIx1_ASAP7_75t_R'.
+Removing unused module `\OR5x2_ASAP7_75t_R'.
+Removing unused module `\OR5x1_ASAP7_75t_R'.
+Removing unused module `\OR4x2_ASAP7_75t_R'.
+Removing unused module `\OR4x1_ASAP7_75t_R'.
+Removing unused module `\OR3x4_ASAP7_75t_R'.
+Removing unused module `\OR3x2_ASAP7_75t_R'.
+Removing unused module `\OR3x1_ASAP7_75t_R'.
+Removing unused module `\OR2x6_ASAP7_75t_R'.
+Removing unused module `\OR2x4_ASAP7_75t_R'.
+Removing unused module `\OR2x2_ASAP7_75t_R'.
+Removing unused module `\NOR5xp2_ASAP7_75t_R'.
+Removing unused module `\NOR4xp75_ASAP7_75t_R'.
+Removing unused module `\NOR4xp25_ASAP7_75t_R'.
+Removing unused module `\NOR3x2_ASAP7_75t_R'.
+Removing unused module `\NOR3x1_ASAP7_75t_R'.
+Removing unused module `\NOR2xp67_ASAP7_75t_R'.
+Removing unused module `\NOR2x2_ASAP7_75t_R'.
+Removing unused module `\NOR2x1p5_ASAP7_75t_R'.
+Removing unused module `\NOR2x1_ASAP7_75t_R'.
+Removing unused module `\NAND5xp2_ASAP7_75t_R'.
+Removing unused module `\NAND4xp75_ASAP7_75t_R'.
+Removing unused module `\NAND4xp25_ASAP7_75t_R'.
+Removing unused module `\NAND3xp33_ASAP7_75t_R'.
+Removing unused module `\NAND3x2_ASAP7_75t_R'.
+Removing unused module `\NAND3x1_ASAP7_75t_R'.
+Removing unused module `\NAND2xp67_ASAP7_75t_R'.
+Removing unused module `\NAND2xp5_ASAP7_75t_R'.
+Removing unused module `\NAND2xp33_ASAP7_75t_R'.
+Removing unused module `\NAND2x2_ASAP7_75t_R'.
+Removing unused module `\NAND2x1p5_ASAP7_75t_R'.
+Removing unused module `\NAND2x1_ASAP7_75t_R'.
+Removing unused module `\MAJx3_ASAP7_75t_R'.
+Removing unused module `\MAJx2_ASAP7_75t_R'.
+Removing unused module `\MAJIxp5_ASAP7_75t_R'.
+Removing unused module `\HAxp5_ASAP7_75t_R'.
+Removing unused module `\FAx1_ASAP7_75t_R'.
+Removing unused module `\AND5x2_ASAP7_75t_R'.
+Removing unused module `\AND5x1_ASAP7_75t_R'.
+Removing unused module `\AND4x2_ASAP7_75t_R'.
+Removing unused module `\AND3x4_ASAP7_75t_R'.
+Removing unused module `\AND3x2_ASAP7_75t_R'.
+Removing unused module `\AND2x6_ASAP7_75t_R'.
+Removing unused module `\AND2x4_ASAP7_75t_R'.
+Removing unused module `\AND2x2_ASAP7_75t_R'.
+Removing unused module `\SDFLx4_ASAP7_75t_R'.
+Removing unused module `\SDFLx3_ASAP7_75t_R'.
+Removing unused module `\SDFLx2_ASAP7_75t_R'.
+Removing unused module `\SDFLx1_ASAP7_75t_R'.
+Removing unused module `\SDFHx4_ASAP7_75t_R'.
+Removing unused module `\SDFHx3_ASAP7_75t_R'.
+Removing unused module `\SDFHx2_ASAP7_75t_R'.
+Removing unused module `\SDFHx1_ASAP7_75t_R'.
+Removing unused module `\DLLx3_ASAP7_75t_R'.
+Removing unused module `\DLLx2_ASAP7_75t_R'.
+Removing unused module `\DLLx1_ASAP7_75t_R'.
+Removing unused module `\DHLx3_ASAP7_75t_R'.
+Removing unused module `\DHLx2_ASAP7_75t_R'.
+Removing unused module `\DHLx1_ASAP7_75t_R'.
+Removing unused module `\DFFLQx4_ASAP7_75t_R'.
+Removing unused module `\DFFLQNx3_ASAP7_75t_R'.
+Removing unused module `\DFFLQNx2_ASAP7_75t_R'.
+Removing unused module `\DFFLQNx1_ASAP7_75t_R'.
+Removing unused module `\DFFHQNx3_ASAP7_75t_R'.
+Removing unused module `\DFFHQNx2_ASAP7_75t_R'.
+Removing unused module `\DFFHQNx1_ASAP7_75t_R'.
+Removing unused module `\DFFASRHQNx1_ASAP7_75t_R'.
+Removing unused module `\OAI33xp33_ASAP7_75t_R'.
+Removing unused module `\OAI333xp33_ASAP7_75t_R'.
+Removing unused module `\OAI332xp33_ASAP7_75t_R'.
+Removing unused module `\OAI331xp33_ASAP7_75t_R'.
+Removing unused module `\OAI32xp33_ASAP7_75t_R'.
+Removing unused module `\OAI322xp33_ASAP7_75t_R'.
+Removing unused module `\OAI321xp33_ASAP7_75t_R'.
+Removing unused module `\OAI31xp67_ASAP7_75t_R'.
+Removing unused module `\OAI31xp33_ASAP7_75t_R'.
+Removing unused module `\OAI311xp33_ASAP7_75t_R'.
+Removing unused module `\OAI22xp5_ASAP7_75t_R'.
+Removing unused module `\OAI22xp33_ASAP7_75t_R'.
+Removing unused module `\OAI22x1_ASAP7_75t_R'.
+Removing unused module `\OAI222xp33_ASAP7_75t_R'.
+Removing unused module `\OAI221xp5_ASAP7_75t_R'.
+Removing unused module `\OAI21xp5_ASAP7_75t_R'.
+Removing unused module `\OAI21x1_ASAP7_75t_R'.
+Removing unused module `\OAI211xp5_ASAP7_75t_R'.
+Removing unused module `\OA33x2_ASAP7_75t_R'.
+Removing unused module `\OA333x2_ASAP7_75t_R'.
+Removing unused module `\OA333x1_ASAP7_75t_R'.
+Removing unused module `\OA332x2_ASAP7_75t_R'.
+Removing unused module `\OA332x1_ASAP7_75t_R'.
+Removing unused module `\OA331x2_ASAP7_75t_R'.
+Removing unused module `\OA331x1_ASAP7_75t_R'.
+Removing unused module `\OA31x2_ASAP7_75t_R'.
+Removing unused module `\OA22x2_ASAP7_75t_R'.
+Removing unused module `\OA222x2_ASAP7_75t_R'.
+Removing unused module `\OA221x2_ASAP7_75t_R'.
+Removing unused module `\OA21x2_ASAP7_75t_R'.
+Removing unused module `\OA211x2_ASAP7_75t_R'.
+Removing unused module `\O2A1O1Ixp5_ASAP7_75t_R'.
+Removing unused module `\O2A1O1Ixp33_ASAP7_75t_R'.
+Removing unused module `\INVxp67_ASAP7_75t_R'.
+Removing unused module `\INVxp33_ASAP7_75t_R'.
+Removing unused module `\INVx8_ASAP7_75t_R'.
+Removing unused module `\INVx6_ASAP7_75t_R'.
+Removing unused module `\INVx5_ASAP7_75t_R'.
+Removing unused module `\INVx4_ASAP7_75t_R'.
+Removing unused module `\INVx3_ASAP7_75t_R'.
+Removing unused module `\INVx2_ASAP7_75t_R'.
+Removing unused module `\INVx13_ASAP7_75t_R'.
+Removing unused module `\INVx11_ASAP7_75t_R'.
+Removing unused module `\HB4xp67_ASAP7_75t_R'.
+Removing unused module `\HB3xp67_ASAP7_75t_R'.
+Removing unused module `\HB2xp67_ASAP7_75t_R'.
+Removing unused module `\HB1xp67_ASAP7_75t_R'.
+Removing unused module `\CKINVDCx9p33_ASAP7_75t_R'.
+Removing unused module `\CKINVDCx8_ASAP7_75t_R'.
+Removing unused module `\CKINVDCx6p67_ASAP7_75t_R'.
+Removing unused module `\CKINVDCx5p33_ASAP7_75t_R'.
+Removing unused module `\CKINVDCx20_ASAP7_75t_R'.
+Removing unused module `\CKINVDCx16_ASAP7_75t_R'.
+Removing unused module `\CKINVDCx14_ASAP7_75t_R'.
+Removing unused module `\CKINVDCx12_ASAP7_75t_R'.
+Removing unused module `\CKINVDCx11_ASAP7_75t_R'.
+Removing unused module `\CKINVDCx10_ASAP7_75t_R'.
+Removing unused module `\BUFx8_ASAP7_75t_R'.
+Removing unused module `\BUFx6f_ASAP7_75t_R'.
+Removing unused module `\BUFx5_ASAP7_75t_R'.
+Removing unused module `\BUFx4f_ASAP7_75t_R'.
+Removing unused module `\BUFx4_ASAP7_75t_R'.
+Removing unused module `\BUFx3_ASAP7_75t_R'.
+Removing unused module `\BUFx2_ASAP7_75t_R'.
+Removing unused module `\BUFx24_ASAP7_75t_R'.
+Removing unused module `\BUFx16f_ASAP7_75t_R'.
+Removing unused module `\BUFx12f_ASAP7_75t_R'.
+Removing unused module `\BUFx12_ASAP7_75t_R'.
+Removing unused module `\BUFx10_ASAP7_75t_R'.
+Removing unused module `\AOI33xp33_ASAP7_75t_R'.
+Removing unused module `\AOI333xp33_ASAP7_75t_R'.
+Removing unused module `\AOI332xp33_ASAP7_75t_R'.
+Removing unused module `\AOI331xp33_ASAP7_75t_R'.
+Removing unused module `\AOI32xp33_ASAP7_75t_R'.
+Removing unused module `\AOI322xp5_ASAP7_75t_R'.
+Removing unused module `\AOI321xp33_ASAP7_75t_R'.
+Removing unused module `\AOI31xp67_ASAP7_75t_R'.
+Removing unused module `\AOI311xp33_ASAP7_75t_R'.
+Removing unused module `\AOI22xp5_ASAP7_75t_R'.
+Removing unused module `\AOI22xp33_ASAP7_75t_R'.
+Removing unused module `\AOI22x1_ASAP7_75t_R'.
+Removing unused module `\AOI222xp33_ASAP7_75t_R'.
+Removing unused module `\AOI221xp5_ASAP7_75t_R'.
+Removing unused module `\AOI221x1_ASAP7_75t_R'.
+Removing unused module `\AOI21xp5_ASAP7_75t_R'.
+Removing unused module `\AOI21x1_ASAP7_75t_R'.
+Removing unused module `\AOI211xp5_ASAP7_75t_R'.
+Removing unused module `\AOI211x1_ASAP7_75t_R'.
+Removing unused module `\AO33x2_ASAP7_75t_R'.
+Removing unused module `\AO333x2_ASAP7_75t_R'.
+Removing unused module `\AO333x1_ASAP7_75t_R'.
+Removing unused module `\AO332x2_ASAP7_75t_R'.
+Removing unused module `\AO332x1_ASAP7_75t_R'.
+Removing unused module `\AO331x2_ASAP7_75t_R'.
+Removing unused module `\AO331x1_ASAP7_75t_R'.
+Removing unused module `\AO32x2_ASAP7_75t_R'.
+Removing unused module `\AO32x1_ASAP7_75t_R'.
+Removing unused module `\AO322x2_ASAP7_75t_R'.
+Removing unused module `\AO31x2_ASAP7_75t_R'.
+Removing unused module `\AO22x2_ASAP7_75t_R'.
+Removing unused module `\AO22x1_ASAP7_75t_R'.
+Removing unused module `\AO222x2_ASAP7_75t_R'.
+Removing unused module `\AO221x2_ASAP7_75t_R'.
+Removing unused module `\AO221x1_ASAP7_75t_R'.
+Removing unused module `\AO21x2_ASAP7_75t_R'.
+Removing unused module `\AO21x1_ASAP7_75t_R'.
+Removing unused module `\AO211x2_ASAP7_75t_R'.
+Removing unused module `\A2O1A1O1Ixp25_ASAP7_75t_R'.
+Removed 182 unused modules.
+
+11. Executing FLATTEN pass (flatten design).
+Deleting now unused module INVx1_ASAP7_75t_R.
+Deleting now unused module NOR3xp33_ASAP7_75t_R.
+Deleting now unused module AOI31xp33_ASAP7_75t_R.
+Deleting now unused module AOI21xp33_ASAP7_75t_R.
+Deleting now unused module AND3x1_ASAP7_75t_R.
+Deleting now unused module AND4x1_ASAP7_75t_R.
+Deleting now unused module DFFHQx4_ASAP7_75t_R.
+Deleting now unused module OAI21xp33_ASAP7_75t_R.
+Deleting now unused module NOR2xp33_ASAP7_75t_R.
+Deleting now unused module A2O1A1Ixp33_ASAP7_75t_R.
+<suppressed ~29 debug messages>
+
+12. Executing OPT_CLEAN pass (remove unused cells and wires).
+Finding unused cells or wires in module \counter8_en..
+Removed 16 unused cells and 155 unused wires.
+<suppressed ~17 debug messages>
+
+13. Executing ASYNC2SYNC pass.
+
+14. Executing EQUIV_MAKE pass (creating equiv checking module).
+Presumably equivalent wires: count_gold (\count_gold), count_gate (\count_gate) -> count
+Presumably equivalent wires: en_gold (\en_gold), en_gate (\en_gate) -> en
+Presumably equivalent wires: rst_gold (\rst_gold), rst_gate (\rst_gate) -> rst
+Presumably equivalent wires: clk_gold (\clk_gold), clk_gate (\clk_gate) -> clk
+Changing input A of cell $flatten$abc$267$blif$267$13.$auto$liberty.cc:62:parse_func_reduce$385_gate ($_NOT_): \count_gate [4] -> \count [4]
+Changing input A of cell $flatten$abc$267$blif$267$13.$auto$liberty.cc:62:parse_func_reduce$391_gate ($_NOT_): \count_gate [4] -> \count [4]
+Changing input A of cell $flatten$abc$267$blif$267$15.$auto$liberty.cc:62:parse_func_reduce$2617_gate ($_NOT_): \count_gate [0] -> \count [0]
+Changing input A of cell $flatten$abc$267$blif$267$16.$auto$liberty.cc:62:parse_func_reduce$389_gate ($_NOT_): \count_gate [0] -> \count [0]
+Changing input A of cell $flatten$abc$267$blif$267$19.$auto$liberty.cc:62:parse_func_reduce$385_gate ($_NOT_): \count_gate [1] -> \count [1]
+Changing input A of cell $flatten$abc$267$blif$267$19.$auto$liberty.cc:62:parse_func_reduce$389_gate ($_NOT_): \count_gate [0] -> \count [0]
+Changing input A of cell $flatten$abc$267$blif$267$19.$auto$liberty.cc:62:parse_func_reduce$391_gate ($_NOT_): \count_gate [1] -> \count [1]
+Changing input B of cell $flatten$abc$267$blif$267$2.$auto$liberty.cc:109:parse_func_reduce$3257_gate ($_AND_): \count_gate [2] -> \count [2]
+Changing input B of cell $flatten$abc$267$blif$267$2.$auto$liberty.cc:109:parse_func_reduce$3259_gate ($_AND_): \count_gate [1] -> \count [1]
+Changing input A of cell $flatten$abc$267$blif$267$8.$auto$liberty.cc:62:parse_func_reduce$99_gate ($_NOT_): \count_gate [6] -> \count [6]
+Changing input A of cell $flatten$abc$267$blif$267$8.$auto$liberty.cc:62:parse_func_reduce$105_gate ($_NOT_): \count_gate [6] -> \count [6]
+Changing input A of cell $flatten$abc$267$blif$267$9.$auto$liberty.cc:62:parse_func_reduce$727_gate ($_NOT_): \count_gate [5] -> \count [5]
+Changing input A of cell $flatten$abc$267$blif$267$11.$auto$liberty.cc:62:parse_func_reduce$737_gate ($_NOT_): \count_gate [7] -> \count [7]
+Changing input A of cell $flatten$abc$267$blif$267$11.$auto$liberty.cc:62:parse_func_reduce$729_gate ($_NOT_): \count_gate [7] -> \count [7]
+Changing input A of cell $flatten$abc$267$blif$267$11.$auto$liberty.cc:62:parse_func_reduce$727_gate ($_NOT_): \count_gate [5] -> \count [5]
+Changing input A of cell $flatten$abc$267$blif$267$11.$auto$liberty.cc:62:parse_func_reduce$723_gate ($_NOT_): \count_gate [7] -> \count [7]
+Changing input B of cell $flatten$abc$267$blif$267$10.$auto$liberty.cc:109:parse_func_reduce$3257_gate ($_AND_): \count_gate [5] -> \count [5]
+Changing input B of cell $flatten$abc$267$blif$267$1.$auto$liberty.cc:109:parse_func_reduce$3245_gate ($_AND_): \count_gate [1] -> \count [1]
+Changing input B of cell $flatten$abc$267$blif$267$1.$auto$liberty.cc:109:parse_func_reduce$3243_gate ($_AND_): \count_gate [0] -> \count [0]
+Changing input B of cell $flatten$abc$267$blif$267$10.$auto$liberty.cc:109:parse_func_reduce$3255_gate ($_AND_): \count_gate [7] -> \count [7]
+Changing input A of cell $flatten$abc$267$blif$267$10.$auto$liberty.cc:109:parse_func_reduce$3255_gate ($_AND_): \count_gate [6] -> \count [6]
+Changing input A of cell $flatten$abc$267$blif$267$11.$auto$liberty.cc:62:parse_func_reduce$721_gate ($_NOT_): \count_gate [6] -> \count [6]
+Changing input A of cell $flatten$abc$267$blif$267$13.$auto$liberty.cc:62:parse_func_reduce$383_gate ($_NOT_): \count_gate [3] -> \count [3]
+Changing input A of cell $flatten$abc$267$blif$267$17.$auto$liberty.cc:62:parse_func_reduce$2615_gate ($_NOT_): \count_gate [5] -> \count [5]
+Changing input A of cell $flatten$abc$267$blif$267$18.$auto$liberty.cc:62:parse_func_reduce$383_gate ($_NOT_): \count_gate [5] -> \count [5]
+Changing input B of cell $flatten$abc$267$blif$267$2.$auto$liberty.cc:109:parse_func_reduce$3255_gate ($_AND_): \count_gate [0] -> \count [0]
+Changing input A of cell $flatten$abc$267$blif$267$3.$auto$liberty.cc:62:parse_func_reduce$2615_gate ($_NOT_): \count_gate [3] -> \count [3]
+Changing input A of cell $flatten$abc$267$blif$267$4.$auto$liberty.cc:62:parse_func_reduce$383_gate ($_NOT_): \count_gate [3] -> \count [3]
+Changing input A of cell $flatten$abc$267$blif$267$5.$auto$liberty.cc:62:parse_func_reduce$3527_gate ($_NOT_): \count_gate [2] -> \count [2]
+Changing input B of cell $flatten$abc$267$blif$267$7.$auto$liberty.cc:109:parse_func_reduce$3243_gate ($_AND_): \count_gate [4] -> \count [4]
+Changing input A of cell $flatten$abc$267$blif$267$7.$auto$liberty.cc:109:parse_func_reduce$3243_gate ($_AND_): \count_gate [3] -> \count [3]
+Changing input A of cell $flatten$abc$267$blif$267$8.$auto$liberty.cc:62:parse_func_reduce$97_gate ($_NOT_): \count_gate [5] -> \count [5]
+Changing input A of cell $flatten$abc$267$blif$267$9.$auto$liberty.cc:62:parse_func_reduce$721_gate ($_NOT_): \count_gate [6] -> \count [6]
+Changing input A of cell $abc$266$blif$266$1_gold ($_AND_): \count_gold [1] -> \count [1]
+Changing input A of cell $abc$266$blif$266$10_gold ($_NOR_): \count_gold [1] -> \count [1]
+Changing input A of cell $abc$266$blif$266$13_gold ($_AND_): \count_gold [4] -> \count [4]
+Changing input A of cell $abc$266$blif$266$14_gold ($_AND_): \count_gold [5] -> \count [5]
+Changing input A of cell $abc$266$blif$266$15_gold ($_NOR_): \count_gold [5] -> \count [5]
+Changing input B of cell $abc$266$blif$266$18_gold ($_NOR_): \count_gold [0] -> \count [0]
+Changing input A of cell $abc$266$blif$266$2_gold ($_AND_): \count_gold [2] -> \count [2]
+Changing input A of cell $abc$266$blif$266$21_gold ($_NOR_): \count_gold [4] -> \count [4]
+Changing input A of cell $abc$266$blif$266$24_gold ($_NAND_): \count_gold [6] -> \count [6]
+Changing input A of cell $abc$266$blif$266$25_gold ($_XOR_): \count_gold [7] -> \count [7]
+Changing input A of cell $abc$266$blif$266$27_gold ($_NOR_): \count_gold [6] -> \count [6]
+Changing input A of cell $abc$266$blif$266$3_gold ($_NOR_): \count_gold [2] -> \count [2]
+Changing input A of cell $abc$266$blif$266$6_gold ($_AND_): \count_gold [3] -> \count [3]
+Changing input A of cell $abc$266$blif$266$7_gold ($_NOR_): \count_gold [3] -> \count [3]
+Changing input B of cell $abc$266$blif$266$0_gold ($_AND_): \count_gold [0] -> \count [0]
+
+15. Executing HIERARCHY pass (managing design hierarchy).
+
+15.1. Analyzing design hierarchy..
+Top module:  \equiv
+
+15.2. Analyzing design hierarchy..
+Top module:  \equiv
+Removing unused module `\gate'.
+Removing unused module `\gold'.
+Removed 2 unused modules.
+
+16. Executing EQUIV_SIMPLE pass.
+Found 8 unproven $equiv cells (1 groups) in equiv:
+ Grouping SAT models for \count:
+  Trying to prove $equiv for \count [0]:ezsat
+ezsat
+ success!
+  Trying to prove $equiv for \count [1]:ezsat
+ezsat
+ success!
+  Trying to prove $equiv for \count [2]:ezsat
+ezsat
+ success!
+  Trying to prove $equiv for \count [3]:ezsat
+ezsat
+ success!
+  Trying to prove $equiv for \count [4]:ezsat
+ezsat
+ success!
+  Trying to prove $equiv for \count [5]:ezsat
+ezsat
+ success!
+  Trying to prove $equiv for \count [6]:ezsat
+ezsat
+ success!
+  Trying to prove $equiv for \count [7]:ezsat
+ezsat
+ success!
+Proved 8 previously unproven $equiv cells.
+
+17. Executing EQUIV_INDUCT pass.
+No selected unproven $equiv cells found in equiv.
+Proved 0 previously unproven $equiv cells.
+
+18. Executing EQUIV_STATUS pass.
+Found 8 $equiv cells in equiv:
+  Of those cells 8 are proven and 0 are unproven.
+  Equivalence successfully proven!
