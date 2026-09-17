@@ -6,6 +6,9 @@ initialize: |
   sudo apt-get update -qq
   sudo apt-get install -y -qq build-essential ninja-build bison flex pkg-config \
     libffi-dev libfl-dev libreadline-dev tcl-dev zlib1g-dev libboost-dev iverilog unzip curl
+  # uv is not part of the base image; the installer drops it in ~/.local/bin
+  command -v uv >/dev/null || curl -LsSf https://astral.sh/uv/install.sh | sh
+  export PATH="$HOME/.local/bin:$PATH"
   uv tool install "cmake>=3.28"
   uv tool install ruff
   uv tool install pre-commit
