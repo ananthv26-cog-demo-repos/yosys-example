@@ -152,8 +152,13 @@ the cluster. The compute node needs the built `yosys` reachable via `$YOSYS`,
   designs; the speedup comes from running hundreds of jobs in parallel on
   Slurm, not from faster machines.
 
-## Tests
+## Tests and the SystemVerilog support matrix
 
 ```sh
 python3 tools/synth_area/tests/test_synth_area.py    # runner smoke tests (needs built yosys)
+python3 tools/synth_area/sv_matrix.py --md matrix.md   # regenerate the table
 ```
+
+`sv_probes/` holds one tiny module per SystemVerilog construct; `sv_matrix.py`
+runs each through every frontend and writes the table that is pasted into the
+"Full matrix" section of [SV_SUPPORT.md](SV_SUPPORT.md), which holds the findings.
