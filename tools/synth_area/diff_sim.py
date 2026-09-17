@@ -4,8 +4,11 @@ diff_sim: random-stimulus differential simulation of the RTL against the ASAP7-m
 netlist with Icarus Verilog.
 
 A self-checking testbench is generated from the port list: every input gets fresh pseudo-
-random values each cycle (fixed seed => reproducible), clocks toggle, resets are held for
-the first cycles, and every output bit the RTL drives to 0/1 must match the netlist.
+random values each cycle (fixed seed => reproducible), clocks toggle, resets are held
+through the first `reset_cycles` rising edges of the primary clock, and from then on every
+output bit the RTL drives to 0/1 must match the netlist. Inputs change with non-blocking
+assignments on the primary clock's falling edge, so a flop in any domain whose edge
+coincides with that instant samples the previous value on both sides.
 Gate-level X where the RTL is known is reported separately as `gate_x_bits` (X-pessimism
 of the cell models, not a mismatch); only a netlist that never drives a known value where
 the RTL does is a failure. Callers that want X to be fatal check `gate_x_bits` themselves.
@@ -33,8 +36,15 @@ from pathlib import Path
 
 CLOCK_RE = re.compile(r"clk|clock", re.IGNORECASE)
 NOT_CLOCK_RE = re.compile(r"(en|enable|gate|sel|div|ok|valid)(_i)?$", re.IGNORECASE)
-RESET_RE = re.compile(r"rst|reset", re.IGNORECASE)
+# a reset is a whole name token (split on `_` and camelCase): `rst`, `reset`, `arst_n`, `wrst_ni`, `hresetn`,
+# `soft_rst`, `RstN`; not a substring inside an ordinary word (`burst_i`, `first`)
+RESET_TOKEN_RE = re.compile(r"^(?:[a-z]|hw|sw|por|soft|sync|async)?(?:rst|reset)(?:n|ni|i|in|b|l)?$")
 ACTIVE_LOW_RE = re.compile(r"(_n|_ni|_b|_l|n)$", re.IGNORECASE)
+
+
+def is_reset_name(name: str) -> bool:
+    tokens = re.split(r"_+|(?<=[a-z0-9])(?=[A-Z])", name)
+    return any(RESET_TOKEN_RE.match(t.lower()) for t in tokens if t)
 
 
 def classify_ports(ports: dict[str, dict], clocks: list[str] | None = None,
@@ -57,7 +67,7 @@ def classify_ports(ports: dict[str, dict], clocks: list[str] | None = None,
             outs.append(name)
         elif name in clocks or name in resets:
             continue
-        elif infer_resets and p["width"] == 1 and RESET_RE.search(name):
+        elif infer_resets and p["width"] == 1 and is_reset_name(name):
             resets[name] = bool(ACTIVE_LOW_RE.search(name))
         elif infer_clocks and p["width"] == 1 and CLOCK_RE.search(name) and not NOT_CLOCK_RE.search(name):
             clocks.append(name)
@@ -129,12 +139,15 @@ def gen_testbench(top: str, ports: dict[str, dict], cycles: int, seed: int, rese
         lines.append("      end")
     lines.append("    end")
     lines.append("    cycle = cycle + 1;")
+    # non-blocking: a secondary clock whose edge coincides with this falling edge must see the
+    # old value in both the RTL and the gate model, not race the update
     for n in data_in:
-        lines.append(f"    {n} = {rand_expr(w[n])};")
+        lines.append(f"    {n} <= {rand_expr(w[n])};")
     for r, low in resets.items():
-        # hold reset for the first cycles, then pulse it rarely so reset logic is also compared
+        # reset is active from time 0 and released at falling edge `reset_cycles`, i.e. exactly the first
+        # `reset_cycles` rising edges see it; afterwards it pulses rarely so reset logic is also compared
         active, inactive = ("0", "1") if low else ("1", "0")
-        lines.append(f"    {r} = (cycle < {reset_cycles} || ($random(seed) & 63) == 0) ? 1'b{active} : 1'b{inactive};")
+        lines.append(f"    {r} <= (cycle < {reset_cycles} || ($random(seed) & 63) == 0) ? 1'b{active} : 1'b{inactive};")
     lines.append(f"    if (cycle == {cycles}) begin")
     lines.append('      $display("DIFFSIM cycles=%0d compared_bits=%0d mismatches=%0d gate_x_bits=%0d", '
                  "cycle, compared_bits, mismatches, gate_x_bits);")
@@ -171,6 +184,9 @@ def run_diff_sim(*, top: str, ports: dict, rtl_sources: list[str], includes: lis
                  resets: dict[str, bool] | None = None) -> dict:
     work.mkdir(parents=True, exist_ok=True)
     res: dict = {"status": "failed", "cycles_requested": cycles, "seed": seed, "work_dir": str(work)}
+    if cycles < 1:
+        res["error"] = f"cycles must be at least 1, got {cycles}"
+        return res
     try:
         clk, rst, _, _ = classify_ports(ports, clocks, resets)
         res["clocks"] = clk
@@ -186,6 +202,9 @@ def run_diff_sim(*, top: str, ports: dict, rtl_sources: list[str], includes: lis
                          work=work, timeout=timeout)
     except subprocess.TimeoutExpired as e:
         res["error"] = f"{Path(e.cmd[0]).name} timed out after {timeout}s"
+        return res
+    except OSError as e:
+        res["error"] = f"cannot run {e.filename or 'simulation tool'}: {e.strerror or e}"
         return res
 
 

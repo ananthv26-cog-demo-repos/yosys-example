@@ -37,6 +37,21 @@ from bool_area import purge_outputs
 TABLE_COLS = ("gate_total", "dff", "edge_total", "max_depth", "max_fanout", "mapped_cell_total", "mapped_cell_area")
 
 
+def metrics_schema_error(metrics: object) -> str | None:
+    """Why `metrics` does not have the bool_area.py shape run_block reads, or None if it does."""
+    if not isinstance(metrics, dict):
+        return "not a JSON object"
+    for key, typ in (("status", str), ("stage", (str, type(None))), ("errors", list)):
+        if not isinstance(metrics.get(key), typ):
+            return f"missing or malformed '{key}'"
+    if not all(isinstance(e, str) for e in metrics["errors"]):
+        return "'errors' has a non-string entry"
+    for key in ("summary", "equivalence", "simulation"):
+        if not isinstance(metrics.get(key), (dict, type(None))):
+            return f"'{key}' is not an object"
+    return None
+
+
 def run_block(entry: dict, out_dir: Path, extra: list[str], python: str) -> dict:
     sources = [str((HERE / s).resolve()) for s in entry["sources"]]
     block_out = out_dir / entry["name"]
@@ -45,7 +60,7 @@ def run_block(entry: dict, out_dir: Path, extra: list[str], python: str) -> dict
         cmd += ["-I", str((HERE / inc).resolve())]
     for d in entry.get("define", []):
         cmd += ["-D", d]
-    cmd += extra
+    cmd += [*entry.get("args", []), *extra]
     t0 = time.time()
     res = {"name": entry["name"], "top": entry["top"], "exit_code": None, "seconds": None, "out_dir": str(block_out),
            "checks": []}
@@ -63,10 +78,17 @@ def run_block(entry: dict, out_dir: Path, extra: list[str], python: str) -> dict
         return res
     res.update(exit_code=p.returncode, seconds=round(time.time() - t0, 3))
     metrics_path = block_out / "metrics.json"
-    metrics = json.loads(metrics_path.read_text()) if metrics_path.exists() else None
-    res["status"] = metrics["status"] if metrics else "no-metrics"
+    metrics, bad_metrics = None, None
+    try:
+        metrics = json.loads(metrics_path.read_text()) if metrics_path.exists() else None
+    except (OSError, ValueError) as e:
+        metrics, bad_metrics = None, f"unreadable {metrics_path}: {e}"
+    if metrics is not None and (schema_error := metrics_schema_error(metrics)):
+        metrics, bad_metrics = None, f"unreadable {metrics_path}: {schema_error}"
+    res["status"] = metrics["status"] if metrics else ("bad-metrics" if bad_metrics else "no-metrics")
     res["stage"] = metrics["stage"] if metrics else None
-    res["errors"] = (metrics["errors"] if metrics else []) or ([p.stderr.strip()] if p.returncode else [])
+    res["errors"] = (metrics["errors"] if metrics else [bad_metrics] if bad_metrics else []) or (
+        [p.stderr.strip()] if p.returncode else [])
     summary = (metrics or {}).get("summary") or {}
     res["summary"] = {k: summary.get(k) for k in TABLE_COLS}
     res["equivalence"] = ((metrics or {}).get("equivalence") or {}).get("status")
@@ -79,7 +101,7 @@ def run_block(entry: dict, out_dir: Path, extra: list[str], python: str) -> dict
         ok &= passed
     for key, bound in entry.get("expect_max", {}).items():
         got = summary.get(key)
-        passed = got is not None and got <= bound
+        passed = isinstance(got, (int, float)) and got <= bound
         res["checks"].append({"key": key, "op": "<=", "want": bound, "got": got, "passed": passed})
         ok &= passed
     res["passed"] = ok
@@ -111,8 +133,9 @@ def main(argv: list[str] | None = None) -> int:
     out_dir = Path(args.out_dir).resolve()
     out_dir.mkdir(parents=True, exist_ok=True)
     entries = [e for e in manifest["blocks"] if not args.only or e["name"] in args.only]
-    if not entries:
-        ap.error("no manifest blocks matched --only")
+    unknown = sorted(set(args.only or []) - {e["name"] for e in manifest["blocks"]})
+    if unknown:
+        ap.error(f"--only names not in the manifest: {', '.join(unknown)}")
     results = []
     for e in entries:
         r = run_block(e, out_dir, args.extra, args.python)

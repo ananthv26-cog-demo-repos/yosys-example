@@ -35,7 +35,7 @@ python3 tools/synth_area/run_suite.py -o out/suite        # the 36-block corpus,
 | Determinism | same profile + sources ⇒ byte-identical `generic_yosys.json`, `mapped_yosys.json`, `mapped_netlist.v`, `boolean_graph.json` | tested in `tests/test_bool_area.py::test_determinism` |
 | Behaviour matches RTL | formal: `equiv_rtl_vs_graph`, `equiv_graph_vs_mapped`; simulation: `diff_sim.py` | see below |
 | ≥ 20 small blocks incl. hand-countable + FIFOs | `corpus/` (32 blocks) + 4 `examples/` FIFOs, manifest `corpus/suite.json` | 19 blocks carry exact `expect` values (e.g. `inv`: 1 NOT; `parity8`: 7 gates, depth 3; `reg8_en`: 8 DFF + 8 MUX) |
-| Nonzero exit on any failure | `metrics.status/stage/errors` + exit code (2 = setup/inputs, 1 = flow) | `metrics.json` is written on failure too |
+| Nonzero exit on any failure | `metrics.status/stage/errors` + exit code (2 = setup/inputs, 1 = flow) | `metrics.json` is written on failure too, for every run that gets past argument parsing; a usage error (unknown flag, malformed `--top`, `--equiv-bmc 1`) exits 2 with argparse's message before an output directory exists |
 
 ### Out of scope in v1
 No graph rewriting / optimisation, no timing or power, no placement, no correlation against a
@@ -141,6 +141,10 @@ Things worth knowing when reading the numbers:
   instead of fixing it — ABC may legitimately pick NAND/NOR forms.
 - Gate counts depend on the frontend and on the profile; never compare runs across
   profiles (the profile hash is in every `metrics.json`, and the profile file says so).
+- A profile is build configuration, like a Makefile: its `script.lower` / `script.map`
+  lines are Yosys commands run as written, so only run profiles you would run as a script.
+- The output directory belongs to the run: every file named in `ARTIFACTS`, `equiv_*` and
+  `sim/` under `-o` is deleted before each run, so give each run its own directory.
 
 ## Adding a block
 
@@ -148,7 +152,9 @@ Drop `corpus/<name>.sv` in, append `{"name", "sources", "top", "expect"?}` to
 `corpus/suite.json`, run `run_suite.py`. `expect` values are compared exactly against
 `metrics.summary`; `expect_max` gives upper bounds. A block that needs explicit clock/reset
 naming for simulation passes them through `run_suite.py ... -- --sim-clock c --sim-reset r:low`
-(applies to the whole run) or gets its own entry with `--sim-cycles 0`.
+(applies to the whole run) or carries them in its manifest entry as
+`"args": ["--sim-clock", "c", "--sim-reset", "r:low"]` (per block, placed before the run-wide
+extras so a run-wide `--sim-cycles 0` still wins).
 
 ## Files
 

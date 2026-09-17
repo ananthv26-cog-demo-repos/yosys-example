@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import filecmp
 import json
+import os
 import shutil
 import subprocess
 import sys
@@ -250,6 +251,37 @@ class BoolAreaFlowTests(unittest.TestCase):
             self.assertEqual(m["stage"], "profile", name)
             self.assertNotIn("Traceback", err, name)
             self.assertIn(str(prof), m["errors"][0], name)
+        # a liberty entry that exists but is a directory is a profile error, not an IsADirectoryError later
+        prof = self.tmp / "lib_is_dir.json"
+        prof.write_text(json.dumps({**good, "liberty": {"dir": ".", "files": [{"file": "corpus", "sha256": "0" * 64}]}}))
+        for verify in ([], ["--no-verify-libs"]):
+            code, m, err = run_flow(self.tmp / f"lib_is_dir{len(verify)}", "inv", [CORPUS / "inv.sv"], "--profile",
+                                    str(prof), "--sim-cycles", "0", *verify)
+            self.assertEqual((code, m["stage"]), (2, "profile"), err)
+            self.assertNotIn("Traceback", err)
+            self.assertIn("not a regular file", m["errors"][0])
+
+    def test_unusable_tools_are_structured_failures(self) -> None:
+        not_exec = self.tmp / "yosys_not_executable"
+        not_exec.write_text("#!/bin/sh\nexit 0\n")
+        not_exec.chmod(0o644)
+        code, m, err = run_flow(self.tmp / "noexec", "inv", [CORPUS / "inv.sv"], "--yosys", str(not_exec), "--sim-cycles", "0")
+        self.assertEqual((code, m["stage"]), (2, "tools"), err)
+        self.assertNotIn("Traceback", err)
+        self.assertIn("not executable", m["errors"][0])
+        code, m, err = run_flow(self.tmp / "nosv2v", "inv", [CORPUS / "inv.sv"], "--frontend", "sv2v", "--sv2v",
+                                str(not_exec), "--sim-cycles", "0")
+        self.assertEqual((code, m["stage"]), (2, "tools"), err)
+        self.assertNotIn("Traceback", err)
+        self.assertIn("sv2v not executable", m["errors"][0])
+        # a stale $SV2V that the slang frontend never uses does not block synthesis
+        proc = subprocess.run([sys.executable, str(RUNNER), str(CORPUS / "inv.sv"), "--top", "inv", "-o",
+                               str(self.tmp / "stale_sv2v"), "-q", "--frontend", "slang", "--no-equiv",
+                               "--sim-cycles", "0"], capture_output=True, text=True, check=False,
+                              env={**os.environ, "SV2V": str(not_exec)})
+        m = json.loads((self.tmp / "stale_sv2v" / "metrics.json").read_text())
+        self.assertEqual((proc.returncode, m["status"]), (0, "ok"), proc.stderr)
+        self.assertNotIn("sv2v_version", m["tools"])
 
     def test_source_identity_in_metrics(self) -> None:
         code, m = self.flow("inv", CORPUS / "inv.sv", "--no-equiv", "--sim-cycles", "0")
