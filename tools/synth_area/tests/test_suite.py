@@ -87,16 +87,20 @@ class SuiteRunnerTests(unittest.TestCase):
             self.assertEqual(proc.returncode, 2)
             self.assertIn("no manifest blocks matched", proc.stderr)
             self.assertFalse((tmp / "none" / "suite_summary.json").exists())
-            # a child that cannot even be launched is a failed block, and the aggregates are still written
-            proc = subprocess.run([sys.executable, str(SUITE), str(manifest), "-o", str(tmp / "nopy"), "--only", "inv",
+            # a child that cannot even be launched is a failed block, the aggregates are still written, and the
+            # block's artifacts from the earlier good run do not survive next to the failed result
+            self.assertTrue((tmp / "out" / "inv" / "metrics.json").exists())
+            proc = subprocess.run([sys.executable, str(SUITE), str(manifest), "-o", str(tmp / "out"), "--only", "inv",
                                    "--python", str(tmp / "missing_python")], capture_output=True, text=True, check=False)
             self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
             self.assertNotIn("Traceback", proc.stderr)
-            summary = json.loads((tmp / "nopy" / "suite_summary.json").read_text())
+            summary = json.loads((tmp / "out" / "suite_summary.json").read_text())
             (r,) = summary["results"]
             self.assertEqual((r["passed"], r["stage"]), (False, "launch"))
             self.assertIn("missing_python", r["errors"][0])
-            self.assertIn("| inv | FAIL(launch) |", (tmp / "nopy" / "suite_table.md").read_text())
+            self.assertIn("| inv | FAIL(launch) |", (tmp / "out" / "suite_table.md").read_text())
+            self.assertFalse((tmp / "out" / "inv" / "metrics.json").exists())
+            self.assertFalse((tmp / "out" / "inv" / "boolean_graph.json").exists())
 
 
 if __name__ == "__main__":

@@ -31,6 +31,9 @@ import time
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
+sys.path.insert(0, str(HERE))
+from bool_area import purge_outputs
+
 TABLE_COLS = ("gate_total", "dff", "edge_total", "max_depth", "max_fanout", "mapped_cell_total", "mapped_cell_area")
 
 
@@ -49,6 +52,8 @@ def run_block(entry: dict, out_dir: Path, extra: list[str], python: str) -> dict
     try:
         p = subprocess.run(cmd, capture_output=True, text=True, check=False)
     except OSError as e:
+        if block_out.is_dir():
+            purge_outputs(block_out)
         res.update(seconds=round(time.time() - t0, 3), status="failed", stage="launch", errors=[f"cannot run {cmd[0]}: {e}"],
                    summary={k: None for k in TABLE_COLS}, equivalence=None, simulation=None, passed=False)
         return res
