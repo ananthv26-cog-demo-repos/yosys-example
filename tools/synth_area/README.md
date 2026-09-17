@@ -11,6 +11,11 @@ sent to the slow, accurate signoff flow.
 SystemVerilog ──► read_slang (or sv2v) ──► synth ──► [dfflibmap/abc -liberty] ──► stat -json ──► report.json
 ```
 
+> **Boolean-layer / ASAP7 flow (v1):** `bool_area.py` goes further — restricted
+> one-bit gate graph (`boolean_graph.json`), pinned ASAP7 RVT/TT mapping, Liberty area,
+> formal RTL ≡ graph ≡ netlist proofs and random differential simulation, with a
+> 36-block corpus. See [`BOOLEAN_LAYER.md`](BOOLEAN_LAYER.md).
+
 ## Requirements
 
 * A Yosys built from this repo (`cmake -B build -G Ninja . && cmake --build build`).
