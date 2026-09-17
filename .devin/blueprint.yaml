@@ -1,11 +1,11 @@
 # https://docs.devin.ai/onboard-devin/environment-yaml
 # Devin environment for this Yosys fork + tools/synth_area (SystemVerilog -> Boolean graph -> ASAP7 area).
-# Commands run from the repo root.
+# One-time setup (e.g., install system tools, global CLIs).
 initialize: |
   # Yosys build deps. CMake >= 3.28 is required and Ubuntu 22.04 ships 3.22, so CMake comes from PyPI via uv.
   sudo apt-get update -qq
   sudo apt-get install -y -qq build-essential ninja-build bison flex pkg-config \
-    libffi-dev libfl-dev libreadline-dev tcl-dev zlib1g-dev libboost-dev iverilog unzip curl
+    libffi-dev libfl-dev libreadline-dev tcl-dev zlib1g-dev libboost-dev iverilog unzip curl ccache
   # uv is not part of the base image; the installer drops it in ~/.local/bin
   command -v uv >/dev/null || curl -LsSf https://astral.sh/uv/install.sh | sh
   export PATH="$HOME/.local/bin:$PATH"
@@ -13,19 +13,27 @@ initialize: |
   uv tool install ruff
   uv tool install pre-commit
   echo "PATH=$HOME/.local/bin:$PATH" >> $ENVRC
+  # ccache keeps a Yosys rebuild after an upstream merge from costing a full ~10 min compile.
+  echo "CCACHE_DIR=$HOME/.ccache" >> $ENVRC
+  ccache --max-size=5G
   # sv2v v0.0.13: second SystemVerilog frontend used by tools/synth_area (slang is built into yosys).
   curl -fsSL https://github.com/zachjs/sv2v/releases/download/v0.0.13/sv2v-Linux.zip -o /tmp/sv2v.zip
   unzip -o -j /tmp/sv2v.zip 'sv2v-Linux/sv2v' -d "$HOME/.local/bin" && chmod +x "$HOME/.local/bin/sv2v"
-# Incremental Yosys build (ninja no-ops when nothing changed; a clean build takes ~10 min).
+# Install project dependencies (runs during builds, surfaced to agent at session start).
 maintenance: |
   git submodule update --init --recursive
-  cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release . && cmake --build build -j"$(nproc)"
+  cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache . \
+    && cmake --build build -j"$(nproc)"
   pre-commit install
 knowledge:
   - name: test
     contents: |
       for t in tools/synth_area/tests/test_*.py; do python3 "$t"; done   # ~1 min, needs build/yosys
-      python3 tools/synth_area/run_suite.py -o /tmp/suite   # 36-block corpus, ~1 min
+      python3 tools/synth_area/run_suite.py -o /tmp/suite   # 36-block corpus, sequential, ~80s
+      # same 36 blocks across all cores, ~19s; each block writes its own summary under /tmp/psuite/<name>
+      python3 -c "import json;print('\n'.join(b['name'] for b in json.load(open('tools/synth_area/corpus/suite.json'))['blocks']))" \
+        | xargs -P "$(nproc)" -I{} python3 tools/synth_area/run_suite.py --only {} -o /tmp/psuite/{}
   - name: lint
     contents: |
       ruff check tools/synth_area --line-length 120
@@ -38,3 +46,6 @@ knowledge:
     contents: |
       TRY_IT.md (repo root) is the hands-on guide; tools/synth_area/BOOLEAN_LAYER.md the design/results write-up;
       SV_SUPPORT.md the slang-vs-sv2v feature matrix. A committed example run is under tools/synth_area/examples/output/.
+      Big-block runtime is almost entirely the single-threaded graph-vs-mapped SAT proof:
+      525 flops 7s, 2067 flops 63s, 8223 flops 1085s (of a 1121s run); synthesis+mapping stays at ~14s.
+      For area-only iteration use --no-equiv (or --equiv-bmc for the bounded fallback) and --sim-cycles 0.
