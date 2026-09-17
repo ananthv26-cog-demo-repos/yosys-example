@@ -1,0 +1,19 @@
+read_slang --top sync_fifo --ignore-assertions --ignore-initial --ignore-timing <repo>/tools/synth_area/examples/sync_fifo.sv
+hierarchy -check -top sync_fifo
+proc
+flatten
+memory_map
+opt_clean
+async2sync
+design -stash gold
+read_json <out>/generic_yosys.json
+hierarchy -top sync_fifo
+async2sync
+design -stash gate
+design -copy-from gold -as gold sync_fifo
+design -copy-from gate -as gate sync_fifo
+equiv_make gold gate equiv
+hierarchy -top equiv
+equiv_simple -seq 5
+equiv_induct -seq 5
+equiv_status -assert

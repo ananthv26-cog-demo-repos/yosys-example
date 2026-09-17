@@ -1,0 +1,22 @@
+read_json <out>/generic_yosys.json
+hierarchy -top counter8_en
+async2sync
+design -stash gold
+read_json <out>/mapped_yosys.json
+read_liberty -ignore_miss_func -ignore_miss_dir -ignore_miss_data_latch <repo>/tools/synth_area/lib/asap7/asap7sc7p5t_AO_RVT_TT_nldm_211120.lib.gz
+read_liberty -ignore_miss_func -ignore_miss_dir -ignore_miss_data_latch <repo>/tools/synth_area/lib/asap7/asap7sc7p5t_INVBUF_RVT_TT_nldm_220122.lib.gz
+read_liberty -ignore_miss_func -ignore_miss_dir -ignore_miss_data_latch <repo>/tools/synth_area/lib/asap7/asap7sc7p5t_OA_RVT_TT_nldm_211120.lib.gz
+read_liberty -ignore_miss_func -ignore_miss_dir -ignore_miss_data_latch <repo>/tools/synth_area/lib/asap7/asap7sc7p5t_SEQ_RVT_TT_nldm_220123.lib.gz
+read_liberty -ignore_miss_func -ignore_miss_dir -ignore_miss_data_latch <repo>/tools/synth_area/lib/asap7/asap7sc7p5t_SIMPLE_RVT_TT_nldm_211120.lib.gz
+hierarchy -top counter8_en
+flatten
+opt_clean
+async2sync
+design -stash gate
+design -copy-from gold -as gold counter8_en
+design -copy-from gate -as gate counter8_en
+equiv_make gold gate equiv
+hierarchy -top equiv
+equiv_simple -seq 5
+equiv_induct -seq 5
+equiv_status -assert

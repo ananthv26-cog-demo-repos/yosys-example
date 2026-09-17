@@ -1,0 +1,9 @@
+read_liberty -ignore_miss_func -ignore_miss_dir -ignore_miss_data_latch <repo>/tools/synth_area/lib/asap7/asap7sc7p5t_AO_RVT_TT_nldm_211120.lib.gz
+read_liberty -ignore_miss_func -ignore_miss_dir -ignore_miss_data_latch <repo>/tools/synth_area/lib/asap7/asap7sc7p5t_INVBUF_RVT_TT_nldm_220122.lib.gz
+read_liberty -ignore_miss_func -ignore_miss_dir -ignore_miss_data_latch <repo>/tools/synth_area/lib/asap7/asap7sc7p5t_OA_RVT_TT_nldm_211120.lib.gz
+read_liberty -ignore_miss_func -ignore_miss_dir -ignore_miss_data_latch <repo>/tools/synth_area/lib/asap7/asap7sc7p5t_SEQ_RVT_TT_nldm_220123.lib.gz
+read_liberty -ignore_miss_func -ignore_miss_dir -ignore_miss_data_latch <repo>/tools/synth_area/lib/asap7/asap7sc7p5t_SIMPLE_RVT_TT_nldm_211120.lib.gz
+read_json <out>/mapped_yosys.json
+hierarchy -top counter8_en
+rename counter8_en counter8_en__gate
+write_verilog -noattr <out>/sim/gate.v

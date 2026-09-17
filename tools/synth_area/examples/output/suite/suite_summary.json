@@ -1,0 +1,1254 @@
+{
+  "manifest": "<repo>/tools/synth_area/corpus/suite.json",
+  "blocks": 36,
+  "passed": 36,
+  "failed": 0,
+  "results": [
+    {
+      "name": "adder8",
+      "top": "adder8",
+      "exit_code": 0,
+      "seconds": 1.501,
+      "out_dir": "<out>/adder8",
+      "checks": [],
+      "status": "ok",
+      "stage": "done",
+      "errors": [],
+      "summary": {
+        "gate_total": 37,
+        "dff": 0,
+        "edge_total": 83,
+        "max_depth": 15,
+        "max_fanout": 2,
+        "mapped_cell_total": 32,
+        "mapped_cell_area": 3.22218
+      },
+      "equivalence": "proven",
+      "simulation": "match",
+      "passed": true
+    },
+    {
+      "name": "alu4",
+      "top": "alu4",
+      "exit_code": 0,
+      "seconds": 1.487,
+      "out_dir": "<out>/alu4",
+      "checks": [],
+      "status": "ok",
+      "stage": "done",
+      "errors": [],
+      "summary": {
+        "gate_total": 95,
+        "dff": 0,
+        "edge_total": 192,
+        "max_depth": 13,
+        "max_fanout": 7,
+        "mapped_cell_total": 60,
+        "mapped_cell_area": 5.0301
+      },
+      "equivalence": "proven",
+      "simulation": "match",
+      "passed": true
+    },
+    {
+      "name": "and2",
+      "top": "and2",
+      "exit_code": 0,
+      "seconds": 1.377,
+      "out_dir": "<out>/and2",
+      "checks": [
+        {
+          "key": "and",
+          "op": "==",
+          "want": 1,
+          "got": 1,
+          "passed": true
+        },
+        {
+          "key": "gate_total",
+          "op": "==",
+          "want": 1,
+          "got": 1,
+          "passed": true
+        },
+        {
+          "key": "dff",
+          "op": "==",
+          "want": 0,
+          "got": 0,
+          "passed": true
+        },
+        {
+          "key": "max_depth",
+          "op": "==",
+          "want": 1,
+          "got": 1,
+          "passed": true
+        }
+      ],
+      "status": "ok",
+      "stage": "done",
+      "errors": [],
+      "summary": {
+        "gate_total": 1,
+        "dff": 0,
+        "edge_total": 3,
+        "max_depth": 1,
+        "max_fanout": 1,
+        "mapped_cell_total": 1,
+        "mapped_cell_area": 0.08748
+      },
+      "equivalence": "proven",
+      "simulation": "match",
+      "passed": true
+    },
+    {
+      "name": "comparator8",
+      "top": "comparator8",
+      "exit_code": 0,
+      "seconds": 1.411,
+      "out_dir": "<out>/comparator8",
+      "checks": [],
+      "status": "ok",
+      "stage": "done",
+      "errors": [],
+      "summary": {
+        "gate_total": 49,
+        "dff": 0,
+        "edge_total": 93,
+        "max_depth": 11,
+        "max_fanout": 2,
+        "mapped_cell_total": 26,
+        "mapped_cell_area": 1.86624
+      },
+      "equivalence": "proven",
+      "simulation": "match",
+      "passed": true
+    },
+    {
+      "name": "counter4",
+      "top": "counter4",
+      "exit_code": 0,
+      "seconds": 1.494,
+      "out_dir": "<out>/counter4",
+      "checks": [
+        {
+          "key": "dff",
+          "op": "==",
+          "want": 4,
+          "got": 4,
+          "passed": true
+        }
+      ],
+      "status": "ok",
+      "stage": "done",
+      "errors": [],
+      "summary": {
+        "gate_total": 11,
+        "dff": 4,
+        "edge_total": 34,
+        "max_depth": 4,
+        "max_fanout": 4,
+        "mapped_cell_total": 13,
+        "mapped_cell_area": 2.187
+      },
+      "equivalence": "proven",
+      "simulation": "match",
+      "passed": true
+    },
+    {
+      "name": "counter8_en",
+      "top": "counter8_en",
+      "exit_code": 0,
+      "seconds": 1.424,
+      "out_dir": "<out>/counter8_en",
+      "checks": [
+        {
+          "key": "dff",
+          "op": "==",
+          "want": 8,
+          "got": 8,
+          "passed": true
+        }
+      ],
+      "status": "ok",
+      "stage": "done",
+      "errors": [],
+      "summary": {
+        "gate_total": 30,
+        "dff": 8,
+        "edge_total": 84,
+        "max_depth": 9,
+        "max_fanout": 8,
+        "mapped_cell_total": 29,
+        "mapped_cell_area": 4.53438
+      },
+      "equivalence": "proven",
+      "simulation": "match",
+      "passed": true
+    },
+    {
+      "name": "dec2to4",
+      "top": "dec2to4",
+      "exit_code": 0,
+      "seconds": 1.378,
+      "out_dir": "<out>/dec2to4",
+      "checks": [
+        {
+          "key": "dff",
+          "op": "==",
+          "want": 0,
+          "got": 0,
+          "passed": true
+        },
+        {
+          "key": "gate_total",
+          "op": "<=",
+          "want": 6,
+          "got": 5,
+          "passed": true
+        },
+        {
+          "key": "max_depth",
+          "op": "<=",
+          "want": 2,
+          "got": 2,
+          "passed": true
+        }
+      ],
+      "status": "ok",
+      "stage": "done",
+      "errors": [],
+      "summary": {
+        "gate_total": 5,
+        "dff": 0,
+        "edge_total": 13,
+        "max_depth": 2,
+        "max_fanout": 4,
+        "mapped_cell_total": 5,
+        "mapped_cell_area": 0.33534
+      },
+      "equivalence": "proven",
+      "simulation": "match",
+      "passed": true
+    },
+    {
+      "name": "dff",
+      "top": "dff",
+      "exit_code": 0,
+      "seconds": 1.282,
+      "out_dir": "<out>/dff",
+      "checks": [
+        {
+          "key": "dff",
+          "op": "==",
+          "want": 1,
+          "got": 1,
+          "passed": true
+        },
+        {
+          "key": "gate_total",
+          "op": "==",
+          "want": 0,
+          "got": 0,
+          "passed": true
+        },
+        {
+          "key": "max_depth",
+          "op": "==",
+          "want": 0,
+          "got": 0,
+          "passed": true
+        },
+        {
+          "key": "mapped_cell_total",
+          "op": "==",
+          "want": 1,
+          "got": 1,
+          "passed": true
+        }
+      ],
+      "status": "ok",
+      "stage": "done",
+      "errors": [],
+      "summary": {
+        "gate_total": 0,
+        "dff": 1,
+        "edge_total": 3,
+        "max_depth": 0,
+        "max_fanout": 1,
+        "mapped_cell_total": 1,
+        "mapped_cell_area": 0.3645
+      },
+      "equivalence": "proven",
+      "simulation": "match",
+      "passed": true
+    },
+    {
+      "name": "dff_async_rst",
+      "top": "dff_async_rst",
+      "exit_code": 0,
+      "seconds": 1.385,
+      "out_dir": "<out>/dff_async_rst",
+      "checks": [
+        {
+          "key": "dff",
+          "op": "==",
+          "want": 1,
+          "got": 1,
+          "passed": true
+        },
+        {
+          "key": "gate_total",
+          "op": "==",
+          "want": 0,
+          "got": 0,
+          "passed": true
+        },
+        {
+          "key": "max_depth",
+          "op": "==",
+          "want": 0,
+          "got": 0,
+          "passed": true
+        }
+      ],
+      "status": "ok",
+      "stage": "done",
+      "errors": [],
+      "summary": {
+        "gate_total": 0,
+        "dff": 1,
+        "edge_total": 4,
+        "max_depth": 0,
+        "max_fanout": 1,
+        "mapped_cell_total": 2,
+        "mapped_cell_area": 0.42282
+      },
+      "equivalence": "proven",
+      "simulation": "match",
+      "passed": true
+    },
+    {
+      "name": "dff_sync_rst",
+      "top": "dff_sync_rst",
+      "exit_code": 0,
+      "seconds": 1.414,
+      "out_dir": "<out>/dff_sync_rst",
+      "checks": [
+        {
+          "key": "dff",
+          "op": "==",
+          "want": 1,
+          "got": 1,
+          "passed": true
+        },
+        {
+          "key": "gate_total",
+          "op": "==",
+          "want": 2,
+          "got": 2,
+          "passed": true
+        }
+      ],
+      "status": "ok",
+      "stage": "done",
+      "errors": [],
+      "summary": {
+        "gate_total": 2,
+        "dff": 1,
+        "edge_total": 6,
+        "max_depth": 2,
+        "max_fanout": 1,
+        "mapped_cell_total": 3,
+        "mapped_cell_area": 0.46656
+      },
+      "equivalence": "proven",
+      "simulation": "match",
+      "passed": true
+    },
+    {
+      "name": "fifo_d2_w4",
+      "top": "fifo_d2_w4",
+      "exit_code": 0,
+      "seconds": 1.539,
+      "out_dir": "<out>/fifo_d2_w4",
+      "checks": [],
+      "status": "ok",
+      "stage": "done",
+      "errors": [],
+      "summary": {
+        "gate_total": 33,
+        "dff": 12,
+        "edge_total": 108,
+        "max_depth": 6,
+        "max_fanout": 5,
+        "mapped_cell_total": 64,
+        "mapped_cell_area": 8.019
+      },
+      "equivalence": "proven",
+      "simulation": "match",
+      "passed": true
+    },
+    {
+      "name": "fifo_fwft_d4_w8",
+      "top": "fifo_fwft_d4_w8",
+      "exit_code": 0,
+      "seconds": 1.822,
+      "out_dir": "<out>/fifo_fwft_d4_w8",
+      "checks": [],
+      "status": "ok",
+      "stage": "done",
+      "errors": [],
+      "summary": {
+        "gate_total": 94,
+        "dff": 39,
+        "edge_total": 334,
+        "max_depth": 8,
+        "max_fanout": 18,
+        "mapped_cell_total": 184,
+        "mapped_cell_area": 24.5673
+      },
+      "equivalence": "proven",
+      "simulation": "match",
+      "passed": true
+    },
+    {
+      "name": "fifo_shift_d4_w8",
+      "top": "fifo_shift_d4_w8",
+      "exit_code": 0,
+      "seconds": 2.624,
+      "out_dir": "<out>/fifo_shift_d4_w8",
+      "checks": [],
+      "status": "ok",
+      "stage": "done",
+      "errors": [],
+      "summary": {
+        "gate_total": 92,
+        "dff": 35,
+        "edge_total": 317,
+        "max_depth": 10,
+        "max_fanout": 25,
+        "mapped_cell_total": 185,
+        "mapped_cell_area": 23.02182
+      },
+      "equivalence": "bounded",
+      "simulation": "match",
+      "passed": true
+    },
+    {
+      "name": "fsm_traffic",
+      "top": "fsm_traffic",
+      "exit_code": 0,
+      "seconds": 1.469,
+      "out_dir": "<out>/fsm_traffic",
+      "checks": [],
+      "status": "ok",
+      "stage": "done",
+      "errors": [],
+      "summary": {
+        "gate_total": 25,
+        "dff": 5,
+        "edge_total": 63,
+        "max_depth": 5,
+        "max_fanout": 5,
+        "mapped_cell_total": 21,
+        "mapped_cell_area": 3.00348
+      },
+      "equivalence": "proven",
+      "simulation": "match",
+      "passed": true
+    },
+    {
+      "name": "full_adder",
+      "top": "full_adder",
+      "exit_code": 0,
+      "seconds": 1.378,
+      "out_dir": "<out>/full_adder",
+      "checks": [
+        {
+          "key": "dff",
+          "op": "==",
+          "want": 0,
+          "got": 0,
+          "passed": true
+        },
+        {
+          "key": "gate_total",
+          "op": "<=",
+          "want": 5,
+          "got": 5,
+          "passed": true
+        },
+        {
+          "key": "max_depth",
+          "op": "<=",
+          "want": 3,
+          "got": 3,
+          "passed": true
+        }
+      ],
+      "status": "ok",
+      "stage": "done",
+      "errors": [],
+      "summary": {
+        "gate_total": 5,
+        "dff": 0,
+        "edge_total": 12,
+        "max_depth": 3,
+        "max_fanout": 2,
+        "mapped_cell_total": 3,
+        "mapped_cell_area": 0.39366
+      },
+      "equivalence": "proven",
+      "simulation": "match",
+      "passed": true
+    },
+    {
+      "name": "gray_counter4",
+      "top": "gray_counter4",
+      "exit_code": 0,
+      "seconds": 1.408,
+      "out_dir": "<out>/gray_counter4",
+      "checks": [
+        {
+          "key": "dff",
+          "op": "==",
+          "want": 4,
+          "got": 4,
+          "passed": true
+        }
+      ],
+      "status": "ok",
+      "stage": "done",
+      "errors": [],
+      "summary": {
+        "gate_total": 17,
+        "dff": 4,
+        "edge_total": 44,
+        "max_depth": 4,
+        "max_fanout": 5,
+        "mapped_cell_total": 16,
+        "mapped_cell_area": 2.53692
+      },
+      "equivalence": "proven",
+      "simulation": "match",
+      "passed": true
+    },
+    {
+      "name": "half_adder",
+      "top": "half_adder",
+      "exit_code": 0,
+      "seconds": 1.463,
+      "out_dir": "<out>/half_adder",
+      "checks": [
+        {
+          "key": "gate_total",
+          "op": "==",
+          "want": 2,
+          "got": 2,
+          "passed": true
+        },
+        {
+          "key": "dff",
+          "op": "==",
+          "want": 0,
+          "got": 0,
+          "passed": true
+        },
+        {
+          "key": "max_depth",
+          "op": "==",
+          "want": 1,
+          "got": 1,
+          "passed": true
+        }
+      ],
+      "status": "ok",
+      "stage": "done",
+      "errors": [],
+      "summary": {
+        "gate_total": 2,
+        "dff": 0,
+        "edge_total": 6,
+        "max_depth": 1,
+        "max_fanout": 2,
+        "mapped_cell_total": 2,
+        "mapped_cell_area": 0.2187
+      },
+      "equivalence": "proven",
+      "simulation": "match",
+      "passed": true
+    },
+    {
+      "name": "inv",
+      "top": "inv",
+      "exit_code": 0,
+      "seconds": 1.369,
+      "out_dir": "<out>/inv",
+      "checks": [
+        {
+          "key": "not",
+          "op": "==",
+          "want": 1,
+          "got": 1,
+          "passed": true
+        },
+        {
+          "key": "gate_total",
+          "op": "==",
+          "want": 1,
+          "got": 1,
+          "passed": true
+        },
+        {
+          "key": "dff",
+          "op": "==",
+          "want": 0,
+          "got": 0,
+          "passed": true
+        },
+        {
+          "key": "max_depth",
+          "op": "==",
+          "want": 1,
+          "got": 1,
+          "passed": true
+        }
+      ],
+      "status": "ok",
+      "stage": "done",
+      "errors": [],
+      "summary": {
+        "gate_total": 1,
+        "dff": 0,
+        "edge_total": 2,
+        "max_depth": 1,
+        "max_fanout": 1,
+        "mapped_cell_total": 1,
+        "mapped_cell_area": 0.04374
+      },
+      "equivalence": "proven",
+      "simulation": "match",
+      "passed": true
+    },
+    {
+      "name": "lfsr8",
+      "top": "lfsr8",
+      "exit_code": 0,
+      "seconds": 1.397,
+      "out_dir": "<out>/lfsr8",
+      "checks": [
+        {
+          "key": "dff",
+          "op": "==",
+          "want": 8,
+          "got": 8,
+          "passed": true
+        }
+      ],
+      "status": "ok",
+      "stage": "done",
+      "errors": [],
+      "summary": {
+        "gate_total": 14,
+        "dff": 8,
+        "edge_total": 51,
+        "max_depth": 4,
+        "max_fanout": 8,
+        "mapped_cell_total": 26,
+        "mapped_cell_area": 4.03866
+      },
+      "equivalence": "proven",
+      "simulation": "match",
+      "passed": true
+    },
+    {
+      "name": "mux2",
+      "top": "mux2",
+      "exit_code": 0,
+      "seconds": 1.421,
+      "out_dir": "<out>/mux2",
+      "checks": [
+        {
+          "key": "mux",
+          "op": "==",
+          "want": 1,
+          "got": 1,
+          "passed": true
+        },
+        {
+          "key": "gate_total",
+          "op": "==",
+          "want": 1,
+          "got": 1,
+          "passed": true
+        },
+        {
+          "key": "dff",
+          "op": "==",
+          "want": 0,
+          "got": 0,
+          "passed": true
+        },
+        {
+          "key": "max_depth",
+          "op": "==",
+          "want": 1,
+          "got": 1,
+          "passed": true
+        }
+      ],
+      "status": "ok",
+      "stage": "done",
+      "errors": [],
+      "summary": {
+        "gate_total": 1,
+        "dff": 0,
+        "edge_total": 4,
+        "max_depth": 1,
+        "max_fanout": 1,
+        "mapped_cell_total": 3,
+        "mapped_cell_area": 0.17496
+      },
+      "equivalence": "proven",
+      "simulation": "match",
+      "passed": true
+    },
+    {
+      "name": "mux4",
+      "top": "mux4",
+      "exit_code": 0,
+      "seconds": 1.53,
+      "out_dir": "<out>/mux4",
+      "checks": [
+        {
+          "key": "mux",
+          "op": "==",
+          "want": 3,
+          "got": 3,
+          "passed": true
+        },
+        {
+          "key": "gate_total",
+          "op": "==",
+          "want": 3,
+          "got": 3,
+          "passed": true
+        },
+        {
+          "key": "dff",
+          "op": "==",
+          "want": 0,
+          "got": 0,
+          "passed": true
+        },
+        {
+          "key": "max_depth",
+          "op": "==",
+          "want": 2,
+          "got": 2,
+          "passed": true
+        }
+      ],
+      "status": "ok",
+      "stage": "done",
+      "errors": [],
+      "summary": {
+        "gate_total": 3,
+        "dff": 0,
+        "edge_total": 10,
+        "max_depth": 2,
+        "max_fanout": 2,
+        "mapped_cell_total": 6,
+        "mapped_cell_area": 0.42282
+      },
+      "equivalence": "proven",
+      "simulation": "match",
+      "passed": true
+    },
+    {
+      "name": "or2",
+      "top": "or2",
+      "exit_code": 0,
+      "seconds": 1.378,
+      "out_dir": "<out>/or2",
+      "checks": [
+        {
+          "key": "or",
+          "op": "==",
+          "want": 1,
+          "got": 1,
+          "passed": true
+        },
+        {
+          "key": "gate_total",
+          "op": "==",
+          "want": 1,
+          "got": 1,
+          "passed": true
+        },
+        {
+          "key": "dff",
+          "op": "==",
+          "want": 0,
+          "got": 0,
+          "passed": true
+        },
+        {
+          "key": "max_depth",
+          "op": "==",
+          "want": 1,
+          "got": 1,
+          "passed": true
+        }
+      ],
+      "status": "ok",
+      "stage": "done",
+      "errors": [],
+      "summary": {
+        "gate_total": 1,
+        "dff": 0,
+        "edge_total": 3,
+        "max_depth": 1,
+        "max_fanout": 1,
+        "mapped_cell_total": 1,
+        "mapped_cell_area": 0.08748
+      },
+      "equivalence": "proven",
+      "simulation": "match",
+      "passed": true
+    },
+    {
+      "name": "parity8",
+      "top": "parity8",
+      "exit_code": 0,
+      "seconds": 1.38,
+      "out_dir": "<out>/parity8",
+      "checks": [
+        {
+          "key": "gate_total",
+          "op": "==",
+          "want": 7,
+          "got": 7,
+          "passed": true
+        },
+        {
+          "key": "dff",
+          "op": "==",
+          "want": 0,
+          "got": 0,
+          "passed": true
+        },
+        {
+          "key": "max_depth",
+          "op": "==",
+          "want": 3,
+          "got": 3,
+          "passed": true
+        }
+      ],
+      "status": "ok",
+      "stage": "done",
+      "errors": [],
+      "summary": {
+        "gate_total": 7,
+        "dff": 0,
+        "edge_total": 15,
+        "max_depth": 3,
+        "max_fanout": 1,
+        "mapped_cell_total": 7,
+        "mapped_cell_area": 0.91854
+      },
+      "equivalence": "proven",
+      "simulation": "match",
+      "passed": true
+    },
+    {
+      "name": "priority_enc8",
+      "top": "priority_enc8",
+      "exit_code": 0,
+      "seconds": 1.404,
+      "out_dir": "<out>/priority_enc8",
+      "checks": [],
+      "status": "ok",
+      "stage": "done",
+      "errors": [],
+      "summary": {
+        "gate_total": 20,
+        "dff": 0,
+        "edge_total": 42,
+        "max_depth": 5,
+        "max_fanout": 3,
+        "mapped_cell_total": 11,
+        "mapped_cell_area": 0.78732
+      },
+      "equivalence": "proven",
+      "simulation": "match",
+      "passed": true
+    },
+    {
+      "name": "reg8_en",
+      "top": "reg8_en",
+      "exit_code": 0,
+      "seconds": 1.485,
+      "out_dir": "<out>/reg8_en",
+      "checks": [
+        {
+          "key": "dff",
+          "op": "==",
+          "want": 8,
+          "got": 8,
+          "passed": true
+        },
+        {
+          "key": "mux",
+          "op": "==",
+          "want": 8,
+          "got": 8,
+          "passed": true
+        },
+        {
+          "key": "gate_total",
+          "op": "==",
+          "want": 8,
+          "got": 8,
+          "passed": true
+        },
+        {
+          "key": "max_depth",
+          "op": "==",
+          "want": 1,
+          "got": 1,
+          "passed": true
+        }
+      ],
+      "status": "ok",
+      "stage": "done",
+      "errors": [],
+      "summary": {
+        "gate_total": 8,
+        "dff": 8,
+        "edge_total": 48,
+        "max_depth": 1,
+        "max_fanout": 8,
+        "mapped_cell_total": 32,
+        "mapped_cell_area": 4.31568
+      },
+      "equivalence": "proven",
+      "simulation": "match",
+      "passed": true
+    },
+    {
+      "name": "shift_reg8",
+      "top": "shift_reg8",
+      "exit_code": 0,
+      "seconds": 1.27,
+      "out_dir": "<out>/shift_reg8",
+      "checks": [
+        {
+          "key": "dff",
+          "op": "==",
+          "want": 8,
+          "got": 8,
+          "passed": true
+        },
+        {
+          "key": "gate_total",
+          "op": "==",
+          "want": 0,
+          "got": 0,
+          "passed": true
+        },
+        {
+          "key": "max_depth",
+          "op": "==",
+          "want": 0,
+          "got": 0,
+          "passed": true
+        },
+        {
+          "key": "max_fanout",
+          "op": "==",
+          "want": 1,
+          "got": 1,
+          "passed": true
+        }
+      ],
+      "status": "ok",
+      "stage": "done",
+      "errors": [],
+      "summary": {
+        "gate_total": 0,
+        "dff": 8,
+        "edge_total": 17,
+        "max_depth": 0,
+        "max_fanout": 1,
+        "mapped_cell_total": 8,
+        "mapped_cell_area": 2.916
+      },
+      "equivalence": "proven",
+      "simulation": "match",
+      "passed": true
+    },
+    {
+      "name": "skid_buffer",
+      "top": "skid_buffer",
+      "exit_code": 0,
+      "seconds": 1.432,
+      "out_dir": "<out>/skid_buffer",
+      "checks": [],
+      "status": "ok",
+      "stage": "done",
+      "errors": [],
+      "summary": {
+        "gate_total": 14,
+        "dff": 9,
+        "edge_total": 63,
+        "max_depth": 5,
+        "max_fanout": 8,
+        "mapped_cell_total": 38,
+        "mapped_cell_area": 5.01552
+      },
+      "equivalence": "proven",
+      "simulation": "match",
+      "passed": true
+    },
+    {
+      "name": "sync_fifo_d16_w32",
+      "top": "sync_fifo_d16_w32",
+      "exit_code": 0,
+      "seconds": 7.913,
+      "out_dir": "<out>/sync_fifo_d16_w32",
+      "checks": [],
+      "status": "ok",
+      "stage": "done",
+      "errors": [],
+      "summary": {
+        "gate_total": 1261,
+        "dff": 525,
+        "edge_total": 4519,
+        "max_depth": 14,
+        "max_fanout": 170,
+        "mapped_cell_total": 2400,
+        "mapped_cell_area": 322.45128
+      },
+      "equivalence": "proven",
+      "simulation": "match",
+      "passed": true
+    },
+    {
+      "name": "sync_fifo_d16_w8",
+      "top": "sync_fifo_d16_w8",
+      "exit_code": 0,
+      "seconds": 3.179,
+      "out_dir": "<out>/sync_fifo_d16_w8",
+      "checks": [],
+      "status": "ok",
+      "stage": "done",
+      "errors": [],
+      "summary": {
+        "gate_total": 391,
+        "dff": 141,
+        "edge_total": 1306,
+        "max_depth": 14,
+        "max_fanout": 46,
+        "mapped_cell_total": 660,
+        "mapped_cell_area": 88.3548
+      },
+      "equivalence": "proven",
+      "simulation": "match",
+      "passed": true
+    },
+    {
+      "name": "sync_fifo_d4_w8",
+      "top": "sync_fifo_d4_w8",
+      "exit_code": 0,
+      "seconds": 1.814,
+      "out_dir": "<out>/sync_fifo_d4_w8",
+      "checks": [],
+      "status": "ok",
+      "stage": "done",
+      "errors": [],
+      "summary": {
+        "gate_total": 95,
+        "dff": 39,
+        "edge_total": 341,
+        "max_depth": 7,
+        "max_fanout": 18,
+        "mapped_cell_total": 192,
+        "mapped_cell_area": 24.5673
+      },
+      "equivalence": "proven",
+      "simulation": "match",
+      "passed": true
+    },
+    {
+      "name": "sync_fifo_d8_w8",
+      "top": "sync_fifo_d8_w8",
+      "exit_code": 0,
+      "seconds": 2.342,
+      "out_dir": "<out>/sync_fifo_d8_w8",
+      "checks": [],
+      "status": "ok",
+      "stage": "done",
+      "errors": [],
+      "summary": {
+        "gate_total": 184,
+        "dff": 74,
+        "edge_total": 655,
+        "max_depth": 11,
+        "max_fanout": 33,
+        "mapped_cell_total": 350,
+        "mapped_cell_area": 46.90386
+      },
+      "equivalence": "proven",
+      "simulation": "match",
+      "passed": true
+    },
+    {
+      "name": "xor2",
+      "top": "xor2",
+      "exit_code": 0,
+      "seconds": 1.373,
+      "out_dir": "<out>/xor2",
+      "checks": [
+        {
+          "key": "xor",
+          "op": "==",
+          "want": 1,
+          "got": 1,
+          "passed": true
+        },
+        {
+          "key": "gate_total",
+          "op": "==",
+          "want": 1,
+          "got": 1,
+          "passed": true
+        },
+        {
+          "key": "dff",
+          "op": "==",
+          "want": 0,
+          "got": 0,
+          "passed": true
+        },
+        {
+          "key": "max_depth",
+          "op": "==",
+          "want": 1,
+          "got": 1,
+          "passed": true
+        }
+      ],
+      "status": "ok",
+      "stage": "done",
+      "errors": [],
+      "summary": {
+        "gate_total": 1,
+        "dff": 0,
+        "edge_total": 3,
+        "max_depth": 1,
+        "max_fanout": 1,
+        "mapped_cell_total": 1,
+        "mapped_cell_area": 0.13122
+      },
+      "equivalence": "proven",
+      "simulation": "match",
+      "passed": true
+    },
+    {
+      "name": "sync_fifo",
+      "top": "sync_fifo",
+      "exit_code": 0,
+      "seconds": 8.124,
+      "out_dir": "<out>/sync_fifo",
+      "checks": [],
+      "status": "ok",
+      "stage": "done",
+      "errors": [],
+      "summary": {
+        "gate_total": 1275,
+        "dff": 525,
+        "edge_total": 4540,
+        "max_depth": 14,
+        "max_fanout": 170,
+        "mapped_cell_total": 2383,
+        "mapped_cell_area": 323.07822
+      },
+      "equivalence": "proven",
+      "simulation": "match",
+      "passed": true
+    },
+    {
+      "name": "async_fifo",
+      "top": "async_fifo",
+      "exit_code": 0,
+      "seconds": 2.226,
+      "out_dir": "<out>/async_fifo",
+      "checks": [],
+      "status": "ok",
+      "stage": "done",
+      "errors": [],
+      "summary": {
+        "gate_total": 392,
+        "dff": 168,
+        "edge_total": 1380,
+        "max_depth": 12,
+        "max_fanout": 49,
+        "mapped_cell_total": 757,
+        "mapped_cell_area": 101.85588
+      },
+      "equivalence": "proven",
+      "simulation": "match",
+      "passed": true
+    },
+    {
+      "name": "struct_fifo",
+      "top": "struct_fifo",
+      "exit_code": 0,
+      "seconds": 3.377,
+      "out_dir": "<out>/struct_fifo",
+      "checks": [],
+      "status": "ok",
+      "stage": "done",
+      "errors": [],
+      "summary": {
+        "gate_total": 392,
+        "dff": 186,
+        "edge_total": 1517,
+        "max_depth": 12,
+        "max_fanout": 89,
+        "mapped_cell_total": 876,
+        "mapped_cell_area": 115.24032
+      },
+      "equivalence": "proven",
+      "simulation": "match",
+      "passed": true
+    },
+    {
+      "name": "if_fifo",
+      "top": "if_fifo_top",
+      "exit_code": 0,
+      "seconds": 2.176,
+      "out_dir": "<out>/if_fifo",
+      "checks": [],
+      "status": "ok",
+      "stage": "done",
+      "errors": [],
+      "summary": {
+        "gate_total": 150,
+        "dff": 71,
+        "edge_total": 575,
+        "max_depth": 8,
+        "max_fanout": 34,
+        "mapped_cell_total": 329,
+        "mapped_cell_area": 43.87122
+      },
+      "equivalence": "proven",
+      "simulation": "match",
+      "passed": true
+    }
+  ]
+}

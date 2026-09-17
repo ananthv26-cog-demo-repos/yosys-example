@@ -1,0 +1,37 @@
+# https://docs.devin.ai/onboard-devin/environment-yaml
+# Devin environment for this Yosys fork + tools/synth_area (SystemVerilog -> Boolean graph -> ASAP7 area).
+# Commands run from the repo root.
+initialize: |
+  # Yosys build deps. CMake >= 3.28 is required and Ubuntu 22.04 ships 3.22, so CMake comes from PyPI via uv.
+  sudo apt-get update -qq
+  sudo apt-get install -y -qq build-essential ninja-build bison flex pkg-config \
+    libffi-dev libfl-dev libreadline-dev tcl-dev zlib1g-dev libboost-dev iverilog
+  uv tool install "cmake>=3.28"
+  uv tool install ruff
+  uv tool install pre-commit
+  echo "PATH=$HOME/.local/bin:$PATH" >> $ENVRC
+  # sv2v v0.0.13: second SystemVerilog frontend used by tools/synth_area (slang is built into yosys).
+  curl -fsSL https://github.com/zachjs/sv2v/releases/download/v0.0.13/sv2v-Linux.zip -o /tmp/sv2v.zip
+  unzip -o -j /tmp/sv2v.zip 'sv2v-Linux/sv2v' -d "$HOME/.local/bin" && chmod +x "$HOME/.local/bin/sv2v"
+# Incremental Yosys build (ninja no-ops when nothing changed; a clean build takes ~10 min).
+maintenance: |
+  git submodule update --init --recursive
+  cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release . && cmake --build build -j"$(nproc)"
+  pre-commit install
+knowledge:
+  - name: test
+    contents: |
+      for t in tools/synth_area/tests/test_*.py; do python3 "$t"; done   # ~1 min, needs build/yosys
+      python3 tools/synth_area/run_suite.py -o /tmp/suite   # 36-block corpus, ~1 min
+  - name: lint
+    contents: |
+      ruff check tools/synth_area --line-length 120
+      pre-commit run --files $(git ls-files -m -o --exclude-standard tools)
+  - name: run
+    contents: |
+      # yosys binary is build/yosys; tools/synth_area/*.py find it there by default
+      tools/synth_area/bool_area.py --top sync_fifo tools/synth_area/examples/sync_fifo.sv -o /tmp/sync_fifo
+  - name: notes
+    contents: |
+      TRY_IT.md (repo root) is the hands-on guide; tools/synth_area/BOOLEAN_LAYER.md the design/results write-up;
+      SV_SUPPORT.md the slang-vs-sv2v feature matrix. A committed example run is under tools/synth_area/examples/output/.

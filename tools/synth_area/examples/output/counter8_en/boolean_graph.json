@@ -1,0 +1,1049 @@
+{
+ "schema_version": 1,
+ "top": "counter8_en",
+ "ports": {
+  "clk": {
+   "direction": "input",
+   "width": 1
+  },
+  "rst": {
+   "direction": "input",
+   "width": 1
+  },
+  "en": {
+   "direction": "input",
+   "width": 1
+  },
+  "count": {
+   "direction": "output",
+   "width": 8
+  }
+ },
+ "nodes": [
+  {
+   "id": 0,
+   "kind": "INPUT",
+   "name": "clk",
+   "port": "clk",
+   "bit": 0
+  },
+  {
+   "id": 1,
+   "kind": "INPUT",
+   "name": "rst",
+   "port": "rst",
+   "bit": 0
+  },
+  {
+   "id": 2,
+   "kind": "INPUT",
+   "name": "en",
+   "port": "en",
+   "bit": 0
+  },
+  {
+   "id": 3,
+   "kind": "OUTPUT",
+   "name": "count[0]",
+   "port": "count",
+   "bit": 0,
+   "inputs": {
+    "A": 41
+   }
+  },
+  {
+   "id": 4,
+   "kind": "OUTPUT",
+   "name": "count[1]",
+   "port": "count",
+   "bit": 1,
+   "inputs": {
+    "A": 42
+   }
+  },
+  {
+   "id": 5,
+   "kind": "OUTPUT",
+   "name": "count[2]",
+   "port": "count",
+   "bit": 2,
+   "inputs": {
+    "A": 43
+   }
+  },
+  {
+   "id": 6,
+   "kind": "OUTPUT",
+   "name": "count[3]",
+   "port": "count",
+   "bit": 3,
+   "inputs": {
+    "A": 44
+   }
+  },
+  {
+   "id": 7,
+   "kind": "OUTPUT",
+   "name": "count[4]",
+   "port": "count",
+   "bit": 4,
+   "inputs": {
+    "A": 45
+   }
+  },
+  {
+   "id": 8,
+   "kind": "OUTPUT",
+   "name": "count[5]",
+   "port": "count",
+   "bit": 5,
+   "inputs": {
+    "A": 46
+   }
+  },
+  {
+   "id": 9,
+   "kind": "OUTPUT",
+   "name": "count[6]",
+   "port": "count",
+   "bit": 6,
+   "inputs": {
+    "A": 47
+   }
+  },
+  {
+   "id": 10,
+   "kind": "OUTPUT",
+   "name": "count[7]",
+   "port": "count",
+   "bit": 7,
+   "inputs": {
+    "A": 48
+   }
+  },
+  {
+   "id": 11,
+   "kind": "GATE",
+   "type": "AND",
+   "cell": "$abc$266$blif$266$0",
+   "src": null,
+   "inputs": {
+    "A": 2,
+    "B": 41
+   },
+   "output_bit": 13,
+   "name": "$abc$266$new_n19"
+  },
+  {
+   "id": 12,
+   "kind": "GATE",
+   "type": "AND",
+   "cell": "$abc$266$blif$266$1",
+   "src": null,
+   "inputs": {
+    "A": 42,
+    "B": 11
+   },
+   "output_bit": 14,
+   "name": "$abc$266$new_n20"
+  },
+  {
+   "id": 13,
+   "kind": "GATE",
+   "type": "NOR",
+   "cell": "$abc$266$blif$266$10",
+   "src": null,
+   "inputs": {
+    "A": 42,
+    "B": 11
+   },
+   "output_bit": 15,
+   "name": "$abc$266$new_n29"
+  },
+  {
+   "id": 14,
+   "kind": "GATE",
+   "type": "OR",
+   "cell": "$abc$266$blif$266$11",
+   "src": null,
+   "inputs": {
+    "A": 1,
+    "B": 13
+   },
+   "output_bit": 16,
+   "name": "$abc$266$new_n30"
+  },
+  {
+   "id": 15,
+   "kind": "GATE",
+   "type": "NOR",
+   "cell": "$abc$266$blif$266$12",
+   "src": null,
+   "inputs": {
+    "A": 12,
+    "B": 14
+   },
+   "output_bit": 17,
+   "name": "$abc$266$auto$rtlil.cc:3480:MuxGate$245"
+  },
+  {
+   "id": 16,
+   "kind": "GATE",
+   "type": "AND",
+   "cell": "$abc$266$blif$266$13",
+   "src": null,
+   "inputs": {
+    "A": 45,
+    "B": 37
+   },
+   "output_bit": 19,
+   "name": "$abc$266$new_n32"
+  },
+  {
+   "id": 17,
+   "kind": "GATE",
+   "type": "AND",
+   "cell": "$abc$266$blif$266$14",
+   "src": null,
+   "inputs": {
+    "A": 46,
+    "B": 16
+   },
+   "output_bit": 20,
+   "name": "$abc$266$new_n33"
+  },
+  {
+   "id": 18,
+   "kind": "GATE",
+   "type": "NOR",
+   "cell": "$abc$266$blif$266$15",
+   "src": null,
+   "inputs": {
+    "A": 46,
+    "B": 16
+   },
+   "output_bit": 21,
+   "name": "$abc$266$new_n34"
+  },
+  {
+   "id": 19,
+   "kind": "GATE",
+   "type": "OR",
+   "cell": "$abc$266$blif$266$16",
+   "src": null,
+   "inputs": {
+    "A": 1,
+    "B": 18
+   },
+   "output_bit": 22,
+   "name": "$abc$266$new_n35"
+  },
+  {
+   "id": 20,
+   "kind": "GATE",
+   "type": "NOR",
+   "cell": "$abc$266$blif$266$17",
+   "src": null,
+   "inputs": {
+    "A": 17,
+    "B": 19
+   },
+   "output_bit": 23,
+   "name": "$abc$266$auto$rtlil.cc:3480:MuxGate$249"
+  },
+  {
+   "id": 21,
+   "kind": "GATE",
+   "type": "NOR",
+   "cell": "$abc$266$blif$266$18",
+   "src": null,
+   "inputs": {
+    "A": 2,
+    "B": 41
+   },
+   "output_bit": 24,
+   "name": "$abc$266$new_n37"
+  },
+  {
+   "id": 22,
+   "kind": "GATE",
+   "type": "OR",
+   "cell": "$abc$266$blif$266$19",
+   "src": null,
+   "inputs": {
+    "A": 1,
+    "B": 21
+   },
+   "output_bit": 25,
+   "name": "$abc$266$new_n38"
+  },
+  {
+   "id": 23,
+   "kind": "GATE",
+   "type": "AND",
+   "cell": "$abc$266$blif$266$2",
+   "src": null,
+   "inputs": {
+    "A": 43,
+    "B": 12
+   },
+   "output_bit": 26,
+   "name": "$abc$266$new_n21"
+  },
+  {
+   "id": 24,
+   "kind": "GATE",
+   "type": "NOR",
+   "cell": "$abc$266$blif$266$20",
+   "src": null,
+   "inputs": {
+    "A": 11,
+    "B": 22
+   },
+   "output_bit": 27,
+   "name": "$abc$266$auto$rtlil.cc:3480:MuxGate$253"
+  },
+  {
+   "id": 25,
+   "kind": "GATE",
+   "type": "NOR",
+   "cell": "$abc$266$blif$266$21",
+   "src": null,
+   "inputs": {
+    "A": 45,
+    "B": 37
+   },
+   "output_bit": 28,
+   "name": "$abc$266$new_n40"
+  },
+  {
+   "id": 26,
+   "kind": "GATE",
+   "type": "OR",
+   "cell": "$abc$266$blif$266$22",
+   "src": null,
+   "inputs": {
+    "A": 1,
+    "B": 25
+   },
+   "output_bit": 29,
+   "name": "$abc$266$new_n41"
+  },
+  {
+   "id": 27,
+   "kind": "GATE",
+   "type": "NOR",
+   "cell": "$abc$266$blif$266$23",
+   "src": null,
+   "inputs": {
+    "A": 16,
+    "B": 26
+   },
+   "output_bit": 30,
+   "name": "$abc$266$auto$rtlil.cc:3480:MuxGate$257"
+  },
+  {
+   "id": 28,
+   "kind": "GATE",
+   "type": "NAND",
+   "cell": "$abc$266$blif$266$24",
+   "src": null,
+   "inputs": {
+    "A": 47,
+    "B": 17
+   },
+   "output_bit": 31,
+   "name": "$abc$266$new_n43"
+  },
+  {
+   "id": 29,
+   "kind": "GATE",
+   "type": "XOR",
+   "cell": "$abc$266$blif$266$25",
+   "src": null,
+   "inputs": {
+    "A": 48,
+    "B": 28
+   },
+   "output_bit": 32,
+   "name": "$abc$266$new_n44"
+  },
+  {
+   "id": 30,
+   "kind": "GATE",
+   "type": "NOR",
+   "cell": "$abc$266$blif$266$26",
+   "src": null,
+   "inputs": {
+    "A": 1,
+    "B": 29
+   },
+   "output_bit": 33,
+   "name": "$abc$266$auto$rtlil.cc:3480:MuxGate$261"
+  },
+  {
+   "id": 31,
+   "kind": "GATE",
+   "type": "NOR",
+   "cell": "$abc$266$blif$266$27",
+   "src": null,
+   "inputs": {
+    "A": 47,
+    "B": 17
+   },
+   "output_bit": 34,
+   "name": "$abc$266$new_n46"
+  },
+  {
+   "id": 32,
+   "kind": "GATE",
+   "type": "NOR",
+   "cell": "$abc$266$blif$266$28",
+   "src": null,
+   "inputs": {
+    "A": 1,
+    "B": 31
+   },
+   "output_bit": 35,
+   "name": "$abc$266$new_n47"
+  },
+  {
+   "id": 33,
+   "kind": "GATE",
+   "type": "AND",
+   "cell": "$abc$266$blif$266$29",
+   "src": null,
+   "inputs": {
+    "A": 28,
+    "B": 32
+   },
+   "output_bit": 36,
+   "name": "$abc$266$auto$rtlil.cc:3480:MuxGate$265"
+  },
+  {
+   "id": 34,
+   "kind": "GATE",
+   "type": "NOR",
+   "cell": "$abc$266$blif$266$3",
+   "src": null,
+   "inputs": {
+    "A": 43,
+    "B": 12
+   },
+   "output_bit": 37,
+   "name": "$abc$266$new_n22"
+  },
+  {
+   "id": 35,
+   "kind": "GATE",
+   "type": "OR",
+   "cell": "$abc$266$blif$266$4",
+   "src": null,
+   "inputs": {
+    "A": 1,
+    "B": 34
+   },
+   "output_bit": 38,
+   "name": "$abc$266$new_n23"
+  },
+  {
+   "id": 36,
+   "kind": "GATE",
+   "type": "NOR",
+   "cell": "$abc$266$blif$266$5",
+   "src": null,
+   "inputs": {
+    "A": 23,
+    "B": 35
+   },
+   "output_bit": 39,
+   "name": "$abc$266$auto$rtlil.cc:3480:MuxGate$237"
+  },
+  {
+   "id": 37,
+   "kind": "GATE",
+   "type": "AND",
+   "cell": "$abc$266$blif$266$6",
+   "src": null,
+   "inputs": {
+    "A": 44,
+    "B": 23
+   },
+   "output_bit": 18,
+   "name": "$abc$266$new_n25"
+  },
+  {
+   "id": 38,
+   "kind": "GATE",
+   "type": "NOR",
+   "cell": "$abc$266$blif$266$7",
+   "src": null,
+   "inputs": {
+    "A": 44,
+    "B": 23
+   },
+   "output_bit": 40,
+   "name": "$abc$266$new_n26"
+  },
+  {
+   "id": 39,
+   "kind": "GATE",
+   "type": "OR",
+   "cell": "$abc$266$blif$266$8",
+   "src": null,
+   "inputs": {
+    "A": 1,
+    "B": 38
+   },
+   "output_bit": 41,
+   "name": "$abc$266$new_n27"
+  },
+  {
+   "id": 40,
+   "kind": "GATE",
+   "type": "NOR",
+   "cell": "$abc$266$blif$266$9",
+   "src": null,
+   "inputs": {
+    "A": 37,
+    "B": 39
+   },
+   "output_bit": 42,
+   "name": "$abc$266$auto$rtlil.cc:3480:MuxGate$241"
+  },
+  {
+   "id": 41,
+   "kind": "DFF",
+   "type": "DFF",
+   "dff_type": "$_DFF_P_",
+   "cell": "$auto$ff.cc:337:slice$89",
+   "src": "../../repos/yosys-example/tools/synth_area/corpus/counter8_en.sv:3.5",
+   "inputs": {
+    "C": 0,
+    "D": 24
+   },
+   "output_bit": 5,
+   "name": "count[0]"
+  },
+  {
+   "id": 42,
+   "kind": "DFF",
+   "type": "DFF",
+   "dff_type": "$_DFF_P_",
+   "cell": "$auto$ff.cc:337:slice$90",
+   "src": "../../repos/yosys-example/tools/synth_area/corpus/counter8_en.sv:3.5",
+   "inputs": {
+    "C": 0,
+    "D": 15
+   },
+   "output_bit": 6,
+   "name": "count[1]"
+  },
+  {
+   "id": 43,
+   "kind": "DFF",
+   "type": "DFF",
+   "dff_type": "$_DFF_P_",
+   "cell": "$auto$ff.cc:337:slice$91",
+   "src": "../../repos/yosys-example/tools/synth_area/corpus/counter8_en.sv:3.5",
+   "inputs": {
+    "C": 0,
+    "D": 36
+   },
+   "output_bit": 7,
+   "name": "count[2]"
+  },
+  {
+   "id": 44,
+   "kind": "DFF",
+   "type": "DFF",
+   "dff_type": "$_DFF_P_",
+   "cell": "$auto$ff.cc:337:slice$92",
+   "src": "../../repos/yosys-example/tools/synth_area/corpus/counter8_en.sv:3.5",
+   "inputs": {
+    "C": 0,
+    "D": 40
+   },
+   "output_bit": 8,
+   "name": "count[3]"
+  },
+  {
+   "id": 45,
+   "kind": "DFF",
+   "type": "DFF",
+   "dff_type": "$_DFF_P_",
+   "cell": "$auto$ff.cc:337:slice$93",
+   "src": "../../repos/yosys-example/tools/synth_area/corpus/counter8_en.sv:3.5",
+   "inputs": {
+    "C": 0,
+    "D": 27
+   },
+   "output_bit": 9,
+   "name": "count[4]"
+  },
+  {
+   "id": 46,
+   "kind": "DFF",
+   "type": "DFF",
+   "dff_type": "$_DFF_P_",
+   "cell": "$auto$ff.cc:337:slice$94",
+   "src": "../../repos/yosys-example/tools/synth_area/corpus/counter8_en.sv:3.5",
+   "inputs": {
+    "C": 0,
+    "D": 20
+   },
+   "output_bit": 10,
+   "name": "count[5]"
+  },
+  {
+   "id": 47,
+   "kind": "DFF",
+   "type": "DFF",
+   "dff_type": "$_DFF_P_",
+   "cell": "$auto$ff.cc:337:slice$95",
+   "src": "../../repos/yosys-example/tools/synth_area/corpus/counter8_en.sv:3.5",
+   "inputs": {
+    "C": 0,
+    "D": 33
+   },
+   "output_bit": 11,
+   "name": "count[6]"
+  },
+  {
+   "id": 48,
+   "kind": "DFF",
+   "type": "DFF",
+   "dff_type": "$_DFF_P_",
+   "cell": "$auto$ff.cc:337:slice$96",
+   "src": "../../repos/yosys-example/tools/synth_area/corpus/counter8_en.sv:3.5",
+   "inputs": {
+    "C": 0,
+    "D": 30
+   },
+   "output_bit": 12,
+   "name": "count[7]"
+  }
+ ],
+ "edges": [
+  {
+   "from": 2,
+   "to": 11,
+   "pin": "A"
+  },
+  {
+   "from": 41,
+   "to": 11,
+   "pin": "B"
+  },
+  {
+   "from": 42,
+   "to": 12,
+   "pin": "A"
+  },
+  {
+   "from": 11,
+   "to": 12,
+   "pin": "B"
+  },
+  {
+   "from": 42,
+   "to": 13,
+   "pin": "A"
+  },
+  {
+   "from": 11,
+   "to": 13,
+   "pin": "B"
+  },
+  {
+   "from": 1,
+   "to": 14,
+   "pin": "A"
+  },
+  {
+   "from": 13,
+   "to": 14,
+   "pin": "B"
+  },
+  {
+   "from": 12,
+   "to": 15,
+   "pin": "A"
+  },
+  {
+   "from": 14,
+   "to": 15,
+   "pin": "B"
+  },
+  {
+   "from": 45,
+   "to": 16,
+   "pin": "A"
+  },
+  {
+   "from": 37,
+   "to": 16,
+   "pin": "B"
+  },
+  {
+   "from": 46,
+   "to": 17,
+   "pin": "A"
+  },
+  {
+   "from": 16,
+   "to": 17,
+   "pin": "B"
+  },
+  {
+   "from": 46,
+   "to": 18,
+   "pin": "A"
+  },
+  {
+   "from": 16,
+   "to": 18,
+   "pin": "B"
+  },
+  {
+   "from": 1,
+   "to": 19,
+   "pin": "A"
+  },
+  {
+   "from": 18,
+   "to": 19,
+   "pin": "B"
+  },
+  {
+   "from": 17,
+   "to": 20,
+   "pin": "A"
+  },
+  {
+   "from": 19,
+   "to": 20,
+   "pin": "B"
+  },
+  {
+   "from": 2,
+   "to": 21,
+   "pin": "A"
+  },
+  {
+   "from": 41,
+   "to": 21,
+   "pin": "B"
+  },
+  {
+   "from": 1,
+   "to": 22,
+   "pin": "A"
+  },
+  {
+   "from": 21,
+   "to": 22,
+   "pin": "B"
+  },
+  {
+   "from": 43,
+   "to": 23,
+   "pin": "A"
+  },
+  {
+   "from": 12,
+   "to": 23,
+   "pin": "B"
+  },
+  {
+   "from": 11,
+   "to": 24,
+   "pin": "A"
+  },
+  {
+   "from": 22,
+   "to": 24,
+   "pin": "B"
+  },
+  {
+   "from": 45,
+   "to": 25,
+   "pin": "A"
+  },
+  {
+   "from": 37,
+   "to": 25,
+   "pin": "B"
+  },
+  {
+   "from": 1,
+   "to": 26,
+   "pin": "A"
+  },
+  {
+   "from": 25,
+   "to": 26,
+   "pin": "B"
+  },
+  {
+   "from": 16,
+   "to": 27,
+   "pin": "A"
+  },
+  {
+   "from": 26,
+   "to": 27,
+   "pin": "B"
+  },
+  {
+   "from": 47,
+   "to": 28,
+   "pin": "A"
+  },
+  {
+   "from": 17,
+   "to": 28,
+   "pin": "B"
+  },
+  {
+   "from": 48,
+   "to": 29,
+   "pin": "A"
+  },
+  {
+   "from": 28,
+   "to": 29,
+   "pin": "B"
+  },
+  {
+   "from": 1,
+   "to": 30,
+   "pin": "A"
+  },
+  {
+   "from": 29,
+   "to": 30,
+   "pin": "B"
+  },
+  {
+   "from": 47,
+   "to": 31,
+   "pin": "A"
+  },
+  {
+   "from": 17,
+   "to": 31,
+   "pin": "B"
+  },
+  {
+   "from": 1,
+   "to": 32,
+   "pin": "A"
+  },
+  {
+   "from": 31,
+   "to": 32,
+   "pin": "B"
+  },
+  {
+   "from": 28,
+   "to": 33,
+   "pin": "A"
+  },
+  {
+   "from": 32,
+   "to": 33,
+   "pin": "B"
+  },
+  {
+   "from": 43,
+   "to": 34,
+   "pin": "A"
+  },
+  {
+   "from": 12,
+   "to": 34,
+   "pin": "B"
+  },
+  {
+   "from": 1,
+   "to": 35,
+   "pin": "A"
+  },
+  {
+   "from": 34,
+   "to": 35,
+   "pin": "B"
+  },
+  {
+   "from": 23,
+   "to": 36,
+   "pin": "A"
+  },
+  {
+   "from": 35,
+   "to": 36,
+   "pin": "B"
+  },
+  {
+   "from": 44,
+   "to": 37,
+   "pin": "A"
+  },
+  {
+   "from": 23,
+   "to": 37,
+   "pin": "B"
+  },
+  {
+   "from": 44,
+   "to": 38,
+   "pin": "A"
+  },
+  {
+   "from": 23,
+   "to": 38,
+   "pin": "B"
+  },
+  {
+   "from": 1,
+   "to": 39,
+   "pin": "A"
+  },
+  {
+   "from": 38,
+   "to": 39,
+   "pin": "B"
+  },
+  {
+   "from": 37,
+   "to": 40,
+   "pin": "A"
+  },
+  {
+   "from": 39,
+   "to": 40,
+   "pin": "B"
+  },
+  {
+   "from": 0,
+   "to": 41,
+   "pin": "C"
+  },
+  {
+   "from": 24,
+   "to": 41,
+   "pin": "D"
+  },
+  {
+   "from": 0,
+   "to": 42,
+   "pin": "C"
+  },
+  {
+   "from": 15,
+   "to": 42,
+   "pin": "D"
+  },
+  {
+   "from": 0,
+   "to": 43,
+   "pin": "C"
+  },
+  {
+   "from": 36,
+   "to": 43,
+   "pin": "D"
+  },
+  {
+   "from": 0,
+   "to": 44,
+   "pin": "C"
+  },
+  {
+   "from": 40,
+   "to": 44,
+   "pin": "D"
+  },
+  {
+   "from": 0,
+   "to": 45,
+   "pin": "C"
+  },
+  {
+   "from": 27,
+   "to": 45,
+   "pin": "D"
+  },
+  {
+   "from": 0,
+   "to": 46,
+   "pin": "C"
+  },
+  {
+   "from": 20,
+   "to": 46,
+   "pin": "D"
+  },
+  {
+   "from": 0,
+   "to": 47,
+   "pin": "C"
+  },
+  {
+   "from": 33,
+   "to": 47,
+   "pin": "D"
+  },
+  {
+   "from": 0,
+   "to": 48,
+   "pin": "C"
+  },
+  {
+   "from": 30,
+   "to": 48,
+   "pin": "D"
+  },
+  {
+   "from": 41,
+   "to": 3,
+   "pin": "A"
+  },
+  {
+   "from": 42,
+   "to": 4,
+   "pin": "A"
+  },
+  {
+   "from": 43,
+   "to": 5,
+   "pin": "A"
+  },
+  {
+   "from": 44,
+   "to": 6,
+   "pin": "A"
+  },
+  {
+   "from": 45,
+   "to": 7,
+   "pin": "A"
+  },
+  {
+   "from": 46,
+   "to": 8,
+   "pin": "A"
+  },
+  {
+   "from": 47,
+   "to": 9,
+   "pin": "A"
+  },
+  {
+   "from": 48,
+   "to": 10,
+   "pin": "A"
+  }
+ ]
+}
