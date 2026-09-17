@@ -8,6 +8,7 @@ Corpus tests: hand-counted blocks through the full flow, manifest coverage, and 
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 import sys
 import tempfile
@@ -101,6 +102,24 @@ class SuiteRunnerTests(unittest.TestCase):
             self.assertIn("| inv | FAIL(launch) |", (tmp / "out" / "suite_table.md").read_text())
             self.assertFalse((tmp / "out" / "inv" / "metrics.json").exists())
             self.assertFalse((tmp / "out" / "inv" / "boolean_graph.json").exists())
+            # when that cleanup itself fails, the launch error is still the first one reported
+            if os.geteuid() != 0:
+                inv = tmp / "out" / "inv"
+                (inv / "metrics.json").write_text("{}")
+                inv.chmod(0o555)
+                try:
+                    proc = subprocess.run([sys.executable, str(SUITE), str(manifest), "-o", str(tmp / "out"), "--only",
+                                           "inv", "--python", str(tmp / "missing_python")],
+                                          capture_output=True, text=True, check=False)
+                finally:
+                    inv.chmod(0o755)
+                self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
+                self.assertNotIn("Traceback", proc.stderr)
+                (r,) = json.loads((tmp / "out" / "suite_summary.json").read_text())["results"]
+                self.assertEqual(r["stage"], "launch")
+                self.assertIn("missing_python", r["errors"][0])
+                self.assertIn("stale artifacts", r["errors"][1])
+                self.assertIn("| inv | FAIL(launch) |", (tmp / "out" / "suite_table.md").read_text())
 
 
 if __name__ == "__main__":

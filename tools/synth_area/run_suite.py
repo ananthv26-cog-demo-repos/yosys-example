@@ -52,9 +52,13 @@ def run_block(entry: dict, out_dir: Path, extra: list[str], python: str) -> dict
     try:
         p = subprocess.run(cmd, capture_output=True, text=True, check=False)
     except OSError as e:
-        if block_out.is_dir():
-            purge_outputs(block_out)
-        res.update(seconds=round(time.time() - t0, 3), status="failed", stage="launch", errors=[f"cannot run {cmd[0]}: {e}"],
+        errors = [f"cannot run {cmd[0]}: {e}"]
+        try:
+            if block_out.is_dir():
+                purge_outputs(block_out)
+        except OSError as e2:
+            errors.append(f"stale artifacts from an earlier run are left in {block_out}: {e2}")
+        res.update(seconds=round(time.time() - t0, 3), status="failed", stage="launch", errors=errors,
                    summary={k: None for k in TABLE_COLS}, equivalence=None, simulation=None, passed=False)
         return res
     res.update(exit_code=p.returncode, seconds=round(time.time() - t0, 3))

@@ -63,11 +63,16 @@ design can never reach from reset. `fifo_shift_d4_w8` (a shift-register FIFO who
 `count` can never exceed 4) is functionally identical to its netlist but the two encode
 the unreachable `count ∈ 5..7` write-decode differently, so induction leaves 24 cells
 unproven at any depth. When that happens `bool_area.py` builds a `miter` of gold and gate,
-asserts the reset inputs (as classified for simulation) in cycle 1 and proves the miter
-never fires for `--equiv-bmc` (default 10) cycles from a zero initial state — a sound
-bounded proof for every input sequence of that length. The run then reports
+starts both from an *undefined* state, asserts the reset inputs (as classified for
+simulation) in cycle 1 and proves the miter never fires in cycles 2..`--equiv-bmc` (default
+10) — a bounded proof for every input sequence of that length and every power-up state.
+Only registers the reset initialises become defined; a gold output that is still `x` is
+unspecified by the RTL and is not compared, while every defined gold output must be matched
+by a defined, equal gate output (forcing all registers to zero instead would silently
+exclude legal non-zero power-up states). The run then reports
 `equivalence.status = bounded`, records `bmc.depth`, and adds a warning; `--equiv-bmc 0`
-turns the fallback off and makes such blocks fail. SAT cost grows steeply with depth (0.4s
+turns the fallback off and makes such blocks fail; the smallest accepted depth is 2 (one
+compared cycle after reset). SAT cost grows steeply with depth (0.4s
 at 10, ~30s at 20 for this block).
 
 **Multi-clock designs.** Both checks run `async2sync` and treat all clocks as one; that is
