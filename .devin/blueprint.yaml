@@ -26,7 +26,7 @@ knowledge:
   - name: lint
     contents: |
       ruff check tools/synth_area --line-length 120
-      pre-commit run --files $(git ls-files -m -o --exclude-standard tools)
+      git ls-files -m -o --exclude-standard -z tools | xargs -0 -r pre-commit run --files
   - name: run
     contents: |
       # yosys binary is build/yosys; tools/synth_area/*.py find it there by default
