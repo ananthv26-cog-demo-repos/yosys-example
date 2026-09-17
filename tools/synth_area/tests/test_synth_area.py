@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """
-Smoke tests for the synth_area runner. Needs a built yosys (./build/yosys,
-$YOSYS or on PATH); sv2v tests are skipped when sv2v is not installed.
+Smoke tests for the synth_area runner. Synthesis and Slurm-wrapper tests need a built yosys
+(./build/yosys, $YOSYS or on PATH) and are skipped without one; InvocationTests always run;
+sv2v tests are skipped when sv2v is not installed.
 
     python3 tools/synth_area/tests/test_synth_area.py
 """
@@ -112,23 +113,35 @@ class SynthAreaTests(unittest.TestCase):
         self.assertTrue(rep["errors"])
         self.assertIn("bad.sv", rep["errors"][0])
 
-    def test_missing_source(self) -> None:
-        code, rep = run_runner(self.tmp, "x", [self.tmp / "nope.sv"])
-        self.assertEqual(code, 2)
-        self.assertIn("source not found", rep["errors"][0])
-
-    def test_bad_yosys_path_is_invocation_error(self) -> None:
-        code, rep = run_runner(self.tmp, "sync_fifo", [EXAMPLES / "sync_fifo.sv"], "--yosys", str(self.tmp / "nope"))
-        self.assertEqual(code, 2)
-        self.assertIn("yosys binary not found", rep["errors"][0])
-
-    def test_top_must_be_identifier(self) -> None:
+    def test_relative_tool_paths_resolve_against_the_callers_cwd(self) -> None:
+        # stages run in the work dir, so a relative --yosys must be pinned before that
+        rel = os.path.relpath(YOSYS, self.tmp)
+        self.assertFalse(os.path.isabs(rel))
+        out = self.tmp / "rel.json"
         proc = subprocess.run(
-            [sys.executable, str(RUNNER), "--top", "x; shell rm -rf /", str(EXAMPLES / "sync_fifo.sv")],
-            capture_output=True, text=True, check=False,
+            [sys.executable, str(RUNNER), "--top", "sync_fifo", "-o", str(out), "-q", "--yosys", rel,
+             "--work-dir", str(self.tmp / "elsewhere"), "--frontend", "slang", str(EXAMPLES / "sync_fifo.sv")],
+            capture_output=True, text=True, check=False, cwd=self.tmp,
         )
-        self.assertEqual(proc.returncode, 2)
-        self.assertIn("plain module identifier", proc.stderr)
+        rep = json.loads(out.read_text())
+        self.assertEqual(proc.returncode, 0, rep["errors"])
+        self.assertEqual(rep["yosys"], str(Path(YOSYS).resolve()))
+
+    def test_compare_rejects_failed_and_zero_baselines(self) -> None:
+        _, ok = run_runner(self.tmp, "sync_fifo", [EXAMPLES / "sync_fifo.sv"], "--frontend", "slang")
+        _, failed = run_runner(self.tmp, "x", [self.tmp / "nope.sv"])
+        zero = {**ok, "stats": {**ok["stats"], "estimated_transistors": 0}}
+        for name, rep in (("ok", ok), ("failed", failed), ("zero", zero)):
+            (self.tmp / f"{name}.json").write_text(json.dumps(rep))
+        for base, why in (("failed", "baseline failed"), ("zero", "baseline transistors is zero")):
+            proc = subprocess.run(
+                [sys.executable, str(TOOL / "compare_reports.py"), "--json", str(self.tmp / f"{base}.json"),
+                 str(self.tmp / "ok.json")],
+                capture_output=True, text=True, check=True,
+            )
+            rows = json.loads(proc.stdout)
+            self.assertIsNone(rows[1]["delta_pct_vs_baseline"])
+            self.assertIn(why, rows[1]["not_comparable"])
 
     def test_unknown_area_ids_match_stat_json_keys(self) -> None:
         txt = self.tmp / "stat.txt"
@@ -232,6 +245,52 @@ class SynthAreaTests(unittest.TestCase):
         self.assertTrue(all(r["delta_pct_vs_baseline"] is None for r in rows[1:]))
 
 
+class InvocationTests(unittest.TestCase):
+    """Argument and tool-lookup handling; these never reach Yosys and run on an unbuilt checkout."""
+
+    def setUp(self) -> None:
+        self._td = tempfile.TemporaryDirectory(prefix="synth_area_test_")
+        self.tmp = Path(self._td.name)
+
+    def tearDown(self) -> None:
+        self._td.cleanup()
+
+    def test_missing_source(self) -> None:
+        code, rep = run_runner(self.tmp, "x", [self.tmp / "nope.sv"])
+        self.assertEqual(code, 2)
+        self.assertIn("source not found", rep["errors"][0])
+
+    def test_bad_yosys_path_is_invocation_error(self) -> None:
+        code, rep = run_runner(self.tmp, "sync_fifo", [EXAMPLES / "sync_fifo.sv"], "--yosys", str(self.tmp / "nope"))
+        self.assertEqual(code, 2)
+        self.assertIn("yosys binary not found", rep["errors"][0])
+
+    def test_non_executable_yosys_is_a_reported_failure(self) -> None:
+        fake = self.tmp / "yosys"
+        fake.write_text("not a binary\n")
+        fake.chmod(0o644)
+        out = self.tmp / "r.json"
+        proc = subprocess.run(
+            [sys.executable, str(RUNNER), "--top", "sync_fifo", "-o", str(out), "-q", "--yosys", str(fake),
+             "--frontend", "slang", str(EXAMPLES / "sync_fifo.sv")],
+            capture_output=True, text=True, check=False,
+        )
+        self.assertEqual(proc.returncode, 1, proc.stderr)
+        self.assertNotIn("Traceback", proc.stderr)
+        rep = json.loads(out.read_text())
+        self.assertEqual(rep["status"], "failed")
+        self.assertIn("Permission denied", rep["stages"][0]["stderr_tail"])
+
+    def test_top_must_be_identifier(self) -> None:
+        proc = subprocess.run(
+            [sys.executable, str(RUNNER), "--top", "x; shell rm -rf /", str(EXAMPLES / "sync_fifo.sv")],
+            capture_output=True, text=True, check=False,
+        )
+        self.assertEqual(proc.returncode, 2)
+        self.assertIn("plain module identifier", proc.stderr)
+
+
+@unittest.skipUnless(YOSYS, "yosys binary not found")
 @unittest.skipUnless(shutil.which("bash"), "bash not found")
 class SlurmWrapperTests(unittest.TestCase):
     def test_local_fallback(self) -> None:

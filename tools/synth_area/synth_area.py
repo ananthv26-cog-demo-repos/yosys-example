@@ -38,6 +38,9 @@ REPO_ROOT = HERE.parent.parent
 
 FRONTENDS = ("auto", "slang", "sv2v", "verilog")
 
+# sequential cells are recognised by type name (Yosys' $_DFF_*/$_SDFF_*/$_DLATCH_* and the DFF/LATCH
+# naming most Liberty libraries use), not from Liberty ff()/latch() groups: a library whose flops are
+# named differently shows them under num_comb_cells, so num_flops is only comparable within one library
 FLOP_RE = re.compile(r"(DFF|SDFF|ADFF|DLATCH|LATCH|_FF_|\bDFF)", re.IGNORECASE)
 IDENT_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_$]*$")
 UNKNOWN_AREA_RE = re.compile(r"^\s*Area for cell type (.+?) is unknown!\s*$", re.MULTILINE)
@@ -81,11 +84,19 @@ class Report:
     started_at: float = field(default_factory=time.time)
 
 
+def absolutize(tool: str | None) -> str | None:
+    """A tool path given relative to the caller's cwd must stay valid when stages run in the work dir;
+    bare names (no separator) are left to PATH lookup, which does not depend on cwd."""
+    if tool and os.sep in tool and not os.path.isabs(tool):
+        return str(Path(tool).resolve())
+    return tool
+
+
 def find_yosys(explicit: str | None) -> str | None:
     if explicit:
-        return explicit
+        return absolutize(explicit)
     for cand in (
-        os.environ.get("YOSYS"),
+        absolutize(os.environ.get("YOSYS")),
         str(REPO_ROOT / "build" / "yosys"),
         shutil.which("yosys"),
     ):
@@ -95,7 +106,7 @@ def find_yosys(explicit: str | None) -> str | None:
 
 
 def find_sv2v(explicit: str | None) -> str | None:
-    return explicit or os.environ.get("SV2V") or shutil.which("sv2v")
+    return absolutize(explicit or os.environ.get("SV2V")) or shutil.which("sv2v")
 
 
 def tail(text: str, n: int = 40) -> str:
@@ -129,7 +140,7 @@ def run(cmd: list[str], name: str, cwd: Path, timeout: int | None, report: Repor
             stdout_tail=tail(e.stdout or "" if isinstance(e.stdout, str) else ""),
             stderr_tail=f"timeout after {timeout}s",
         )
-    except FileNotFoundError as e:
+    except OSError as e:
         res = StageResult(name=name, ok=False, seconds=0.0, command=cmdline, stderr_tail=str(e))
     report.stages.append(res.__dict__)
     return res

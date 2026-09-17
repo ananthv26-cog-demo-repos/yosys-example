@@ -28,6 +28,11 @@ def incomparable(base: dict, rep: dict, allow_partial: bool) -> str | None:
     """Why `rep` must not be ranked against `base`, or None if it may be."""
     if rep.get("status") != "ok":
         return "failed"
+    if base.get("status") != "ok":
+        return "baseline failed"
+    base_name, base_val = metric(base)
+    if not base_val:
+        return f"baseline {base_name} is {'missing' if base_val is None else 'zero'}, no percentage is defined"
     if metric(rep)[0] != metric(base)[0]:
         return "different metric"
     if rep.get("liberty") != base.get("liberty"):
@@ -59,7 +64,7 @@ def main() -> int:
         s = rep.get("stats", {})
         why = incomparable(base, rep, args.allow_partial)
         delta = None
-        if why is None and val is not None and base_val:
+        if why is None and val is not None:
             delta = (val - base_val) / base_val * 100.0
         elif why and not args.json:
             print(f"compare_reports: {path}: not comparable to baseline ({why})", file=sys.stderr)

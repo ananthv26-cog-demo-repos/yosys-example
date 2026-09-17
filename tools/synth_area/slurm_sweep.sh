@@ -4,8 +4,9 @@
 #   slurm_sweep.sh <blocks.txt> <outdir> [extra synth_area args...]
 #
 # blocks.txt has one block per line:  <top> <source1> [<source2> ...]
-# Fields are whitespace-separated, so source paths must not contain spaces.
-# Lines starting with # are ignored. Each job writes <outdir>/<top>.json.
+# Fields are whitespace-separated with no quoting or escaping, so source paths must not contain
+# spaces; a line is either a block or a whole-line # comment (no trailing comments).
+# Each job writes <outdir>/<top>.json.
 # Without sbatch on PATH, blocks run sequentially in this shell.
 set -euo pipefail
 
