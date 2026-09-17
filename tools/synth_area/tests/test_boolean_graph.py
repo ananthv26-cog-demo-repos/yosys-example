@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import json
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -63,6 +64,68 @@ class GraphUnitTests(unittest.TestCase):
         self.assertEqual(m["clock_fanout"], {"clk": 1})
         self.assertEqual(m["max_fanout"], 2)  # q drives NOT and the output port; the clock edge is not counted
         self.assertEqual(m["dff_by_type"], {"$_DFF_P_": 1})
+
+    def test_clock_and_reset_logic_not_counted_as_data_depth(self) -> None:
+        # D fed straight from an input (depth 0); C through NOT->NOT->NOT; async R through one NOT
+        data = fake_yosys_json(
+            cells={
+                "c1": {"type": "$_NOT_", "connections": {"A": [2], "Y": [10]}},
+                "c2": {"type": "$_NOT_", "connections": {"A": [10], "Y": [11]}},
+                "c3": {"type": "$_NOT_", "connections": {"A": [11], "Y": [12]}},
+                "r1": {"type": "$_NOT_", "connections": {"A": [4], "Y": [13]}},
+                "ff": {"type": "$_DFF_PN0_", "connections": {"C": [12], "D": [3], "R": [13], "Q": [5]}},
+            },
+            ports={"clk": {"direction": "input", "bits": [2]}, "d": {"direction": "input", "bits": [3]},
+                   "rst_n": {"direction": "input", "bits": [4]}, "q": {"direction": "output", "bits": [5]}},
+        )
+        m = boolean_graph.compute_metrics(boolean_graph.build_graph(data, "top", {"$_DFF_PN0_"}))
+        self.assertEqual(m["max_depth"], 0)
+        self.assertEqual(m["gate_total"], 4)
+        # the same gates on the D path do count
+        data["modules"]["top"]["cells"]["ff"]["connections"] = {"C": [2], "D": [12], "R": [4], "Q": [5]}
+        data["modules"]["top"]["cells"]["c1"]["connections"] = {"A": [3], "Y": [10]}
+        m = boolean_graph.compute_metrics(boolean_graph.build_graph(data, "top", {"$_DFF_PN0_"}))
+        self.assertEqual(m["max_depth"], 3)
+
+    def test_vector_bits_named_with_hdl_index(self) -> None:
+        data = fake_yosys_json(
+            cells={"b0": {"type": "$_NOT_", "connections": {"A": [2], "Y": [12]}},
+                   "b1": {"type": "$_NOT_", "connections": {"A": [3], "Y": [13]}}},
+            ports={"hi": {"direction": "input", "bits": [2, 3], "offset": 4},          # input [5:4] hi
+                   "up": {"direction": "input", "bits": [6, 7], "upto": 1},            # input [0:1] up (unused)
+                   "y": {"direction": "output", "bits": [12, 13], "offset": 3, "upto": 1}},  # output [3:4] y
+            netnames={"t": {"bits": [12, 13], "offset": 3, "upto": 1, "hide_name": 0},
+                      "one": {"bits": [3], "offset": 7, "hide_name": 0}},
+        )
+        g = boolean_graph.build_graph(data, "top", set())
+        names = {(n["port"], n["bit"]): n["name"] for n in g["nodes"] if n["kind"] in ("INPUT", "OUTPUT")}
+        self.assertEqual(names[("hi", 4)], "hi[4]")
+        self.assertEqual(names[("hi", 5)], "hi[5]")
+        self.assertEqual(names[("up", 1)], "up[1]")  # first list entry of an ascending range is the high index
+        self.assertEqual(names[("up", 0)], "up[0]")
+        self.assertEqual(names[("y", 4)], "y[4]")
+        self.assertEqual(names[("y", 3)], "y[3]")
+        self.assertEqual([n["name"] for n in g["nodes"] if n["kind"] == "GATE"], ["t[4]", "t[3]"])
+        self.assertEqual(boolean_graph.bit_label("one", {"bits": [3], "offset": 7}, 0), "one[7]")
+        self.assertEqual(boolean_graph.bit_label("s", {"bits": [3]}, 0), "s")
+
+    def test_cli_enforces_dff_allowlist(self) -> None:
+        data = fake_yosys_json(
+            cells={"ff": {"type": "$_DFF_NN0_", "connections": {"C": [2], "D": [3], "R": [4], "Q": [5]}}},
+            ports={"clk": {"direction": "input", "bits": [2]}, "d": {"direction": "input", "bits": [3]},
+                   "r": {"direction": "input", "bits": [4]}, "q": {"direction": "output", "bits": [5]}},
+        )
+        with tempfile.TemporaryDirectory() as td:
+            src = Path(td) / "in.json"
+            src.write_text(json.dumps(data))
+            out = Path(td) / "g.json"
+            common = [str(src), "--top", "top", "-o", str(out)]
+            # default profile (asap7_rvt_tt_v1) lists no negative-clock reset flop -> rejected
+            self.assertEqual(boolean_graph.main(common), 1)
+            self.assertFalse(out.exists())
+            self.assertEqual(boolean_graph.main([*common, "--dff-type", "$_DFF_NN0_"]), 0)
+            self.assertTrue(out.exists())
+            self.assertEqual(boolean_graph.main([*common, "--profile", "no_such_profile"]), 1)
 
     def test_unsupported_cell_rejected(self) -> None:
         data = fake_yosys_json(
