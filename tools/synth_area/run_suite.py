@@ -44,6 +44,8 @@ def metrics_schema_error(metrics: object) -> str | None:
     for key, typ in (("status", str), ("stage", (str, type(None))), ("errors", list)):
         if not isinstance(metrics.get(key), typ):
             return f"missing or malformed '{key}'"
+    if not all(isinstance(e, str) for e in metrics["errors"]):
+        return "'errors' has a non-string entry"
     for key in ("summary", "equivalence", "simulation"):
         if not isinstance(metrics.get(key), (dict, type(None))):
             return f"'{key}' is not an object"
@@ -99,7 +101,7 @@ def run_block(entry: dict, out_dir: Path, extra: list[str], python: str) -> dict
         ok &= passed
     for key, bound in entry.get("expect_max", {}).items():
         got = summary.get(key)
-        passed = got is not None and got <= bound
+        passed = isinstance(got, (int, float)) and got <= bound
         res["checks"].append({"key": key, "op": "<=", "want": bound, "got": got, "passed": passed})
         ok &= passed
     res["passed"] = ok
