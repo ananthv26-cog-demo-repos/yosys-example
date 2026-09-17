@@ -1,0 +1,360 @@
+{
+  "blocks": [
+    {
+      "name": "adder8",
+      "sources": [
+        "corpus/adder8.sv"
+      ],
+      "top": "adder8"
+    },
+    {
+      "name": "alu4",
+      "sources": [
+        "corpus/alu4.sv"
+      ],
+      "top": "alu4"
+    },
+    {
+      "name": "and2",
+      "sources": [
+        "corpus/and2.sv"
+      ],
+      "top": "and2",
+      "expect": {
+        "and": 1,
+        "gate_total": 1,
+        "dff": 0,
+        "max_depth": 1
+      }
+    },
+    {
+      "name": "comparator8",
+      "sources": [
+        "corpus/comparator8.sv"
+      ],
+      "top": "comparator8"
+    },
+    {
+      "name": "counter4",
+      "sources": [
+        "corpus/counter4.sv"
+      ],
+      "top": "counter4",
+      "expect": {
+        "dff": 4
+      }
+    },
+    {
+      "name": "counter8_en",
+      "sources": [
+        "corpus/counter8_en.sv"
+      ],
+      "top": "counter8_en",
+      "expect": {
+        "dff": 8
+      }
+    },
+    {
+      "name": "dec2to4",
+      "sources": [
+        "corpus/dec2to4.sv"
+      ],
+      "top": "dec2to4",
+      "expect": {
+        "dff": 0
+      },
+      "expect_max": {
+        "gate_total": 6,
+        "max_depth": 2
+      }
+    },
+    {
+      "name": "dff",
+      "sources": [
+        "corpus/dff.sv"
+      ],
+      "top": "dff",
+      "expect": {
+        "dff": 1,
+        "gate_total": 0,
+        "max_depth": 0,
+        "mapped_cell_total": 1
+      }
+    },
+    {
+      "name": "dff_async_rst",
+      "sources": [
+        "corpus/dff_async_rst.sv"
+      ],
+      "top": "dff_async_rst",
+      "expect": {
+        "dff": 1,
+        "gate_total": 0,
+        "max_depth": 0
+      }
+    },
+    {
+      "name": "dff_sync_rst",
+      "sources": [
+        "corpus/dff_sync_rst.sv"
+      ],
+      "top": "dff_sync_rst",
+      "expect": {
+        "dff": 1,
+        "gate_total": 2
+      }
+    },
+    {
+      "name": "fifo_d2_w4",
+      "sources": [
+        "corpus/fifo_d2_w4.sv"
+      ],
+      "top": "fifo_d2_w4"
+    },
+    {
+      "name": "fifo_fwft_d4_w8",
+      "sources": [
+        "corpus/fifo_fwft_d4_w8.sv"
+      ],
+      "top": "fifo_fwft_d4_w8"
+    },
+    {
+      "name": "fifo_shift_d4_w8",
+      "sources": [
+        "corpus/fifo_shift_d4_w8.sv"
+      ],
+      "top": "fifo_shift_d4_w8"
+    },
+    {
+      "name": "fsm_traffic",
+      "sources": [
+        "corpus/fsm_traffic.sv"
+      ],
+      "top": "fsm_traffic"
+    },
+    {
+      "name": "full_adder",
+      "sources": [
+        "corpus/full_adder.sv"
+      ],
+      "top": "full_adder",
+      "expect": {
+        "dff": 0
+      },
+      "expect_max": {
+        "gate_total": 5,
+        "max_depth": 3
+      }
+    },
+    {
+      "name": "gray_counter4",
+      "sources": [
+        "corpus/gray_counter4.sv"
+      ],
+      "top": "gray_counter4",
+      "expect": {
+        "dff": 4
+      }
+    },
+    {
+      "name": "half_adder",
+      "sources": [
+        "corpus/half_adder.sv"
+      ],
+      "top": "half_adder",
+      "expect": {
+        "gate_total": 2,
+        "dff": 0,
+        "max_depth": 1
+      }
+    },
+    {
+      "name": "inv",
+      "sources": [
+        "corpus/inv.sv"
+      ],
+      "top": "inv",
+      "expect": {
+        "not": 1,
+        "gate_total": 1,
+        "dff": 0,
+        "max_depth": 1
+      }
+    },
+    {
+      "name": "lfsr8",
+      "sources": [
+        "corpus/lfsr8.sv"
+      ],
+      "top": "lfsr8",
+      "expect": {
+        "dff": 8
+      }
+    },
+    {
+      "name": "mux2",
+      "sources": [
+        "corpus/mux2.sv"
+      ],
+      "top": "mux2",
+      "expect": {
+        "mux": 1,
+        "gate_total": 1,
+        "dff": 0,
+        "max_depth": 1
+      }
+    },
+    {
+      "name": "mux4",
+      "sources": [
+        "corpus/mux4.sv"
+      ],
+      "top": "mux4",
+      "expect": {
+        "mux": 3,
+        "gate_total": 3,
+        "dff": 0,
+        "max_depth": 2
+      }
+    },
+    {
+      "name": "or2",
+      "sources": [
+        "corpus/or2.sv"
+      ],
+      "top": "or2",
+      "expect": {
+        "or": 1,
+        "gate_total": 1,
+        "dff": 0,
+        "max_depth": 1
+      }
+    },
+    {
+      "name": "parity8",
+      "sources": [
+        "corpus/parity8.sv"
+      ],
+      "top": "parity8",
+      "expect": {
+        "gate_total": 7,
+        "dff": 0,
+        "max_depth": 3
+      }
+    },
+    {
+      "name": "priority_enc8",
+      "sources": [
+        "corpus/priority_enc8.sv"
+      ],
+      "top": "priority_enc8"
+    },
+    {
+      "name": "reg8_en",
+      "sources": [
+        "corpus/reg8_en.sv"
+      ],
+      "top": "reg8_en",
+      "expect": {
+        "dff": 8,
+        "mux": 8,
+        "gate_total": 8,
+        "max_depth": 1
+      }
+    },
+    {
+      "name": "shift_reg8",
+      "sources": [
+        "corpus/shift_reg8.sv"
+      ],
+      "top": "shift_reg8",
+      "expect": {
+        "dff": 8,
+        "gate_total": 0,
+        "max_depth": 0,
+        "max_fanout": 1
+      }
+    },
+    {
+      "name": "skid_buffer",
+      "sources": [
+        "corpus/skid_buffer.sv"
+      ],
+      "top": "skid_buffer"
+    },
+    {
+      "name": "sync_fifo_d16_w32",
+      "sources": [
+        "examples/sync_fifo.sv",
+        "corpus/sync_fifo_d16_w32.sv"
+      ],
+      "top": "sync_fifo_d16_w32"
+    },
+    {
+      "name": "sync_fifo_d16_w8",
+      "sources": [
+        "examples/sync_fifo.sv",
+        "corpus/sync_fifo_d16_w8.sv"
+      ],
+      "top": "sync_fifo_d16_w8"
+    },
+    {
+      "name": "sync_fifo_d4_w8",
+      "sources": [
+        "examples/sync_fifo.sv",
+        "corpus/sync_fifo_d4_w8.sv"
+      ],
+      "top": "sync_fifo_d4_w8"
+    },
+    {
+      "name": "sync_fifo_d8_w8",
+      "sources": [
+        "examples/sync_fifo.sv",
+        "corpus/sync_fifo_d8_w8.sv"
+      ],
+      "top": "sync_fifo_d8_w8"
+    },
+    {
+      "name": "xor2",
+      "sources": [
+        "corpus/xor2.sv"
+      ],
+      "top": "xor2",
+      "expect": {
+        "xor": 1,
+        "gate_total": 1,
+        "dff": 0,
+        "max_depth": 1
+      }
+    },
+    {
+      "name": "sync_fifo",
+      "sources": [
+        "examples/sync_fifo.sv"
+      ],
+      "top": "sync_fifo"
+    },
+    {
+      "name": "async_fifo",
+      "sources": [
+        "examples/async_fifo.sv"
+      ],
+      "top": "async_fifo"
+    },
+    {
+      "name": "struct_fifo",
+      "sources": [
+        "examples/fifo_pkg.sv",
+        "examples/struct_fifo.sv"
+      ],
+      "top": "struct_fifo"
+    },
+    {
+      "name": "if_fifo",
+      "sources": [
+        "examples/if_fifo.sv"
+      ],
+      "top": "if_fifo_top"
+    }
+  ]
+}
