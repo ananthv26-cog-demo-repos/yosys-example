@@ -8,6 +8,7 @@ Unit tests for diff_sim.py port classification (no tools needed).
 from __future__ import annotations
 
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -38,7 +39,7 @@ class DiffSimUnitTests(unittest.TestCase):
         self.assertEqual((clocks, resets, ins), (["clk"], {"clk_reset_n": True}, []))
         tb = diff_sim.gen_testbench("top", ports, 10, 1)
         self.assertNotIn("clk_reset_n = ~clk_reset_n", tb)
-        self.assertIn("clk_reset_n = (cycle < 4", tb)
+        self.assertIn("clk_reset_n <= (cycle <= 4", tb)
 
     def test_parse_result_statuses(self) -> None:
         line = "DIFFSIM cycles=20 compared_bits={c} mismatches={m} gate_x_bits={x}"
@@ -67,6 +68,48 @@ class DiffSimUnitTests(unittest.TestCase):
         self.assertEqual((clocks, resets, ins), (["clk"], {"rst_n": True}, ["d"]))
         clocks, resets, ins, _ = diff_sim.classify_ports(ports, resets={"rst_n": True})
         self.assertEqual((clocks, resets, ins), (["clk"], {"rst_n": True}, ["d"]))
+
+    def test_reset_is_a_name_token_not_a_substring(self) -> None:
+        for name in ("rst", "rst_ni", "reset", "reset_n", "arst_n", "wrst_ni", "hresetn", "soft_rst", "RstN", "nrst",
+                     "sync_reset_i"):
+            self.assertTrue(diff_sim.is_reset_name(name), name)
+        for name in ("burst_i", "first", "thirst_o", "resetting_count", "d", "presto"):
+            self.assertFalse(diff_sim.is_reset_name(name), name)
+        ports = {"clk": {"direction": "input", "width": 1}, "burst_i": {"direction": "input", "width": 1},
+                 "q": {"direction": "output", "width": 1}}
+        clocks, resets, ins, _ = diff_sim.classify_ports(ports)
+        self.assertEqual((clocks, resets, ins), (["clk"], {}, ["burst_i"]))
+
+    def test_testbench_drives_inputs_nonblocking_and_holds_reset_for_reset_cycles(self) -> None:
+        ports = {"clk": {"direction": "input", "width": 1}, "clk2": {"direction": "input", "width": 1},
+                 "rst_n": {"direction": "input", "width": 1}, "d": {"direction": "input", "width": 8},
+                 "q": {"direction": "output", "width": 8}}
+        tb = diff_sim.gen_testbench("top", ports, 10, 1, reset_cycles=4)
+        # a secondary clock edge that coincides with the primary falling edge must not race the stimulus
+        self.assertIn("    d <= $random(seed)", tb)
+        self.assertIn("    rst_n <= (cycle <= 4 ||", tb)
+        self.assertNotIn("    d = $random", tb)
+        self.assertNotIn("    rst_n = (", tb)
+
+    def test_nonpositive_cycles_is_a_structured_failure(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="diff_sim_test_") as td:
+            res = diff_sim.run_diff_sim(top="t", ports={}, rtl_sources=[], includes=[], defines=[], mapped_json=Path(td),
+                                        libs=[], yosys="yosys", sv2v=None, iverilog="iverilog", vvp="vvp",
+                                        work=Path(td) / "w", cycles=0, seed=1, timeout=5)
+        self.assertEqual(res["status"], "failed")
+        self.assertIn("at least 1", res["error"])
+
+    def test_missing_tool_is_a_structured_failure(self) -> None:
+        ports = {"clk": {"direction": "input", "width": 1}, "d": {"direction": "input", "width": 1},
+                 "q": {"direction": "output", "width": 1}}
+        with tempfile.TemporaryDirectory(prefix="diff_sim_test_") as td:
+            missing = str(Path(td) / "no_such_yosys")
+            res = diff_sim.run_diff_sim(top="t", ports=ports, rtl_sources=[], includes=[], defines=[],
+                                        mapped_json=Path(td) / "m.json", libs=[], yosys=missing, sv2v=None,
+                                        iverilog="iverilog", vvp="vvp", work=Path(td) / "w", cycles=5, seed=1, timeout=5)
+        self.assertEqual(res["status"], "failed")
+        self.assertIn("cannot run", res["error"])
+        self.assertIn("no_such_yosys", res["error"])
 
 
 if __name__ == "__main__":

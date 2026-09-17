@@ -45,7 +45,7 @@ def run_block(entry: dict, out_dir: Path, extra: list[str], python: str) -> dict
         cmd += ["-I", str((HERE / inc).resolve())]
     for d in entry.get("define", []):
         cmd += ["-D", d]
-    cmd += extra
+    cmd += [*entry.get("args", []), *extra]
     t0 = time.time()
     res = {"name": entry["name"], "top": entry["top"], "exit_code": None, "seconds": None, "out_dir": str(block_out),
            "checks": []}
@@ -63,10 +63,17 @@ def run_block(entry: dict, out_dir: Path, extra: list[str], python: str) -> dict
         return res
     res.update(exit_code=p.returncode, seconds=round(time.time() - t0, 3))
     metrics_path = block_out / "metrics.json"
-    metrics = json.loads(metrics_path.read_text()) if metrics_path.exists() else None
-    res["status"] = metrics["status"] if metrics else "no-metrics"
+    metrics, bad_metrics = None, None
+    try:
+        metrics = json.loads(metrics_path.read_text()) if metrics_path.exists() else None
+        if metrics is not None and not isinstance(metrics, dict):
+            raise ValueError("not a JSON object")
+    except (OSError, ValueError) as e:
+        metrics, bad_metrics = None, f"unreadable {metrics_path}: {e}"
+    res["status"] = metrics["status"] if metrics else ("bad-metrics" if bad_metrics else "no-metrics")
     res["stage"] = metrics["stage"] if metrics else None
-    res["errors"] = (metrics["errors"] if metrics else []) or ([p.stderr.strip()] if p.returncode else [])
+    res["errors"] = (metrics["errors"] if metrics else [bad_metrics] if bad_metrics else []) or (
+        [p.stderr.strip()] if p.returncode else [])
     summary = (metrics or {}).get("summary") or {}
     res["summary"] = {k: summary.get(k) for k in TABLE_COLS}
     res["equivalence"] = ((metrics or {}).get("equivalence") or {}).get("status")
@@ -111,8 +118,9 @@ def main(argv: list[str] | None = None) -> int:
     out_dir = Path(args.out_dir).resolve()
     out_dir.mkdir(parents=True, exist_ok=True)
     entries = [e for e in manifest["blocks"] if not args.only or e["name"] in args.only]
-    if not entries:
-        ap.error("no manifest blocks matched --only")
+    unknown = sorted(set(args.only or []) - {e["name"] for e in manifest["blocks"]})
+    if unknown:
+        ap.error(f"--only names not in the manifest: {', '.join(unknown)}")
     results = []
     for e in entries:
         r = run_block(e, out_dir, args.extra, args.python)

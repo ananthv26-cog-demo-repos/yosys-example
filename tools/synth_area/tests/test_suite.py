@@ -82,12 +82,24 @@ class SuiteRunnerTests(unittest.TestCase):
             self.assertEqual(by["and2_wrong"]["checks"][0]["got"], 1)
             table = (tmp / "out" / "suite_table.md").read_text()
             self.assertIn("| inv | PASS |", table)
-            # a selection that matches nothing is a usage error, not a 0/0 pass
-            proc = subprocess.run([sys.executable, str(SUITE), str(manifest), "-o", str(tmp / "none"), "--only", "typo"],
-                                  capture_output=True, text=True, check=False)
-            self.assertEqual(proc.returncode, 2)
-            self.assertIn("no manifest blocks matched", proc.stderr)
-            self.assertFalse((tmp / "none" / "suite_summary.json").exists())
+            # a selection with a name the manifest does not have is a usage error, even next to valid names
+            for only in (["--only", "typo"], ["--only", "inv", "--only", "typo"]):
+                proc = subprocess.run([sys.executable, str(SUITE), str(manifest), "-o", str(tmp / "none"), *only],
+                                      capture_output=True, text=True, check=False)
+                self.assertEqual(proc.returncode, 2, proc.stderr)
+                self.assertIn("--only names not in the manifest: typo", proc.stderr)
+                self.assertFalse((tmp / "none" / "suite_summary.json").exists())
+            # a child that leaves a truncated metrics.json is a failed block, not an aborted suite
+            (tmp / "out" / "inv" / "metrics.json").write_text('{"status": "ok", "sta')
+            (tmp / "true_python").write_text("#!/bin/sh\nexit 0\n")
+            (tmp / "true_python").chmod(0o755)
+            proc = subprocess.run([sys.executable, str(SUITE), str(manifest), "-o", str(tmp / "out"), "--only", "inv",
+                                   "--python", str(tmp / "true_python")], capture_output=True, text=True, check=False)
+            self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
+            self.assertNotIn("Traceback", proc.stderr)
+            (r,) = json.loads((tmp / "out" / "suite_summary.json").read_text())["results"]
+            self.assertEqual((r["passed"], r["status"]), (False, "bad-metrics"))
+            self.assertIn("unreadable", r["errors"][0])
             # a child that cannot even be launched is a failed block, the aggregates are still written, and the
             # block's artifacts from the earlier good run do not survive next to the failed result
             self.assertTrue((tmp / "out" / "inv" / "metrics.json").exists())

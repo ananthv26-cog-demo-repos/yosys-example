@@ -178,10 +178,13 @@ def liberty_paths(profile: dict, verify: bool) -> list[Path]:
     paths = []
     for entry in lib["files"]:
         p = base / entry["file"]
-        if not p.exists():
-            raise FlowError("profile", f"liberty file missing: {p}")
+        if not p.is_file():
+            raise FlowError("profile", f"liberty file missing or not a regular file: {p}")
         if verify:
-            got = sha256_file(p)
+            try:
+                got = sha256_file(p)
+            except OSError as e:
+                raise FlowError("profile", f"could not read liberty file {p}: {e}") from e
             if got != entry["sha256"]:
                 raise FlowError("profile", f"liberty sha256 mismatch for {p.name}: expected {entry['sha256']}, got {got}")
         paths.append(p)
@@ -300,6 +303,8 @@ def run_yosys(yosys: str, script: str, script_path: Path, log_path: Path, timeou
         ok, extra = proc.returncode == 0, proc.stderr
     except subprocess.TimeoutExpired:
         ok, extra = False, f"yosys timed out after {timeout}s"
+    except OSError as e:
+        ok, extra = False, f"ERROR: cannot run {yosys}: {e.strerror or e}"
     log_text = log_path.read_text(errors="replace") if log_path.exists() else ""
     return ok, log_text + ("\n" + extra if extra else ""), round(time.time() - t0, 3)
 
@@ -434,14 +439,18 @@ def main(argv: list[str] | None = None) -> int:
     try:
         profile, profile_path = load_profile(args.profile)
         libs = liberty_paths(profile, verify=not args.no_verify_libs)
+        profile_sha = sha256_file(profile_path)
+        lib_hashes = [{"file": p.name, "sha256": sha256_file(p)} for p in libs]
     except FlowError as e:
         return fail(e.stage, str(e), 2)
+    except OSError as e:
+        return fail("profile", f"could not read profile or liberty file: {e}", 2)
     metrics["profile"] = {
         "name": profile["name"],
         "version": profile["version"],
         "path": str(profile_path),
-        "sha256": sha256_file(profile_path),
-        "liberty": [{"file": p.name, "sha256": sha256_file(p)} for p in libs],
+        "sha256": profile_sha,
+        "liberty": lib_hashes,
         "liberty_verified": not args.no_verify_libs,
         "boolean_gates": profile["boolean_gates"],
         "dff_types": profile["dff_types"],
@@ -459,11 +468,14 @@ def main(argv: list[str] | None = None) -> int:
     except ValueError as e:
         return fail("inputs", str(e), 2)
 
+    # shutil.which on a path checks that it is an executable regular file, not just that it exists
     yosys = find_yosys(args.yosys)
-    if not yosys or not (Path(yosys).is_file() or shutil.which(yosys)):
-        return fail("tools", "yosys binary not found (build the repo, set $YOSYS, or pass --yosys)", 2)
+    if not yosys or not shutil.which(yosys):
+        return fail("tools", "yosys binary not found or not executable (build the repo, set $YOSYS, or pass --yosys)", 2)
     metrics["tools"] = {"yosys": yosys, "yosys_version": tool_version(yosys, "-V")}
     sv2v = find_sv2v(args.sv2v)
+    if sv2v and not shutil.which(sv2v):
+        return fail("tools", f"sv2v not executable: {sv2v}", 2)
     if sv2v:
         metrics["tools"]["sv2v_version"] = tool_version(sv2v, "--version")
 
@@ -481,6 +493,8 @@ def main(argv: list[str] | None = None) -> int:
             proc = subprocess.run(cmd, capture_output=True, text=True, timeout=args.timeout, check=False)
         except subprocess.TimeoutExpired:
             return fail("parse", f"sv2v timed out after {args.timeout}s")
+        except OSError as e:
+            return fail("tools", f"cannot run sv2v: {e}", 2)
         if proc.returncode != 0:
             return fail("parse", f"sv2v failed: {proc.stderr.strip().splitlines()[-1] if proc.stderr.strip() else proc.returncode}")
         read_sources, includes, defines = [str(conv)], [], []
@@ -603,6 +617,10 @@ def main(argv: list[str] | None = None) -> int:
 
     # --- 5. random differential simulation RTL vs mapped netlist (sample, not proof) ---
     if args.sim_cycles > 0:
+        try:  # port classification is decided by the design, not by which simulators this machine has
+            classify_ports(graph["ports"], args.sim_clock, sim_reset_args)
+        except ValueError as e:
+            return fail("simulation", str(e))
         iverilog, vvp = shutil.which("iverilog"), shutil.which("vvp")
         if not (iverilog and vvp):
             metrics["simulation"] = {"status": "skipped", "error": "iverilog/vvp not on PATH"}

@@ -18,6 +18,8 @@ Port and wire bits are named with their HDL index (`data[4]` for the low bit of
 Edges are (driver node -> sink node, sink pin). `max_depth` is the longest chain of
 combinational gates from a graph source (input, constant, DFF Q) to a data sink (output
 port or DFF D pin); logic feeding clock or asynchronous set/reset pins is not counted.
+A combinational loop makes depth undefined: `combinational_loop` is true and `max_depth`
+is null.
 `max_fanout` / `avg_fanout` count data sink pins per driving node; DFF clock pins and
 asynchronous set/reset pins are reported separately (`clock_fanout`, `control_fanout`).
 """
@@ -142,6 +144,16 @@ def build_graph(data: dict, top: str | None, dff_types: set[str] | None = None) 
             if isinstance(b, int) and b not in bit_name:
                 bit_name[b] = bit_label(wname, w, i)
 
+    def set_driver(b: int, nid: int) -> None:
+        prev = driver_of.get(b)
+        if prev is not None and prev != nid:
+            raise ValueError(f"bit {b} ({bit_name.get(b, '?')}) is driven by both {describe(prev)} and {describe(nid)}")
+        driver_of[b] = nid
+
+    def describe(nid: int) -> str:
+        n = nodes[nid]
+        return n.get("cell") or n.get("port") or f"{n['kind']}#{nid}"
+
     ports = mod.get("ports", {})
     for pname, p in ports.items():
         for i, b in enumerate(p.get("bits", [])):
@@ -149,7 +161,7 @@ def build_graph(data: dict, top: str | None, dff_types: set[str] | None = None) 
             if p["direction"] in ("input", "inout"):
                 nid = new_node("INPUT", name=label, port=pname, bit=idx)
                 if isinstance(b, int):
-                    driver_of.setdefault(b, nid)
+                    set_driver(b, nid)
             if p["direction"] in ("output", "inout"):
                 new_node("OUTPUT", name=label, port=pname, bit=idx, source_bit=b)
 
@@ -165,13 +177,13 @@ def build_graph(data: dict, top: str | None, dff_types: set[str] | None = None) 
             out_bits = conns.get("Y", [])
             for b in out_bits:
                 if isinstance(b, int):
-                    driver_of[b] = nid
+                    set_driver(b, nid)
             cell_nodes.append((nid, c))
         elif ctype.startswith(DFF_PREFIX) and (dff_types is None or ctype in dff_types):
             nid = new_node("DFF", type="DFF", dff_type=ctype, cell=cname, src=src)
             for b in conns.get(DFF_OUTPUT_PIN, []):
                 if isinstance(b, int):
-                    driver_of[b] = nid
+                    set_driver(b, nid)
             cell_nodes.append((nid, c))
         else:
             unsupported[ctype] += 1
@@ -285,7 +297,8 @@ def compute_metrics(graph: dict) -> dict:
         for n in nodes
         if (pin := data_sink_pin.get(n["kind"])) is not None and pin in n["inputs"]
     ]
-    max_depth = max(sink_depths, default=0)
+    # nodes inside a loop never enter `order`, so their depth would silently read as 0
+    max_depth = None if comb_loop else max(sink_depths, default=0)
 
     m: dict = {k.lower(): gate_counts.get(k, 0) for k in GATE_INPUT_PINS}
     m["dff"] = by_kind.get("DFF", 0)

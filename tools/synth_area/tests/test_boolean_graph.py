@@ -158,6 +158,35 @@ class GraphUnitTests(unittest.TestCase):
         with self.assertRaises(boolean_graph.UnsupportedCell):
             boolean_graph.build_graph(data, "top", {"$_DFF_P_"})
 
+    def test_combinational_loop_has_no_depth(self) -> None:
+        data = fake_yosys_json(
+            cells={"a1": {"type": "$_AND_", "connections": {"A": [2], "B": [5], "Y": [4]},
+                          "port_directions": {"A": "input", "B": "input", "Y": "output"}},
+                   "n1": {"type": "$_NOT_", "connections": {"A": [4], "Y": [5]},
+                          "port_directions": {"A": "input", "Y": "output"}}},
+            ports={"a": {"direction": "input", "bits": [2]}, "y": {"direction": "output", "bits": [4]}},
+        )
+        m = boolean_graph.compute_metrics(boolean_graph.build_graph(data, "top", {"$_DFF_P_"}))
+        self.assertTrue(m["combinational_loop"])
+        self.assertIsNone(m["max_depth"])
+
+    def test_multiple_drivers_rejected_not_last_one_wins(self) -> None:
+        data = fake_yosys_json(
+            cells={"n1": {"type": "$_NOT_", "connections": {"A": [2], "Y": [4]},
+                          "port_directions": {"A": "input", "Y": "output"}},
+                   "n2": {"type": "$_NOT_", "connections": {"A": [3], "Y": [4]},
+                          "port_directions": {"A": "input", "Y": "output"}}},
+            ports={"a": {"direction": "input", "bits": [2]}, "b": {"direction": "input", "bits": [3]},
+                   "y": {"direction": "output", "bits": [4]}},
+        )
+        with self.assertRaisesRegex(ValueError, "driven by both"):
+            boolean_graph.build_graph(data, "top", {"$_DFF_P_"})
+        # a port bit that is also a gate output is the same error
+        data["modules"]["top"]["cells"] = {"n1": {"type": "$_NOT_", "connections": {"A": [2], "Y": [3]},
+                                                  "port_directions": {"A": "input", "Y": "output"}}}
+        with self.assertRaisesRegex(ValueError, "driven by both"):
+            boolean_graph.build_graph(data, "top", {"$_DFF_P_"})
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
