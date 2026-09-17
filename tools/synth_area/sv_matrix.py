@@ -82,14 +82,17 @@ def main() -> int:
             print(f"{top:32s} " + " ".join(
                 f"{fe}={'ok' if row['results'][fe]['ok'] else 'FAIL'}" for fe in frontends), file=sys.stderr)
 
+    def md_escape(s: str) -> str:
+        return s.replace("|", "\\|")
+
     def cell(r: dict) -> str:
         if r["ok"]:
             return f"ok ({r['cells']} cells)"
-        return "FAIL: " + r["error"].replace("|", "\\|") if r["error"] else "FAIL"
+        return "FAIL: " + md_escape(r["error"]) if r["error"] else "FAIL"
 
     lines = ["| construct | " + " | ".join(frontends) + " |", "|---|" + "---|" * len(frontends)]
     for row in results:
-        lines.append(f"| {row['label']} | " + " | ".join(cell(row["results"][fe]) for fe in frontends) + " |")
+        lines.append(f"| {md_escape(row['label'])} | " + " | ".join(cell(row["results"][fe]) for fe in frontends) + " |")
     totals = " | ".join(f"{sum(1 for r in results if r['results'][fe]['ok'])}/{len(results)}" for fe in frontends)
     lines.append(f"| **passing** | {totals} |")
     md = "\n".join(lines) + "\n"

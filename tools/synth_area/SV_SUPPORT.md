@@ -1,8 +1,9 @@
 # SystemVerilog support in Yosys: what works today
 
 Findings from running the probes in `sv_probes/` and the FIFOs in `examples/`
-through the three ways of getting SystemVerilog into Yosys. Regenerate with
-`python3 sv_matrix.py --md SV_SUPPORT_MATRIX.md`.
+through the three ways of getting SystemVerilog into Yosys. The table under
+"Full matrix" is the verbatim output of `python3 sv_matrix.py --md matrix.md`;
+to refresh it, rerun that and paste `matrix.md` over the table.
 
 Tested with Yosys 0.69+ (this fork, commit 150c32b03, slang frontend 11.0.0)
 and sv2v v0.0.13, on Ubuntu 22.04.
@@ -29,7 +30,7 @@ and sv2v v0.0.13, on Ubuntu 22.04.
   `inside`, no struct parameters. It fails on 3 of the 4 FIFOs.
 * **Frontends are not interchangeable for area numbers.** For the same RTL,
   slang and sv2v produced different netlists after identical `synth`
-  (`struct_fifo` 393 vs 571 cells, `if_fifo_top` 150 vs 206,
+  (`struct_fifo` 393 vs 571 cells, `if_fifo_top` 150 vs 205,
   pulp-platform `cc_fifo` 1079 vs 1779). Comparisons across runs must use the
   same frontend; the runner defaults to slang and records `frontend_used` in
   every report.
@@ -79,7 +80,7 @@ pure wiring.
 | p12_generate: generate for/if with named blocks and genvar in localparam | ok (6 cells) | ok (6 cells) | ok (6 cells) |
 | p13_streaming_op: streaming operator (bit reverse) and replication | ok (0 cells) | ok (0 cells) | FAIL: p13_streaming_op.sv:3: ERROR: syntax error, unexpected OP_SHL |
 | p14_immediate_assert: immediate assertion + $error in always_ff (should be ignored for synthesis) | ok (4 cells) | ok (4 cells) | FAIL: p14_immediate_assert.sv:5: ERROR: syntax error, unexpected TOK_ELSE, expecting ';' |
-| p15_concurrent_sva: concurrent SVA property/assert with |=> and $past | ok (1 cells) | ok (1 cells) | FAIL: p15_concurrent_sva.sv:4: ERROR: syntax error, unexpected TOK_PROPERTY |
+| p15_concurrent_sva: concurrent SVA property/assert with \|=> and $past | ok (1 cells) | ok (1 cells) | FAIL: p15_concurrent_sva.sv:4: ERROR: syntax error, unexpected TOK_PROPERTY |
 | p16_dpi_import: DPI-C import (not synthesizable; expect frontend to reject or ignore) | ok (8 cells) | FAIL: sv2v_out.v:9: ERROR: syntax error, unexpected '[', expecting TOK_ID or ':' or '=' | FAIL: p16_dpi_import.sv:3: ERROR: syntax error, unexpected TOK_ID, expecting ')' or ',' |
 | p17_inside_operator: inside operator with ranges and wildcard equality | ok (19 cells) | ok (17 cells) | FAIL: p17_inside_operator.sv:3: ERROR: syntax error, unexpected TOK_ID |
 | p18_multidim_packed: multi-dimensional packed arrays and part-selects | ok (24 cells) | ok (24 cells) | ok (24 cells) |
@@ -97,6 +98,6 @@ pure wiring.
 | p30_class_decl: class declaration (testbench-only construct) next to synthesizable logic | ok (1 cells) | FAIL: sv2v failed: p30_class_decl.sv:3:5: Parse error: missing expected `endmodule` | FAIL: p30_class_decl.sv:3: ERROR: syntax error, unexpected ';', expecting '(' or '[' |
 | sync_fifo | ok (1077 cells) | ok (1077 cells) | ok (1077 cells) |
 | struct_fifo (pkg+struct+enum) | ok (393 cells) | ok (571 cells) | FAIL: fifo_pkg.sv:17: ERROR: syntax error, unexpected '?', expecting ';' |
-| if_fifo_top (interfaces) | ok (150 cells) | ok (206 cells) | FAIL: ERROR: Module `$paramod$698d5f4fdaf5ca1e41fde98124b2bf97706c1f76\if_fifo_core$interfaces$$paramod\fifo_port_if\Width=32'00000000000000000000000000010000$paramod |
+| if_fifo_top (interfaces) | ok (150 cells) | ok (205 cells) | FAIL: ERROR: Module `$paramod$698d5f4fdaf5ca1e41fde98124b2bf97706c1f76\if_fifo_core$interfaces$$paramod\fifo_port_if\Width=32'00000000000000000000000000010000$paramod |
 | async_fifo (2 clocks, gray) | ok (373 cells) | ok (374 cells) | FAIL: async_fifo.sv:18: ERROR: syntax error, unexpected TOK_ID |
 | **passing** | 33/34 | 30/34 | 16/34 |
