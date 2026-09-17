@@ -6,7 +6,14 @@ netlist with Icarus Verilog.
 A self-checking testbench is generated from the port list: every input gets fresh pseudo-
 random values each cycle (fixed seed => reproducible), clocks toggle, resets are held for
 the first cycles, and every output bit the RTL drives to 0/1 must match the netlist.
-Gate-level X where the RTL is known is reported separately (X-pessimism, not a mismatch).
+Gate-level X where the RTL is known is reported separately as `gate_x_bits` (X-pessimism
+of the cell models, not a mismatch); only a netlist that never drives a known value where
+the RTL does is a failure. Callers that want X to be fatal check `gate_x_bits` themselves.
+
+Sampling is driven by the first clock: `cycles` counts its periods, and every clock toggles
+with a distinct period so multi-clock blocks see edges in both orders. Values are compared
+only where the RTL is known, so clock-domain crossings are checked functionally at the
+primary clock's rate, not for CDC timing.
 
 The RTL is converted with sv2v first (Icarus' SystemVerilog support is thin); the mapped
 netlist simulates against Verilog cell models that Yosys derives from the Liberty
@@ -35,7 +42,8 @@ def classify_ports(ports: dict[str, dict], clocks: list[str] | None = None,
     """-> (clocks, {reset: active_low}, data inputs, outputs).
 
     Clocks / resets are guessed from 1-bit input names unless given explicitly (each independently:
-    an explicit clock list still infers resets, and vice versa). Raises on inout."""
+    an explicit clock list still infers resets, and vice versa). A name matching both patterns
+    (`clk_reset_n`) is a reset: reset syntax wins over clock syntax. Raises on inout."""
     infer_clocks, infer_resets = clocks is None, resets is None
     clocks, resets = list(clocks or []), dict(resets or {})
     for name in [*clocks, *resets]:
@@ -49,10 +57,10 @@ def classify_ports(ports: dict[str, dict], clocks: list[str] | None = None,
             outs.append(name)
         elif name in clocks or name in resets:
             continue
-        elif infer_clocks and p["width"] == 1 and CLOCK_RE.search(name) and not NOT_CLOCK_RE.search(name):
-            clocks.append(name)
         elif infer_resets and p["width"] == 1 and RESET_RE.search(name):
             resets[name] = bool(ACTIVE_LOW_RE.search(name))
+        elif infer_clocks and p["width"] == 1 and CLOCK_RE.search(name) and not NOT_CLOCK_RE.search(name):
+            clocks.append(name)
         else:
             data_in.append(name)
     return clocks, resets, data_in, outs
@@ -149,6 +157,9 @@ def parse_result(stdout: str) -> dict:
     elif compared == 0:
         res["status"] = "failed"
         res["error"] = "RTL never drove a known output value; nothing was compared"
+    elif gx == compared:
+        res["status"] = "failed"
+        res["error"] = "netlist never drove a known value where the RTL did; nothing was compared"
     else:
         res["status"] = "match"
     return res
@@ -217,7 +228,9 @@ def _simulate(res: dict, *, top: str, rtl_sources: list[str], includes: list[str
         iv_flags += [f"-I{i}" for i in includes] + [f"-D{d}" for d in defines]
 
     vvp_file = work / "sim.vvp"
-    cmd = [iverilog, *iv_flags, "-o", str(vvp_file), str(work / "tb.v"), *gold_sources, str(gate_v)]
+    # -s tb: only the generated testbench is a root, so uninstantiated modules in the RTL sources
+    # (with their own initial blocks) cannot run alongside or end the simulation
+    cmd = [iverilog, *iv_flags, "-s", "tb", "-o", str(vvp_file), str(work / "tb.v"), *gold_sources, str(gate_v)]
     p = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout, check=False)
     (work / "iverilog.log").write_text(p.stdout + p.stderr)
     if p.returncode != 0:
@@ -225,5 +238,8 @@ def _simulate(res: dict, *, top: str, rtl_sources: list[str], includes: list[str
         return res
     p = subprocess.run([vvp, "-n", str(vvp_file)], capture_output=True, text=True, timeout=timeout, check=False)
     (work / "sim.log").write_text(p.stdout + p.stderr)
+    if p.returncode != 0:
+        res["error"] = f"vvp exited {p.returncode}: " + ((p.stderr or p.stdout).strip().splitlines() or ["?"])[-1]
+        return res
     res.update(parse_result(p.stdout))
     return res

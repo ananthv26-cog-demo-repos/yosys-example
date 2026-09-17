@@ -31,6 +31,27 @@ class DiffSimUnitTests(unittest.TestCase):
         self.assertEqual(ins, ["clk_en", "d_i"])
         self.assertEqual(outs, ["q_o"])
 
+    def test_reset_syntax_wins_over_clock_syntax(self) -> None:
+        ports = {"clk": {"direction": "input", "width": 1}, "clk_reset_n": {"direction": "input", "width": 1},
+                 "q": {"direction": "output", "width": 1}}
+        clocks, resets, ins, _ = diff_sim.classify_ports(ports)
+        self.assertEqual((clocks, resets, ins), (["clk"], {"clk_reset_n": True}, []))
+        tb = diff_sim.gen_testbench("top", ports, 10, 1)
+        self.assertNotIn("clk_reset_n = ~clk_reset_n", tb)
+        self.assertIn("clk_reset_n = (cycle < 4", tb)
+
+    def test_parse_result_statuses(self) -> None:
+        line = "DIFFSIM cycles=20 compared_bits={c} mismatches={m} gate_x_bits={x}"
+        self.assertEqual(diff_sim.parse_result(line.format(c=40, m=0, x=0))["status"], "match")
+        r = diff_sim.parse_result(line.format(c=40, m=0, x=5))
+        self.assertEqual((r["status"], r["gate_x_bits"]), ("match", 5))
+        self.assertEqual(diff_sim.parse_result(line.format(c=40, m=0, x=40))["status"], "failed")
+        self.assertEqual(diff_sim.parse_result(line.format(c=0, m=0, x=0))["status"], "failed")
+        self.assertEqual(diff_sim.parse_result("MISMATCH cycle=3 q[0] rtl=1 gate=0\n" + line.format(c=40, m=1, x=0)),
+                         {"cycles": 20, "compared_bits": 40, "mismatches": 1, "gate_x_bits": 0, "status": "mismatch",
+                          "first_mismatches": ["MISMATCH cycle=3 q[0] rtl=1 gate=0"]})
+        self.assertEqual(diff_sim.parse_result("")["status"], "failed")
+
     def test_classify_ports_explicit_overrides(self) -> None:
         ports = {"c": {"direction": "input", "width": 1}, "r": {"direction": "input", "width": 1},
                  "d": {"direction": "input", "width": 1}, "q": {"direction": "output", "width": 1}}
