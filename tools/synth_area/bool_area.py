@@ -274,6 +274,8 @@ def equiv_bmc_script(setup: list[str], depth: int, resets: dict[str, bool]) -> s
     RTL leaves that value unspecified, so it is not compared (`-ignore_gold_x`). A defined gold
     output must be matched by a defined, equal gate output. Forcing every register to zero
     would instead prove nothing about legal non-zero power-up states."""
+    if depth < 2:
+        raise ValueError(f"bounded proof depth must be >= 2 (cycle 1 is the reset cycle), got {depth}")
     set_at = " ".join(f"-set-at 1 in_{r} {0 if low else 1}" for r, low in resets.items())
     return "\n".join([
         *setup,
@@ -358,7 +360,8 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--no-equiv", action="store_true", help="skip the formal equivalence checks")
     ap.add_argument("--equiv-seq", type=int, default=5, help="induction / unrolling depth for equiv passes")
     ap.add_argument("--equiv-bmc", type=int, default=10,
-                    help="cycles for the bounded-from-reset fallback proof when induction fails; 0 disables")
+                    help="cycles for the bounded-from-reset fallback proof when induction fails (>= 2: cycle 1 is "
+                         "the reset cycle and is not compared); 0 disables")
     ap.add_argument("--sim-cycles", type=int, default=200,
                     help="random differential simulation RTL vs mapped netlist (iverilog); 0 disables")
     ap.add_argument("--seed", type=int, default=1, help="stimulus seed for --sim-cycles")
@@ -374,6 +377,9 @@ def main(argv: list[str] | None = None) -> int:
     args = ap.parse_args(argv)
     if not IDENT_RE.match(args.top):
         ap.error(f"--top must be a plain module identifier, got {args.top!r}")
+    if args.equiv_bmc < 0 or args.equiv_bmc == 1:
+        ap.error("--equiv-bmc must be 0 (disabled) or at least 2: cycle 1 is the reset cycle and is skipped, "
+                 "so a depth of 1 would compare no outputs")
 
     t_start = time.time()
     out_dir = Path(args.out_dir).resolve()

@@ -170,6 +170,23 @@ class BoolAreaFlowTests(unittest.TestCase):
         proc = subprocess.run([YOSYS, "-q", "-s", str(script)], capture_output=True, text=True, check=False)
         self.assertNotEqual(proc.returncode, 0)
 
+    def test_bounded_fallback_depth_must_cover_a_post_reset_cycle(self) -> None:
+        # cycle 1 is the reset cycle and is not compared, so depth 1 would prove nothing: refused up front
+        with self.assertRaises(ValueError):
+            bool_area.equiv_bmc_script([], 1, {"rst_n": True})
+        code, m, err = run_flow(self.tmp / "bmc1", "fifo_shift_d4_w8", [CORPUS / "fifo_shift_d4_w8.sv"], "--sim-cycles",
+                                "0", "--equiv-bmc", "1")
+        self.assertEqual(code, 2, err)
+        self.assertIn("--equiv-bmc must be 0", err)
+        self.assertEqual(m, {})
+        code, _, err = run_flow(self.tmp / "bmcneg", "inv", [CORPUS / "inv.sv"], "--sim-cycles", "0", "--equiv-bmc", "-3")
+        self.assertEqual(code, 2, err)
+        # the smallest accepted depth still compares one post-reset cycle
+        code, m, _ = run_flow(self.tmp / "bmc2", "fifo_shift_d4_w8", [CORPUS / "fifo_shift_d4_w8.sv"], "--sim-cycles",
+                              "0", "--equiv-bmc", "2")
+        self.assertEqual(code, 0, m.get("errors"))
+        self.assertEqual(m["equivalence"]["checks"]["rtl_vs_graph"]["bmc"]["depth"], 2)
+
     def test_bounded_fallback_needs_a_reset(self) -> None:
         # same FIFO with a reset name inference cannot recognise: induction fails and nothing anchors a bounded proof
         src = self.tmp / "fifo_shift_d4_w8.sv"
