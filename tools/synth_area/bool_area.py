@@ -164,8 +164,8 @@ def load_profile(name_or_path: str) -> tuple[dict, Path]:
             raise FlowError("profile", f"profile {p}: script.{key} uses unknown placeholders {', '.join(bad)} "
                                        f"(allowed: {', '.join(SCRIPT_PLACEHOLDERS)})")
     lib = profile["liberty"]
-    if not isinstance(lib.get("dir"), str) or not isinstance(lib.get("files"), list):
-        raise FlowError("profile", f"profile {p}: liberty.dir (string) and liberty.files (list) are required")
+    if not isinstance(lib.get("dir"), str) or not isinstance(lib.get("files"), list) or not lib["files"]:
+        raise FlowError("profile", f"profile {p}: liberty.dir (string) and a non-empty liberty.files list are required")
     for entry in lib["files"]:
         if not isinstance(entry, dict) or not isinstance(entry.get("file"), str) or not isinstance(entry.get("sha256"), str):
             raise FlowError("profile", f"profile {p}: each liberty.files entry needs 'file' and 'sha256' strings")
@@ -266,13 +266,21 @@ def equiv_bmc_script(setup: list[str], depth: int, resets: dict[str, bool]) -> s
 
     Induction can fail on states that are unreachable from reset (e.g. a FIFO count above its
     depth) even though the designs agree on every reachable state; this covers that case with a
-    bounded, reset-anchored proof over all input sequences of `depth` cycles."""
+    bounded, reset-anchored proof over all input sequences of `depth` cycles.
+
+    Initial state is undefined (x) in both designs, the declared resets are asserted in cycle 1
+    and outputs are compared from cycle 2 on. Only registers the reset actually initialises
+    become defined; everything else stays x until written, and an x on a gold output means the
+    RTL leaves that value unspecified, so it is not compared (`-ignore_gold_x`). A defined gold
+    output must be matched by a defined, equal gate output. Forcing every register to zero
+    would instead prove nothing about legal non-zero power-up states."""
     set_at = " ".join(f"-set-at 1 in_{r} {0 if low else 1}" for r, low in resets.items())
     return "\n".join([
         *setup,
-        "miter -equiv -flatten -make_outputs gold gate miter",
+        "miter -equiv -flatten -make_outputs -ignore_gold_x gold gate miter",
         "hierarchy -top miter",
-        f"sat -verify -prove trigger 0 -seq {depth} -set-init-zero {set_at} miter".replace("  ", " "),
+        f"sat -verify -prove trigger 0 -seq {depth} -prove-skip 1 -set-init-undef -enable_undef -set-def-inputs"
+        f" {set_at} miter".replace("  ", " "),
         "",
     ])
 
@@ -556,7 +564,11 @@ def main(argv: list[str] | None = None) -> int:
                 status["status"] = "failed"
                 status["error"] = (f"only {status['equiv_cells']} $equiv cells for "
                                    f"{metrics['boolean']['output_bits']} output bits")
-            if status["status"] == "failed" and status["unproven"] and args.equiv_bmc > 0:
+            if status["status"] == "failed" and status["unproven"] and args.equiv_bmc > 0 and not sim_resets:
+                # nothing to anchor the bounded proof on: an all-x start would compare nothing
+                status["error"] = (f"{status['unproven']} cells not provable by induction and no reset port is known "
+                                   "for the bounded fallback (pass --sim-reset PORT[:low])")
+            elif status["status"] == "failed" and status["unproven"] and args.equiv_bmc > 0:
                 # induction left cells unproven: fall back to a bounded proof anchored at reset
                 ok, log_text, bmc_secs = run_yosys(yosys, equiv_bmc_script(setup, args.equiv_bmc, sim_resets),
                                                    out_dir / f"equiv_{name}_bmc.ys", out_dir / f"equiv_{name}_bmc.log",

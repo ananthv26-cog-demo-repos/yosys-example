@@ -138,6 +138,48 @@ class BoolAreaFlowTests(unittest.TestCase):
         self.assertEqual(code, 1)
         self.assertEqual(m["stage"], "equivalence")
 
+    def test_bounded_fallback_does_not_assume_zero_power_up_state(self) -> None:
+        # gold's output depends on a register that no reset initialises; gate agrees with it only
+        # when that register happens to be 0. A zero-initialised bounded check would accept this.
+        src = self.tmp / "unreset.v"
+        src.write_text(
+            "module gold(input clk, input rst_n, input d, output o);\n"
+            "  reg q, u;\n"
+            "  always @(posedge clk or negedge rst_n) if (!rst_n) q <= 1'b0; else q <= d;\n"
+            "  always @(posedge clk) u <= u;\n"
+            "  assign o = q ^ u;\n"
+            "endmodule\n"
+            "module gate(input clk, input rst_n, input d, output o);\n"
+            "  reg q;\n"
+            "  always @(posedge clk or negedge rst_n) if (!rst_n) q <= 1'b0; else q <= d;\n"
+            "  assign o = q;\n"
+            "endmodule\n"
+        )
+        setup = [f"read_verilog {src}", "proc", "async2sync", "opt_clean"]
+        script = self.tmp / "unreset_bmc.ys"
+        script.write_text(bool_area.equiv_bmc_script(setup, 6, {"rst_n": True}))
+        proc = subprocess.run([YOSYS, "-q", "-s", str(script)], capture_output=True, text=True, check=False)
+        self.assertEqual(proc.returncode, 0, proc.stderr)  # gold is x wherever u matters: unspecified, not compared
+        # the other way round the gate must not be x where the RTL is defined
+        src.write_text(src.read_text().replace("module gold", "module tmp").replace("module gate", "module gold")
+                       .replace("module tmp", "module gate"))
+        proc = subprocess.run([YOSYS, "-q", "-s", str(script)], capture_output=True, text=True, check=False)
+        self.assertNotEqual(proc.returncode, 0)
+        # a reachable bug is still found from the undefined start
+        src.write_text(src.read_text().replace("q <= d;\n  assign o = q;", "q <= ~d;\n  assign o = q;"))
+        proc = subprocess.run([YOSYS, "-q", "-s", str(script)], capture_output=True, text=True, check=False)
+        self.assertNotEqual(proc.returncode, 0)
+
+    def test_bounded_fallback_needs_a_reset(self) -> None:
+        # same FIFO with a reset name inference cannot recognise: induction fails and nothing anchors a bounded proof
+        src = self.tmp / "fifo_shift_d4_w8.sv"
+        src.write_text((CORPUS / "fifo_shift_d4_w8.sv").read_text().replace("rst_ni", "init_ni"))
+        code, m, _ = run_flow(self.tmp / "noreset", "fifo_shift_d4_w8", [src], "--sim-cycles", "0")
+        self.assertEqual(code, 1)
+        self.assertEqual(m["stage"], "equivalence")
+        self.assertNotIn("bmc", m["equivalence"]["checks"]["rtl_vs_graph"])
+        self.assertIn("no reset port", m["equivalence"]["checks"]["rtl_vs_graph"]["error"])
+
     def test_failures_are_reported_not_hidden(self) -> None:
         code, m = self.flow("nope", CORPUS / "inv.sv", "--sim-cycles", "0")
         self.assertNotEqual(code, 0)
@@ -180,6 +222,7 @@ class BoolAreaFlowTests(unittest.TestCase):
             "bad_frontend": json.dumps({**good, "frontend": {"name": "vivado"}}),
             "bad_dff_entry": json.dumps({**good, "dff_types": [["$_DFF_P_"]]}),
             "bad_lib_entry": json.dumps({**good, "liberty": {**good["liberty"], "files": [{"file": 1}]}}),
+            "no_lib_files": json.dumps({**good, "liberty": {**good["liberty"], "files": []}}),
         }
         for name, text in bad.items():
             prof = self.tmp / f"{name}.json"
