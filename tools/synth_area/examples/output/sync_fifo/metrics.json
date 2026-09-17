@@ -1,0 +1,288 @@
+{
+  "schema_version": 2,
+  "status": "ok",
+  "stage": "done",
+  "top": "sync_fifo",
+  "summary": {
+    "not": 11,
+    "and": 120,
+    "nand": 194,
+    "or": 21,
+    "nor": 16,
+    "xor": 5,
+    "xnor": 9,
+    "mux": 899,
+    "dff": 525,
+    "gate_total": 1275,
+    "mapped_cell_total": 2383,
+    "mapped_cells_by_type": {
+      "NAND2xp33_ASAP7_75t_R": 561,
+      "OAI21xp33_ASAP7_75t_R": 558,
+      "DFFHQx4_ASAP7_75t_R": 512,
+      "AOI21xp33_ASAP7_75t_R": 134,
+      "INVx1_ASAP7_75t_R": 111,
+      "NOR2xp33_ASAP7_75t_R": 73,
+      "A2O1A1Ixp33_ASAP7_75t_R": 70,
+      "AO21x1_ASAP7_75t_R": 66,
+      "O2A1O1Ixp33_ASAP7_75t_R": 42,
+      "AND2x2_ASAP7_75t_R": 33,
+      "OA21x2_ASAP7_75t_R": 33,
+      "AOI211xp5_ASAP7_75t_R": 26,
+      "OAI211xp5_ASAP7_75t_R": 26,
+      "OR2x2_ASAP7_75t_R": 22,
+      "OAI311xp33_ASAP7_75t_R": 15,
+      "DFFASRHQNx1_ASAP7_75t_R": 13,
+      "OA22x2_ASAP7_75t_R": 12,
+      "AOI22xp33_ASAP7_75t_R": 11,
+      "OAI221xp5_ASAP7_75t_R": 11,
+      "XNOR2xp5_ASAP7_75t_R": 10,
+      "NAND3xp33_ASAP7_75t_R": 6,
+      "OAI22xp33_ASAP7_75t_R": 5,
+      "A2O1A1O1Ixp25_ASAP7_75t_R": 4,
+      "AOI31xp33_ASAP7_75t_R": 4,
+      "NOR3xp33_ASAP7_75t_R": 4,
+      "NOR5xp2_ASAP7_75t_R": 4,
+      "AOI311xp33_ASAP7_75t_R": 3,
+      "OA211x2_ASAP7_75t_R": 3,
+      "OAI32xp33_ASAP7_75t_R": 2,
+      "AO221x1_ASAP7_75t_R": 1,
+      "AO32x1_ASAP7_75t_R": 1,
+      "AOI221xp5_ASAP7_75t_R": 1,
+      "AOI321xp33_ASAP7_75t_R": 1,
+      "AOI32xp33_ASAP7_75t_R": 1,
+      "MAJIxp5_ASAP7_75t_R": 1,
+      "NAND4xp25_ASAP7_75t_R": 1,
+      "NAND5xp2_ASAP7_75t_R": 1,
+      "NOR4xp25_ASAP7_75t_R": 1
+    },
+    "edge_total": 4540,
+    "max_depth": 14,
+    "max_fanout": 170,
+    "avg_fanout": 2.1868,
+    "mapped_cell_area": 323.07822,
+    "area_unit": "um^2"
+  },
+  "sources": [
+    {
+      "path": "<repo>/tools/synth_area/examples/sync_fifo.sv",
+      "sha256": "2c0460fe1659a9b67d2b476bed7d7403d3edacfb3ccfdf2689da07e750de3097"
+    }
+  ],
+  "profile": {
+    "name": "asap7_rvt_tt_v1",
+    "version": 1,
+    "path": "<repo>/tools/synth_area/profiles/asap7_rvt_tt_v1.json",
+    "sha256": "0bce66648ccfcc40c92ddf1c1c1995ef7c09bd46a52253b483355793993baf1b",
+    "liberty": [
+      {
+        "file": "asap7sc7p5t_AO_RVT_TT_nldm_211120.lib.gz",
+        "sha256": "fe9f1c18e88ab129d63ad82adc256f3a85c7e38e47dabbe0a96749b41087dea1"
+      },
+      {
+        "file": "asap7sc7p5t_INVBUF_RVT_TT_nldm_220122.lib.gz",
+        "sha256": "8d6db2c2f83c3c162be54a5e102b2d379fcaaaef2db5f0b1d4152c395d01fea1"
+      },
+      {
+        "file": "asap7sc7p5t_OA_RVT_TT_nldm_211120.lib.gz",
+        "sha256": "bbe6d904d58c7367de1ed7639e4eae386c65fa0a5af26ae62dc5e4e2ec52b08b"
+      },
+      {
+        "file": "asap7sc7p5t_SEQ_RVT_TT_nldm_220123.lib.gz",
+        "sha256": "99aa4415b6402a83e401f82ea930724ca1139274813a29eeafebd73591dd381a"
+      },
+      {
+        "file": "asap7sc7p5t_SIMPLE_RVT_TT_nldm_211120.lib.gz",
+        "sha256": "073ac4b6b08f272b6953b0ad54d1d9743767a7d15a0e2964ed86cf44c3dbe00e"
+      }
+    ],
+    "liberty_verified": true,
+    "boolean_gates": [
+      "NOT",
+      "AND",
+      "NAND",
+      "OR",
+      "NOR",
+      "XOR",
+      "XNOR",
+      "MUX"
+    ],
+    "dff_types": [
+      "$_DFF_P_",
+      "$_DFF_N_",
+      "$_DFF_PN0_",
+      "$_DFF_PN1_",
+      "$_DFF_PP0_",
+      "$_DFF_PP1_"
+    ]
+  },
+  "tools": {
+    "yosys": "<repo>/build/yosys",
+    "yosys_version": "Yosys 0.69+ (git sha1 150c32b03, Release, GNU /usr/bin/g++-11 11.4.0) [github.com/ananthv26-cog-demo-repos/yosys-example at main]",
+    "sv2v_version": "sv2v v0.0.13"
+  },
+  "frontend": {
+    "name": "slang",
+    "slang_args": [
+      "--ignore-assertions",
+      "--ignore-initial",
+      "--ignore-timing"
+    ],
+    "include_dirs": [],
+    "defines": []
+  },
+  "boolean": {
+    "not": 11,
+    "and": 120,
+    "nand": 194,
+    "or": 21,
+    "nor": 16,
+    "xor": 5,
+    "xnor": 9,
+    "mux": 899,
+    "dff": 525,
+    "gate_total": 1275,
+    "node_total": 1875,
+    "edge_total": 4540,
+    "max_depth": 14,
+    "max_fanout": 170,
+    "avg_fanout": 2.1868,
+    "clock_fanout": {
+      "clk_i": 525
+    },
+    "input_bits": 36,
+    "output_bits": 39,
+    "constants": {},
+    "gates_by_type": {
+      "AND": 120,
+      "MUX": 899,
+      "NAND": 194,
+      "NOR": 16,
+      "NOT": 11,
+      "OR": 21,
+      "XNOR": 9,
+      "XOR": 5
+    },
+    "dff_by_type": {
+      "$_DFF_PN0_": 13,
+      "$_DFF_P_": 512
+    },
+    "combinational_loop": false,
+    "graph_schema_version": 1
+  },
+  "mapped": {
+    "num_cells": 2383,
+    "num_flops": 525,
+    "num_comb_cells": 1858,
+    "num_wires": 1851,
+    "num_wire_bits": 2419,
+    "num_ports": 9,
+    "num_port_bits": 75,
+    "num_memories": 0,
+    "num_memory_bits": 0,
+    "cells_by_type": {
+      "NAND2xp33_ASAP7_75t_R": 561,
+      "OAI21xp33_ASAP7_75t_R": 558,
+      "DFFHQx4_ASAP7_75t_R": 512,
+      "AOI21xp33_ASAP7_75t_R": 134,
+      "INVx1_ASAP7_75t_R": 111,
+      "NOR2xp33_ASAP7_75t_R": 73,
+      "A2O1A1Ixp33_ASAP7_75t_R": 70,
+      "AO21x1_ASAP7_75t_R": 66,
+      "O2A1O1Ixp33_ASAP7_75t_R": 42,
+      "AND2x2_ASAP7_75t_R": 33,
+      "OA21x2_ASAP7_75t_R": 33,
+      "AOI211xp5_ASAP7_75t_R": 26,
+      "OAI211xp5_ASAP7_75t_R": 26,
+      "OR2x2_ASAP7_75t_R": 22,
+      "OAI311xp33_ASAP7_75t_R": 15,
+      "DFFASRHQNx1_ASAP7_75t_R": 13,
+      "OA22x2_ASAP7_75t_R": 12,
+      "AOI22xp33_ASAP7_75t_R": 11,
+      "OAI221xp5_ASAP7_75t_R": 11,
+      "XNOR2xp5_ASAP7_75t_R": 10,
+      "NAND3xp33_ASAP7_75t_R": 6,
+      "OAI22xp33_ASAP7_75t_R": 5,
+      "A2O1A1O1Ixp25_ASAP7_75t_R": 4,
+      "AOI31xp33_ASAP7_75t_R": 4,
+      "NOR3xp33_ASAP7_75t_R": 4,
+      "NOR5xp2_ASAP7_75t_R": 4,
+      "AOI311xp33_ASAP7_75t_R": 3,
+      "OA211x2_ASAP7_75t_R": 3,
+      "OAI32xp33_ASAP7_75t_R": 2,
+      "AO221x1_ASAP7_75t_R": 1,
+      "AO32x1_ASAP7_75t_R": 1,
+      "AOI221xp5_ASAP7_75t_R": 1,
+      "AOI321xp33_ASAP7_75t_R": 1,
+      "AOI32xp33_ASAP7_75t_R": 1,
+      "MAJIxp5_ASAP7_75t_R": 1,
+      "NAND4xp25_ASAP7_75t_R": 1,
+      "NAND5xp2_ASAP7_75t_R": 1,
+      "NOR4xp25_ASAP7_75t_R": 1
+    },
+    "area": 323.07822,
+    "area_unit": "um^2",
+    "sequential_area": 191.55204,
+    "area_is_lower_bound": false,
+    "unknown_area_cell_types": {}
+  },
+  "equivalence": {
+    "status": "proven",
+    "method": "yosys equiv_make + equiv_simple/equiv_induct -seq 5; fallback: miter + sat -seq 10 from reset",
+    "checks": {
+      "rtl_vs_graph": {
+        "equiv_cells": 560,
+        "proven": 560,
+        "unproven": 0,
+        "seconds": 0.316,
+        "log": "<out>/equiv_rtl_vs_graph.log",
+        "status": "proven"
+      },
+      "graph_vs_mapped": {
+        "equiv_cells": 559,
+        "proven": 559,
+        "unproven": 0,
+        "seconds": 5.88,
+        "log": "<out>/equiv_graph_vs_mapped.log",
+        "status": "proven"
+      }
+    }
+  },
+  "simulation": {
+    "status": "match",
+    "cycles_requested": 200,
+    "seed": 1,
+    "work_dir": "<out>/sim",
+    "clocks": [
+      "clk_i"
+    ],
+    "resets": {
+      "rst_ni": "active_low"
+    },
+    "gold": "sv2v",
+    "cycles": 200,
+    "compared_bits": 1372,
+    "mismatches": 0,
+    "gate_x_bits": 0,
+    "method": "iverilog random differential simulation, RTL (via sv2v) vs mapped netlist + Liberty-derived cell models"
+  },
+  "artifacts": {
+    "generic_json": "<out>/generic_yosys.json",
+    "mapped_json": "<out>/mapped_yosys.json",
+    "netlist": "<out>/mapped_netlist.v",
+    "graph": "<out>/boolean_graph.json",
+    "metrics": "<out>/metrics.json",
+    "log": "<out>/yosys.log"
+  },
+  "timing": {
+    "synth_seconds": 1.246,
+    "equiv_rtl_vs_graph_seconds": 0.316,
+    "equiv_graph_vs_mapped_seconds": 5.88,
+    "sim_seconds": 0.604
+  },
+  "warnings": [
+    "ABC: Warning: The network is combinational (run \"fraig\" or \"fraig_sweep\").",
+    "ABC: Warning: Detected 2 multi-output cells (for example, \"FAx1_ASAP7_75t_R\")."
+  ],
+  "errors": [],
+  "wall_seconds": 8.129
+}

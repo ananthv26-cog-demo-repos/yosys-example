@@ -1,0 +1,18 @@
+read_slang --top sync_fifo --ignore-assertions --ignore-initial --ignore-timing <repo>/tools/synth_area/examples/sync_fifo.sv
+hierarchy -check -top sync_fifo
+synth -top sync_fifo -flatten
+dfflegalize -cell $_DFF_P_ 01 -cell $_DFF_N_ 01 -cell $_DFF_PN0_ 01 -cell $_DFF_PN1_ 01 -cell $_DFF_PP0_ 01 -cell $_DFF_PP1_ 01
+abc -g AND,NAND,OR,NOR,XOR,XNOR,MUX
+opt_clean -purge
+check -assert
+write_json <out>/generic_yosys.json
+select -set ffq t:$_DFF_* %co:+[Q] w:* %i
+setattr -set keep 1 @ffq
+select -clear
+dfflibmap -liberty <repo>/tools/synth_area/lib/asap7/asap7sc7p5t_AO_RVT_TT_nldm_211120.lib.gz -liberty <repo>/tools/synth_area/lib/asap7/asap7sc7p5t_INVBUF_RVT_TT_nldm_220122.lib.gz -liberty <repo>/tools/synth_area/lib/asap7/asap7sc7p5t_OA_RVT_TT_nldm_211120.lib.gz -liberty <repo>/tools/synth_area/lib/asap7/asap7sc7p5t_SEQ_RVT_TT_nldm_220123.lib.gz -liberty <repo>/tools/synth_area/lib/asap7/asap7sc7p5t_SIMPLE_RVT_TT_nldm_211120.lib.gz
+abc -liberty <repo>/tools/synth_area/lib/asap7/asap7sc7p5t_AO_RVT_TT_nldm_211120.lib.gz -liberty <repo>/tools/synth_area/lib/asap7/asap7sc7p5t_INVBUF_RVT_TT_nldm_220122.lib.gz -liberty <repo>/tools/synth_area/lib/asap7/asap7sc7p5t_OA_RVT_TT_nldm_211120.lib.gz -liberty <repo>/tools/synth_area/lib/asap7/asap7sc7p5t_SEQ_RVT_TT_nldm_220123.lib.gz -liberty <repo>/tools/synth_area/lib/asap7/asap7sc7p5t_SIMPLE_RVT_TT_nldm_211120.lib.gz
+opt_clean -purge
+tee -q -o <out>/stat.json stat -liberty <repo>/tools/synth_area/lib/asap7/asap7sc7p5t_AO_RVT_TT_nldm_211120.lib.gz -liberty <repo>/tools/synth_area/lib/asap7/asap7sc7p5t_INVBUF_RVT_TT_nldm_220122.lib.gz -liberty <repo>/tools/synth_area/lib/asap7/asap7sc7p5t_OA_RVT_TT_nldm_211120.lib.gz -liberty <repo>/tools/synth_area/lib/asap7/asap7sc7p5t_SEQ_RVT_TT_nldm_220123.lib.gz -liberty <repo>/tools/synth_area/lib/asap7/asap7sc7p5t_SIMPLE_RVT_TT_nldm_211120.lib.gz -json
+tee -q -o <out>/stat.txt stat -liberty <repo>/tools/synth_area/lib/asap7/asap7sc7p5t_AO_RVT_TT_nldm_211120.lib.gz -liberty <repo>/tools/synth_area/lib/asap7/asap7sc7p5t_INVBUF_RVT_TT_nldm_220122.lib.gz -liberty <repo>/tools/synth_area/lib/asap7/asap7sc7p5t_OA_RVT_TT_nldm_211120.lib.gz -liberty <repo>/tools/synth_area/lib/asap7/asap7sc7p5t_SEQ_RVT_TT_nldm_220123.lib.gz -liberty <repo>/tools/synth_area/lib/asap7/asap7sc7p5t_SIMPLE_RVT_TT_nldm_211120.lib.gz
+write_json <out>/mapped_yosys.json
+write_verilog -noattr <out>/mapped_netlist.v

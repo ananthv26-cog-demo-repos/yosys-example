@@ -1,0 +1,65 @@
+Found gzip magic in file `<repo>/tools/synth_area/lib/asap7/asap7sc7p5t_AO_RVT_TT_nldm_211120.lib.gz', decompressing using zlib.
+Found gzip magic in file `<repo>/tools/synth_area/lib/asap7/asap7sc7p5t_INVBUF_RVT_TT_nldm_220122.lib.gz', decompressing using zlib.
+Found gzip magic in file `<repo>/tools/synth_area/lib/asap7/asap7sc7p5t_OA_RVT_TT_nldm_211120.lib.gz', decompressing using zlib.
+Found gzip magic in file `<repo>/tools/synth_area/lib/asap7/asap7sc7p5t_SEQ_RVT_TT_nldm_220123.lib.gz', decompressing using zlib.
+Found gzip magic in file `<repo>/tools/synth_area/lib/asap7/asap7sc7p5t_SIMPLE_RVT_TT_nldm_211120.lib.gz', decompressing using zlib.
+{
+   "creator": "Yosys 0.69+ (git sha1 150c32b03, Release, GNU /usr/bin/g++-11 11.4.0) [github.com/ananthv26-cog-demo-repos/yosys-example at main]",
+   "invocation": "stat -liberty <repo>/tools/synth_area/lib/asap7/asap7sc7p5t_AO_RVT_TT_nldm_211120.lib.gz -liberty <repo>/tools/synth_area/lib/asap7/asap7sc7p5t_INVBUF_RVT_TT_nldm_220122.lib.gz -liberty <repo>/tools/synth_area/lib/asap7/asap7sc7p5t_OA_RVT_TT_nldm_211120.lib.gz -liberty <repo>/tools/synth_area/lib/asap7/asap7sc7p5t_SEQ_RVT_TT_nldm_220123.lib.gz -liberty <repo>/tools/synth_area/lib/asap7/asap7sc7p5t_SIMPLE_RVT_TT_nldm_211120.lib.gz -json ",
+   "modules": {
+      "\\counter8_en": {
+         "num_wires":         25,
+         "num_wire_bits":     32,
+         "num_pub_wires":     4,
+         "num_pub_wire_bits": 11,
+         "num_ports":         4,
+         "num_port_bits":     11,
+         "num_memories":      0,
+         "num_memory_bits":   0,
+         "num_processes":     0,
+         "num_cells":         29,
+         "num_submodules":       0,
+         "area":              4.534380,
+         "sequential_area":    2.916000,
+         "num_cells_by_type": {
+            "A2O1A1Ixp33_ASAP7_75t_R": 1,
+            "AND3x1_ASAP7_75t_R": 2,
+            "AND4x1_ASAP7_75t_R": 2,
+            "AOI21xp33_ASAP7_75t_R": 5,
+            "AOI31xp33_ASAP7_75t_R": 2,
+            "DFFHQx4_ASAP7_75t_R": 8,
+            "INVx1_ASAP7_75t_R": 1,
+            "NOR2xp33_ASAP7_75t_R": 1,
+            "NOR3xp33_ASAP7_75t_R": 4,
+            "OAI21xp33_ASAP7_75t_R": 3
+         }
+      }
+   },
+      "design": {
+         "num_wires":         25,
+         "num_wire_bits":     32,
+         "num_pub_wires":     4,
+         "num_pub_wire_bits": 11,
+         "num_ports":         4,
+         "num_port_bits":     11,
+         "num_memories":      0,
+         "num_memory_bits":   0,
+         "num_processes":     0,
+         "num_cells":         29,
+         "num_submodules":       0,
+         "area":              4.534380,
+         "sequential_area":    2.916000,
+         "num_cells_by_type": {
+            "A2O1A1Ixp33_ASAP7_75t_R": 1,
+            "AND3x1_ASAP7_75t_R": 2,
+            "AND4x1_ASAP7_75t_R": 2,
+            "AOI21xp33_ASAP7_75t_R": 5,
+            "AOI31xp33_ASAP7_75t_R": 2,
+            "DFFHQx4_ASAP7_75t_R": 8,
+            "INVx1_ASAP7_75t_R": 1,
+            "NOR2xp33_ASAP7_75t_R": 1,
+            "NOR3xp33_ASAP7_75t_R": 4,
+            "OAI21xp33_ASAP7_75t_R": 3
+         }
+      }
+}
