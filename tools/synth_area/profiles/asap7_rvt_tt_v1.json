@@ -1,0 +1,57 @@
+{
+  "name": "asap7_rvt_tt_v1",
+  "version": 1,
+  "description": "v1 Boolean-layer area flow: SystemVerilog -> generic one-bit gates (NOT/AND/NAND/OR/NOR/XOR/XNOR/MUX + DFF) -> ASAP7 RVT TT cells via dfflibmap + ABC. Change anything here => bump `version` (results are only comparable within one profile).",
+  "frontend": {
+    "name": "slang",
+    "args": ["--ignore-assertions", "--ignore-initial", "--ignore-timing"]
+  },
+  "boolean_gates": ["NOT", "AND", "NAND", "OR", "NOR", "XOR", "XNOR", "MUX"],
+  "abc_gates": "AND,NAND,OR,NOR,XOR,XNOR,MUX",
+  "dff_types": ["$_DFF_P_", "$_DFF_N_", "$_DFF_PN0_", "$_DFF_PN1_", "$_DFF_PP0_", "$_DFF_PP1_"],
+  "liberty": {
+    "library": "asap7sc7p5t_28",
+    "vt": "RVT",
+    "corner": "TT",
+    "model": "NLDM",
+    "area_unit": "um^2",
+    "dir": "lib/asap7",
+    "files": [
+      {"file": "asap7sc7p5t_AO_RVT_TT_nldm_211120.lib.gz", "sha256": "fe9f1c18e88ab129d63ad82adc256f3a85c7e38e47dabbe0a96749b41087dea1"},
+      {"file": "asap7sc7p5t_INVBUF_RVT_TT_nldm_220122.lib.gz", "sha256": "8d6db2c2f83c3c162be54a5e102b2d379fcaaaef2db5f0b1d4152c395d01fea1"},
+      {"file": "asap7sc7p5t_OA_RVT_TT_nldm_211120.lib.gz", "sha256": "bbe6d904d58c7367de1ed7639e4eae386c65fa0a5af26ae62dc5e4e2ec52b08b"},
+      {"file": "asap7sc7p5t_SEQ_RVT_TT_nldm_220123.lib.gz", "sha256": "99aa4415b6402a83e401f82ea930724ca1139274813a29eeafebd73591dd381a"},
+      {"file": "asap7sc7p5t_SIMPLE_RVT_TT_nldm_211120.lib.gz", "sha256": "073ac4b6b08f272b6953b0ad54d1d9743767a7d15a0e2964ed86cf44c3dbe00e"}
+    ]
+  },
+  "script": {
+    "lower": [
+      "hierarchy -check -top {top}",
+      "synth -top {top} -flatten",
+      "dfflegalize {dfflegalize_cells}",
+      "abc -g {abc_gates}",
+      "opt_clean -purge",
+      "check -assert",
+      "write_json {generic_json}"
+    ],
+    "map": [
+      "select -set ffq t:$_DFF_* %co:+[Q] w:* %i",
+      "setattr -set keep 1 @ffq",
+      "select -clear",
+      "dfflibmap {liberty_args}",
+      "abc {liberty_args}",
+      "opt_clean -purge",
+      "tee -q -o {stat_json} stat {liberty_args} -json",
+      "tee -q -o {stat_txt} stat {liberty_args}",
+      "write_json {mapped_json}",
+      "write_verilog -noattr {netlist}"
+    ]
+  },
+  "notes": [
+    "synth -flatten lowers processes, memories (to flops + muxes) and word-level ops to one-bit gates.",
+    "dfflegalize rewrites enable / sync-reset flops into plain DFFs + MUX gates so the Boolean graph has only the listed dff_types; latches and other sequential cells are rejected.",
+    "abc -g restricts the generic gate set; NOT is always available to ABC.",
+    "`keep` on flop Q wires keeps register names through dfflibmap/abc so the mapped netlist can be matched wire-for-wire against the Boolean graph in the equivalence check (an inverter after a QN-only cell is then not merged into downstream logic).",
+    "Equivalence is checked outside this script by bool_area.py: RTL vs Boolean graph and Boolean graph vs mapped netlist, both with equiv_simple + equiv_induct (fallback: bounded miter/SAT)."
+  ]
+}
