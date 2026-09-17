@@ -9,6 +9,12 @@ Manifest entries:
     {"name": "half_adder", "sources": ["corpus/half_adder.sv"], "top": "half_adder",
      "expect": {"gate_total": 2, "dff": 0, "max_depth": 1}}
 
+Relative `sources` and `include` paths resolve against this tool's directory (so the shipped
+manifest can mix `corpus/` and `examples/`); use absolute paths in manifests kept elsewhere.
+Extra arguments after `--` are appended to every bool_area.py command line after the
+manifest's own options, so they win where bool_area.py takes the last value (e.g.
+`--sim-cycles`).
+
 `expect` values are compared exactly against `metrics.json` -> `summary`; `expect_max`
 gives upper bounds. Any block whose flow fails or whose expectations do not hold makes the
 suite exit nonzero. A `suite_summary.json` and a Markdown table are written to the
@@ -31,15 +37,22 @@ TABLE_COLS = ("gate_total", "dff", "edge_total", "max_depth", "max_fanout", "map
 def run_block(entry: dict, out_dir: Path, extra: list[str], python: str) -> dict:
     sources = [str((HERE / s).resolve()) for s in entry["sources"]]
     block_out = out_dir / entry["name"]
-    cmd = [python, str(HERE / "bool_area.py"), *sources, "--top", entry["top"], "-o", str(block_out), "-q", *extra]
+    cmd = [python, str(HERE / "bool_area.py"), *sources, "--top", entry["top"], "-o", str(block_out), "-q"]
     for inc in entry.get("include", []):
         cmd += ["-I", str((HERE / inc).resolve())]
     for d in entry.get("define", []):
         cmd += ["-D", d]
+    cmd += extra
     t0 = time.time()
-    p = subprocess.run(cmd, capture_output=True, text=True, check=False)
-    res = {"name": entry["name"], "top": entry["top"], "exit_code": p.returncode, "seconds": round(time.time() - t0, 3),
-           "out_dir": str(block_out), "checks": []}
+    res = {"name": entry["name"], "top": entry["top"], "exit_code": None, "seconds": None, "out_dir": str(block_out),
+           "checks": []}
+    try:
+        p = subprocess.run(cmd, capture_output=True, text=True, check=False)
+    except OSError as e:
+        res.update(seconds=round(time.time() - t0, 3), status="failed", stage="launch", errors=[f"cannot run {cmd[0]}: {e}"],
+                   summary={k: None for k in TABLE_COLS}, equivalence=None, simulation=None, passed=False)
+        return res
+    res.update(exit_code=p.returncode, seconds=round(time.time() - t0, 3))
     metrics_path = block_out / "metrics.json"
     metrics = json.loads(metrics_path.read_text()) if metrics_path.exists() else None
     res["status"] = metrics["status"] if metrics else "no-metrics"
@@ -84,10 +97,13 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("extra", nargs="*", help="extra arguments passed to bool_area.py (after --)")
     args = ap.parse_args(argv)
 
-    manifest = json.loads(Path(args.manifest).read_text())
+    manifest_path = Path(args.manifest).resolve()
+    manifest = json.loads(manifest_path.read_text())
     out_dir = Path(args.out_dir).resolve()
     out_dir.mkdir(parents=True, exist_ok=True)
     entries = [e for e in manifest["blocks"] if not args.only or e["name"] in args.only]
+    if not entries:
+        ap.error("no manifest blocks matched --only")
     results = []
     for e in entries:
         r = run_block(e, out_dir, args.extra, args.python)
@@ -101,7 +117,7 @@ def main(argv: list[str] | None = None) -> int:
             detail += " | expectation failed: " + ", ".join(f"{c['key']} {c['op']} {c['want']} (got {c['got']})" for c in bad)
         print(f"[suite] {flag} {r['name']:<22} {detail} ({r['seconds']}s)")
     passed = sum(r["passed"] for r in results)
-    summary = {"manifest": str(Path(args.manifest).resolve()), "blocks": len(results), "passed": passed,
+    summary = {"manifest": str(manifest_path), "blocks": len(results), "passed": passed,
                "failed": len(results) - passed, "results": results}
     (out_dir / "suite_summary.json").write_text(json.dumps(summary, indent=2) + "\n")
     (out_dir / "suite_table.md").write_text(markdown_table(results))

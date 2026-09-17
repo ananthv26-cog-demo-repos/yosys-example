@@ -22,7 +22,6 @@ CORPUS = TOOL / "corpus"
 sys.path.insert(0, str(HERE))
 sys.path.insert(0, str(TOOL))
 import synth_area
-
 from test_bool_area import run_flow
 
 YOSYS = synth_area.find_yosys(None)
@@ -82,6 +81,22 @@ class SuiteRunnerTests(unittest.TestCase):
             self.assertEqual(by["and2_wrong"]["checks"][0]["got"], 1)
             table = (tmp / "out" / "suite_table.md").read_text()
             self.assertIn("| inv | PASS |", table)
+            # a selection that matches nothing is a usage error, not a 0/0 pass
+            proc = subprocess.run([sys.executable, str(SUITE), str(manifest), "-o", str(tmp / "none"), "--only", "typo"],
+                                  capture_output=True, text=True, check=False)
+            self.assertEqual(proc.returncode, 2)
+            self.assertIn("no manifest blocks matched", proc.stderr)
+            self.assertFalse((tmp / "none" / "suite_summary.json").exists())
+            # a child that cannot even be launched is a failed block, and the aggregates are still written
+            proc = subprocess.run([sys.executable, str(SUITE), str(manifest), "-o", str(tmp / "nopy"), "--only", "inv",
+                                   "--python", str(tmp / "missing_python")], capture_output=True, text=True, check=False)
+            self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
+            self.assertNotIn("Traceback", proc.stderr)
+            summary = json.loads((tmp / "nopy" / "suite_summary.json").read_text())
+            (r,) = summary["results"]
+            self.assertEqual((r["passed"], r["stage"]), (False, "launch"))
+            self.assertIn("missing_python", r["errors"][0])
+            self.assertIn("| inv | FAIL(launch) |", (tmp / "nopy" / "suite_table.md").read_text())
 
 
 if __name__ == "__main__":
