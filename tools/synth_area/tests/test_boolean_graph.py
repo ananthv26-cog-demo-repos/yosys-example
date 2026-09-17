@@ -87,6 +87,22 @@ class GraphUnitTests(unittest.TestCase):
         m = boolean_graph.compute_metrics(boolean_graph.build_graph(data, "top", {"$_DFF_PN0_"}))
         self.assertEqual(m["max_depth"], 3)
 
+    def test_reset_fanout_reported_separately_from_data_fanout(self) -> None:
+        # one reset into three flops' R pins; the widest data fanout is d -> two D pins
+        cells = {f"ff{i}": {"type": "$_DFF_PN0_", "connections": {"C": [2], "D": [3 if i < 2 else 6], "R": [4], "Q": [10 + i]}}
+                 for i in range(3)}
+        data = fake_yosys_json(
+            cells=cells,
+            ports={"clk": {"direction": "input", "bits": [2]}, "d": {"direction": "input", "bits": [3]},
+                   "rst_n": {"direction": "input", "bits": [4]}, "e": {"direction": "input", "bits": [6]},
+                   "q": {"direction": "output", "bits": [10]}},
+        )
+        m = boolean_graph.compute_metrics(boolean_graph.build_graph(data, "top", {"$_DFF_PN0_"}))
+        self.assertEqual(m["max_fanout"], 2)
+        self.assertEqual(m["clock_fanout"], {"clk": 3})
+        self.assertEqual(m["control_fanout"], {"rst_n": 3})
+        self.assertEqual(m["edge_total"], 10)
+
     def test_vector_bits_named_with_hdl_index(self) -> None:
         data = fake_yosys_json(
             cells={"b0": {"type": "$_NOT_", "connections": {"A": [2], "Y": [12]}},

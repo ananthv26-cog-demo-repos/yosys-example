@@ -18,7 +18,8 @@ Port and wire bits are named with their HDL index (`data[4]` for the low bit of
 Edges are (driver node -> sink node, sink pin). `max_depth` is the longest chain of
 combinational gates from a graph source (input, constant, DFF Q) to a data sink (output
 port or DFF D pin); logic feeding clock or asynchronous set/reset pins is not counted.
-`max_fanout` / `avg_fanout` count data sink pins per driving node.
+`max_fanout` / `avg_fanout` count data sink pins per driving node; DFF clock pins and
+asynchronous set/reset pins are reported separately (`clock_fanout`, `control_fanout`).
 """
 
 from __future__ import annotations
@@ -229,15 +230,24 @@ def compute_metrics(graph: dict) -> dict:
     gate_counts = Counter(n["type"] for n in nodes if n["kind"] == "GATE")
     dff_counts = Counter(n["dff_type"] for n in nodes if n["kind"] == "DFF")
 
-    # clock pins are fed by a clock tree, not logic: keep them out of the data fanout numbers
+    # clock pins are fed by a clock tree and async set/reset pins by a reset network, not by
+    # data logic: keep both out of the data fanout numbers and report them by driver instead
     id2node = {n["id"]: n for n in nodes}
-    clock_edges = [e for e in edges if id2node[e["to"]]["kind"] == "DFF" and e["pin"] == DFF_CLOCK_PIN]
-    data_edges = [e for e in edges if not (id2node[e["to"]]["kind"] == "DFF" and e["pin"] == DFF_CLOCK_PIN)]
+
+    def dff_pin(e: dict) -> str | None:
+        return e["pin"] if id2node[e["to"]]["kind"] == "DFF" else None
+
+    data_edges = [e for e in edges if dff_pin(e) in (None, DFF_DATA_PIN)]
     fanout = Counter(e["from"] for e in data_edges)
     drivers = [n["id"] for n in nodes if n["kind"] in ("INPUT", "GATE", "DFF") or n["kind"].startswith("CONST")]
     fanouts = [fanout.get(d, 0) for d in drivers]
-    clock_fanout = Counter(e["from"] for e in clock_edges)
-    clocks = {id2node[d].get("name") or f"node{d}": n for d, n in sorted(clock_fanout.items())}
+
+    def fanout_by_driver(pred) -> dict[str, int]:
+        c = Counter(e["from"] for e in edges if pred(dff_pin(e)))
+        return {id2node[d].get("name") or f"node{d}": n for d, n in sorted(c.items())}
+
+    clocks = fanout_by_driver(lambda pin: pin == DFF_CLOCK_PIN)
+    controls = fanout_by_driver(lambda pin: pin not in (None, DFF_DATA_PIN, DFF_CLOCK_PIN))
 
     # longest combinational path: DP over gates in topological order
     depth: dict[int, int] = {}
@@ -286,6 +296,7 @@ def compute_metrics(graph: dict) -> dict:
     m["max_fanout"] = max(fanouts, default=0)
     m["avg_fanout"] = round(sum(fanouts) / len(fanouts), 4) if fanouts else 0.0
     m["clock_fanout"] = clocks
+    m["control_fanout"] = controls
     m["input_bits"] = by_kind.get("INPUT", 0)
     m["output_bits"] = by_kind.get("OUTPUT", 0)
     m["constants"] = {k: by_kind.get(k, 0) for k in ("CONST0", "CONST1", "CONSTX") if by_kind.get(k)}
@@ -312,10 +323,14 @@ def main(argv: list[str] | None = None) -> int:
     except (OSError, ValueError, KeyError) as e:
         print(f"[boolean_graph] error: {e}", file=sys.stderr)
         return 1
-    Path(args.out).write_text(json.dumps(graph, indent=1, sort_keys=False) + "\n")
     metrics = compute_metrics(graph)
-    if args.metrics:
-        Path(args.metrics).write_text(json.dumps(metrics, indent=2) + "\n")
+    try:
+        Path(args.out).write_text(json.dumps(graph, indent=1, sort_keys=False) + "\n")
+        if args.metrics:
+            Path(args.metrics).write_text(json.dumps(metrics, indent=2) + "\n")
+    except OSError as e:
+        print(f"[boolean_graph] error: {e}", file=sys.stderr)
+        return 1
     print(json.dumps({k: metrics[k] for k in ("gate_total", "dff", "edge_total", "max_depth", "max_fanout")}))
     return 0
 
