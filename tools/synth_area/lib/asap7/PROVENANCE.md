@@ -1,9 +1,9 @@
 # ASAP7 7.5-track standard cells — pinned Liberty files
 
 These are the **only** technology-mapping target of the `asap7_rvt_tt_v1` synthesis profile
-(`tools/synth_area/profiles/asap7_rvt_tt_v1.json`). Every experiment run through
-`bool_area.py` maps to exactly these files, so cell counts and summed areas are comparable
-across runs, machines and Slurm jobs.
+(`tools/synth_area/profiles/asap7_rvt_tt_v1.json`). Any flow that consumes that profile maps
+to exactly these files (and can check the recorded SHA-256s first), so cell counts and summed
+areas are comparable across runs, machines and Slurm jobs.
 
 | property | value |
 |---|---|
