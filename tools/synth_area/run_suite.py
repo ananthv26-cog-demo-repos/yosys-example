@@ -126,7 +126,14 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--only", action="append", default=[], help="run only these block names")
     ap.add_argument("--python", default=sys.executable)
     ap.add_argument("extra", nargs="*", help="extra arguments passed to bool_area.py (after --)")
+    argv = sys.argv[1:] if argv is None else list(argv)
+    # Split at "--" ourselves: older argparse (Python 3.10) rejects option-like tokens after "--" in a "*" positional.
+    extra: list[str] = []
+    if "--" in argv:
+        cut = argv.index("--")
+        argv, extra = argv[:cut], argv[cut + 1:]
     args = ap.parse_args(argv)
+    args.extra += extra
 
     manifest_path = Path(args.manifest).resolve()
     manifest = json.loads(manifest_path.read_text())
