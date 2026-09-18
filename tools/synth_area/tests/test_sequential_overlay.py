@@ -20,6 +20,7 @@ TOOL = HERE.parent
 CORPUS = TOOL / "corpus"
 EXAMPLES = TOOL / "examples"
 sys.path.insert(0, str(TOOL))
+import boolean_graph
 import sequential_overlay
 import word_level
 
@@ -63,6 +64,23 @@ class HelperTests(unittest.TestCase):
         self.assertEqual(sequential_overlay.bit_label(12, names), "q[3]")
         self.assertEqual(sequential_overlay.bit_label("1", names), "1'b1")
         self.assertEqual(sequential_overlay.bit_label(99, names), "$bit99")
+
+    def test_alias_choice_joins_boolean_graph_dff_names(self) -> None:
+        """Lexical order (`aa` < `z`) and length order (`z` shorter) disagree: both layers must still pick
+        the same alias, or the overlay's per-bit `q` cannot be joined to the Boolean graph's DFF node."""
+        netnames = {
+            "clk": {"bits": [2], "hide_name": 0}, "d": {"bits": [5], "hide_name": 0},
+            "aa": {"bits": [9], "hide_name": 0}, "z": {"bits": [9], "hide_name": 0},
+            "$hidden": {"bits": [9], "hide_name": 1},
+        }
+        overlay = sequential_overlay.build_overlay(doc({
+            "r": reg("$dff", {"CLK": [2], "D": [5], "Q": [9]}, {"WIDTH": 1, "CLK_POLARITY": 1}),
+        }, netnames), "top")
+        graph = boolean_graph.build_graph({"modules": {"top": {"ports": {}, "netnames": netnames, "cells": {
+            "r": {"type": "$_DFF_P_", "connections": {"C": [2], "D": [5], "Q": [9]}},
+        }}}}, "top")
+        dff_names = [n["name"] for n in graph["nodes"] if n["kind"] == "DFF"]
+        self.assertEqual(dff_names, [overlay["registers"][0]["bits"][0]["q"]])
 
     def test_init_bits_are_msb_first_and_skip_x(self) -> None:
         inits = sequential_overlay.init_bits({"netnames": {

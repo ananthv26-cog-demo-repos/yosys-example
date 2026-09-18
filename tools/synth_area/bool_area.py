@@ -572,6 +572,8 @@ def main(argv: list[str] | None = None) -> int:
         return fail("word", str(e))
     except (ValueError, KeyError) as e:
         return fail("word", f"could not build word-level report: {e}")
+    except OSError as e:
+        return fail("artifacts", f"could not write word-level / sequential report: {e}")
     metrics["word_level"] = {"schema_version": WORD_SCHEMA_VERSION, **word["summary"]}
     metrics["sequential"] = {"schema_version": SEQ_SCHEMA_VERSION, **seq["summary"]}
 

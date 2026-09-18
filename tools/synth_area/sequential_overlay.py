@@ -167,10 +167,10 @@ def main(argv: list[str] | None = None) -> int:
     args = ap.parse_args(argv)
     try:
         report = build_overlay(json.loads(Path(args.yosys_json).read_text()), args.top, args.src_base)
+        Path(args.out).write_text(json.dumps(report, indent=1) + "\n")
     except (OSError, ValueError, KeyError, UnsupportedCell) as e:
         print(f"[sequential_overlay] error: {e}", file=sys.stderr)
         return 1
-    Path(args.out).write_text(json.dumps(report, indent=1) + "\n")
     print(json.dumps(report["summary"], indent=1))
     return 0
 

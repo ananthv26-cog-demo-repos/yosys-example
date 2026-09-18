@@ -98,6 +98,14 @@ def bit_label(name: str, vec: dict, pos: int) -> str:
     return name if len(vec["bits"]) == 1 and not vec.get("offset", 0) else f"{name}[{hdl_index(vec, pos)}]"
 
 
+def alias_rank(item: tuple[str, dict]) -> tuple:
+    """Sort key choosing which of a bit's aliases names it, shared by every layer so labels join across
+    reports: public names beat Yosys-internal (`hide_name`) ones, then the shallowest, shortest name
+    wins so top-level ports beat hierarchical internals (`count_o` over `u_fifo.count_q`)."""
+    wname, w = item
+    return (w.get("hide_name", 0), wname.count("."), len(wname), wname)
+
+
 def load_profile_dff_types(name_or_path: str) -> set[str]:
     """`dff_types` allowlist of a synthesis profile (a name under profiles/ or a JSON path)."""
     p = Path(name_or_path)
@@ -139,7 +147,7 @@ def build_graph(data: dict, top: str | None, dff_types: set[str] | None = None) 
 
     # names for bits (public wires first so a bit driven by a register keeps its RTL name)
     bit_name: dict[int, str] = {}
-    for wname, w in sorted(mod.get("netnames", {}).items(), key=lambda kv: (kv[1].get("hide_name", 0), kv[0])):
+    for wname, w in sorted(mod.get("netnames", {}).items(), key=alias_rank):
         for i, b in enumerate(w.get("bits", [])):
             if isinstance(b, int) and b not in bit_name:
                 bit_name[b] = bit_label(wname, w, i)
