@@ -172,6 +172,12 @@ def main(argv: list[str] | None = None) -> int:
     if dupes:
         ap.error(f"duplicate block names in the manifest: {', '.join(dupes)}")
     jobs = max(1, min(args.jobs or (os.cpu_count() or 1), len(entries) or 1))
+    baseline = None
+    if args.baseline:  # read it now: a bad path must not surface after a full corpus run, and the
+        try:         # snapshot is what the evidence is compared against even if the file moves meanwhile
+            baseline = suite_evidence.load_baseline(Path(args.baseline).resolve())
+        except ValueError as e:
+            ap.error(f"--baseline {e}")
 
     def run_and_report(e: dict) -> dict:
         r = run_block(e, out_dir, args.extra, args.python)
@@ -189,9 +195,9 @@ def main(argv: list[str] | None = None) -> int:
     summary = {"manifest": str(manifest_path), "blocks": len(results), "passed": passed,
                "failed": len(results) - passed, "jobs": jobs, "wall_seconds": round(time.time() - t0, 3),
                "results": results}
-    (out_dir / "suite_summary.json").write_text(json.dumps(summary, indent=2) + "\n")
-    (out_dir / "suite_table.md").write_text(markdown_table(results))
-    evidence = suite_evidence.write(results, out_dir, Path(args.baseline).resolve() if args.baseline else None)
+    suite_evidence.write_atomic(out_dir / "suite_summary.json", json.dumps(summary, indent=2) + "\n")
+    suite_evidence.write_atomic(out_dir / "suite_table.md", markdown_table(results))
+    evidence = suite_evidence.write(results, out_dir, baseline)
     for c in evidence["criteria"]:
         if c["ok"] is not True:
             print(f"[suite] criterion {'UNKNOWN' if c['ok'] is None else 'FAILED'}: {c['id']} — {c['measured']}")

@@ -22,6 +22,7 @@ CORPUS = TOOL / "corpus"
 
 sys.path.insert(0, str(HERE))
 sys.path.insert(0, str(TOOL))
+import suite_evidence
 import synth_area
 from test_bool_area import run_flow
 
@@ -117,6 +118,33 @@ class SuiteRunnerTests(unittest.TestCase):
             self.assertIn("criterion FAILED: determinism", proc.stdout)
             # ... while the same selection without a baseline is a clean run
             self.assertEqual(subprocess.run(inv_only, capture_output=True, text=True, check=False).returncode, 0)
+            # identical layer files prove nothing when the block was built from different inputs
+            changed = json.loads((tmp / "out" / "suite_evidence.json").read_text())
+            changed["blocks"][0]["inputs"]["profile"] = "0" * 64
+            (tmp / "changed.json").write_text(json.dumps(changed))
+            proc = subprocess.run([sys.executable, str(SUITE), str(manifest), "--only", "inv", "-o",
+                                   str(tmp / "out4"), "--baseline", str(tmp / "changed.json")],
+                                  capture_output=True, text=True, check=False)
+            self.assertEqual(proc.returncode, 1, proc.stdout)
+            self.assertIn("built from different sources, profile or yosys", proc.stdout)
+            # an unusable baseline is a usage error before any block runs, not a traceback after all of them
+            (tmp / "notevidence.json").write_text('{"blocks": 3}')
+            # a `blocks` list alone is not enough: determinism indexes by name and reads nested dicts
+            (tmp / "badblock.json").write_text(json.dumps(
+                {"schema_version": suite_evidence.EVIDENCE_SCHEMA_VERSION, "blocks": [{"name": []}]}))
+            (tmp / "oldschema.json").write_text(json.dumps({"schema_version": 1, "blocks": []}))
+            # two records under one name: whichever came last would silently be the one compared against
+            dup = json.loads((tmp / "out" / "suite_evidence.json").read_text())
+            dup["blocks"].append(dup["blocks"][0])
+            (tmp / "dupbase.json").write_text(json.dumps(dup))
+            for bad_baseline in (str(tmp / "typo.json"), str(tmp / "notevidence.json"),
+                                 str(tmp / "badblock.json"), str(tmp / "oldschema.json"),
+                                 str(tmp / "dupbase.json")):
+                proc = subprocess.run([sys.executable, str(SUITE), str(manifest), "-o", str(tmp / "nobase"),
+                                       "--baseline", bad_baseline], capture_output=True, text=True, check=False)
+                self.assertEqual(proc.returncode, 2, proc.stderr)
+                self.assertIn("--baseline", proc.stderr)
+                self.assertFalse((tmp / "nobase" / "suite_summary.json").exists())
             # duplicate names would have two concurrent blocks writing one output directory
             (tmp / "dupes.json").write_text(json.dumps({"blocks": [
                 {"name": "inv", "sources": [str(CORPUS / "inv.sv")], "top": "inv"},
@@ -191,6 +219,49 @@ class SuiteRunnerTests(unittest.TestCase):
                 self.assertIn("missing_python", r["errors"][0])
                 self.assertIn("stale artifacts", r["errors"][1])
                 self.assertIn("| inv | FAIL(launch) |", (tmp / "out" / "suite_table.md").read_text())
+
+
+class EvidenceAccountingTests(unittest.TestCase):
+    """What the rollup is allowed to claim, on synthetic blocks: no yosys needed."""
+
+    @staticmethod
+    def block(name: str, **over: object) -> dict:
+        b = {"name": name, "passed": True, "status": "ok", "seconds": 1, "errors": [],
+             "artifacts": {layer: {"present": True, "sha256": "a" * 64} for layer in suite_evidence.LAYERS},
+             "layers_present": True, "mapped": {"cells": 1, "area": 1.0},
+             "equivalence": {"status": "proven", "checks": {}},
+             "simulation": {"status": "match", "compared_bits": 8, "mismatches": 0},
+             "inputs": {"sources": ["b" * 64], "profile": "c" * 64, "yosys_version": "Yosys 0.69+",
+                        "top": name, "frontend": {"name": "slang", "defines": [], "include_dirs": []}},
+             "src_coverage": {"with_src": dict.fromkeys(suite_evidence.LAYERS, 1),
+                              "items": dict.fromkeys(suite_evidence.LAYERS, 1)}}
+        return {**b, **over}
+
+    def test_bounded_pairs_are_not_reported_as_proven(self) -> None:
+        """A bounded fallback keeps the induction pass's unproven pairs; the rollup must say so."""
+        bounded = self.block("fifo_shift", equivalence={
+            "status": "bounded",
+            "checks": {"rtl_vs_graph": {"status": "bounded", "proven": 14, "unproven": 24},
+                       "graph_vs_mapped": {"status": "proven", "proven": 38, "unproven": 0}}})
+        eq = {c["id"]: c for c in suite_evidence.criteria([bounded], None)}["equivalence"]
+        self.assertIn("24 pair(s) settled by bounded check from reset", eq["measured"])
+        self.assertIn("0 unproven pairs", eq["measured"])
+
+    def test_missing_layer_files_do_not_match_a_baseline(self) -> None:
+        gone = {layer: {"present": False, "sha256": None} for layer in suite_evidence.LAYERS}
+        blocks = [self.block("inv", artifacts=gone, layers_present=False)]
+        det = suite_evidence.determinism(blocks, {"blocks": blocks})
+        self.assertFalse(det["ok"])
+        self.assertEqual(len(det["differing"]), len(suite_evidence.LAYERS))
+
+    def test_frontend_options_are_part_of_the_inputs(self) -> None:
+        """Same sources and profile, different defines: the layer files are not a reproduction."""
+        before = self.block("inv")
+        after = json.loads(json.dumps(before))
+        after["inputs"]["frontend"]["defines"] = ["UNUSED=1"]
+        det = suite_evidence.determinism([after], {"blocks": [before]})
+        self.assertFalse(det["ok"])
+        self.assertEqual(det["changed_inputs"], ["inv"])
 
 
 if __name__ == "__main__":

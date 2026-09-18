@@ -4,13 +4,13 @@
   "passed": 49,
   "failed": 0,
   "jobs": 8,
-  "wall_seconds": 24.8,
+  "wall_seconds": 29.541,
   "results": [
     {
       "name": "adder8",
       "top": "adder8",
       "exit_code": 0,
-      "seconds": 2.269,
+      "seconds": 2.295,
       "out_dir": "<out>/adder8",
       "checks": [],
       "status": "ok",
@@ -33,7 +33,7 @@
       "name": "alu4",
       "top": "alu4",
       "exit_code": 0,
-      "seconds": 2.364,
+      "seconds": 3.189,
       "out_dir": "<out>/alu4",
       "checks": [],
       "status": "ok",
@@ -56,7 +56,7 @@
       "name": "and2",
       "top": "and2",
       "exit_code": 0,
-      "seconds": 2.181,
+      "seconds": 3.499,
       "out_dir": "<out>/and2",
       "checks": [
         {
@@ -108,7 +108,7 @@
       "name": "comparator8",
       "top": "comparator8",
       "exit_code": 0,
-      "seconds": 2.26,
+      "seconds": 2.854,
       "out_dir": "<out>/comparator8",
       "checks": [],
       "status": "ok",
@@ -131,7 +131,7 @@
       "name": "counter4",
       "top": "counter4",
       "exit_code": 0,
-      "seconds": 2.231,
+      "seconds": 2.345,
       "out_dir": "<out>/counter4",
       "checks": [
         {
@@ -162,7 +162,7 @@
       "name": "counter8_en",
       "top": "counter8_en",
       "exit_code": 0,
-      "seconds": 2.287,
+      "seconds": 2.401,
       "out_dir": "<out>/counter8_en",
       "checks": [
         {
@@ -193,7 +193,7 @@
       "name": "dec2to4",
       "top": "dec2to4",
       "exit_code": 0,
-      "seconds": 2.322,
+      "seconds": 2.224,
       "out_dir": "<out>/dec2to4",
       "checks": [
         {
@@ -238,7 +238,7 @@
       "name": "dff",
       "top": "dff",
       "exit_code": 0,
-      "seconds": 2.074,
+      "seconds": 2.086,
       "out_dir": "<out>/dff",
       "checks": [
         {
@@ -290,7 +290,7 @@
       "name": "dff_async_rst",
       "top": "dff_async_rst",
       "exit_code": 0,
-      "seconds": 2.374,
+      "seconds": 2.973,
       "out_dir": "<out>/dff_async_rst",
       "checks": [
         {
@@ -335,7 +335,7 @@
       "name": "dff_sync_rst",
       "top": "dff_sync_rst",
       "exit_code": 0,
-      "seconds": 2.428,
+      "seconds": 2.735,
       "out_dir": "<out>/dff_sync_rst",
       "checks": [
         {
@@ -373,7 +373,7 @@
       "name": "fifo_d2_w4",
       "top": "fifo_d2_w4",
       "exit_code": 0,
-      "seconds": 2.58,
+      "seconds": 2.8,
       "out_dir": "<out>/fifo_d2_w4",
       "checks": [],
       "status": "ok",
@@ -396,7 +396,7 @@
       "name": "fifo_fwft_d4_w8",
       "top": "fifo_fwft_d4_w8",
       "exit_code": 0,
-      "seconds": 3.116,
+      "seconds": 4.017,
       "out_dir": "<out>/fifo_fwft_d4_w8",
       "checks": [],
       "status": "ok",
@@ -419,7 +419,7 @@
       "name": "fifo_shift_d4_w8",
       "top": "fifo_shift_d4_w8",
       "exit_code": 0,
-      "seconds": 4.767,
+      "seconds": 4.923,
       "out_dir": "<out>/fifo_shift_d4_w8",
       "checks": [],
       "status": "ok",
@@ -442,7 +442,7 @@
       "name": "fifo_almost_flags_d8_w8",
       "top": "fifo_almost_flags_d8_w8",
       "exit_code": 0,
-      "seconds": 3.772,
+      "seconds": 5.064,
       "out_dir": "<out>/fifo_almost_flags_d8_w8",
       "checks": [
         {
@@ -473,7 +473,7 @@
       "name": "fifo_bypass_d4_w8",
       "top": "fifo_bypass_d4_w8",
       "exit_code": 0,
-      "seconds": 3.315,
+      "seconds": 3.388,
       "out_dir": "<out>/fifo_bypass_d4_w8",
       "checks": [
         {
@@ -504,7 +504,7 @@
       "name": "fifo_clr_d4_w8",
       "top": "fifo_clr_d4_w8",
       "exit_code": 0,
-      "seconds": 3.213,
+      "seconds": 4.347,
       "out_dir": "<out>/fifo_clr_d4_w8",
       "checks": [
         {
@@ -535,7 +535,7 @@
       "name": "fifo_enum_state_d4_w8",
       "top": "fifo_enum_state_d4_w8",
       "exit_code": 0,
-      "seconds": 4.516,
+      "seconds": 4.757,
       "out_dir": "<out>/fifo_enum_state_d4_w8",
       "checks": [
         {
@@ -566,7 +566,7 @@
       "name": "fifo_err_flags_d4_w8",
       "top": "fifo_err_flags_d4_w8",
       "exit_code": 0,
-      "seconds": 3.138,
+      "seconds": 3.47,
       "out_dir": "<out>/fifo_err_flags_d4_w8",
       "checks": [
         {
@@ -597,7 +597,7 @@
       "name": "fifo_generate_d4_w8",
       "top": "fifo_generate_d4_w8",
       "exit_code": 0,
-      "seconds": 3.183,
+      "seconds": 3.353,
       "out_dir": "<out>/fifo_generate_d4_w8",
       "checks": [
         {
@@ -628,7 +628,7 @@
       "name": "fifo_gray_ptr_d8_w8",
       "top": "fifo_gray_ptr_d8_w8",
       "exit_code": 0,
-      "seconds": 3.815,
+      "seconds": 4.011,
       "out_dir": "<out>/fifo_gray_ptr_d8_w8",
       "checks": [
         {
@@ -659,7 +659,7 @@
       "name": "fifo_last_d4_w8",
       "top": "fifo_last_d4_w8",
       "exit_code": 0,
-      "seconds": 3.212,
+      "seconds": 3.884,
       "out_dir": "<out>/fifo_last_d4_w8",
       "checks": [
         {
@@ -690,7 +690,7 @@
       "name": "fifo_onehot_d4_w8",
       "top": "fifo_onehot_d4_w8",
       "exit_code": 0,
-      "seconds": 2.872,
+      "seconds": 4.242,
       "out_dir": "<out>/fifo_onehot_d4_w8",
       "checks": [
         {
@@ -721,7 +721,7 @@
       "name": "fifo_pipe_d3_w8",
       "top": "fifo_pipe_d3_w8",
       "exit_code": 0,
-      "seconds": 3.079,
+      "seconds": 3.682,
       "out_dir": "<out>/fifo_pipe_d3_w8",
       "checks": [
         {
@@ -752,7 +752,7 @@
       "name": "fifo_ptr_wrap_d8_w8",
       "top": "fifo_ptr_wrap_d8_w8",
       "exit_code": 0,
-      "seconds": 3.518,
+      "seconds": 3.644,
       "out_dir": "<out>/fifo_ptr_wrap_d8_w8",
       "checks": [
         {
@@ -783,7 +783,7 @@
       "name": "fifo_regout_d4_w8",
       "top": "fifo_regout_d4_w8",
       "exit_code": 0,
-      "seconds": 3.005,
+      "seconds": 5.36,
       "out_dir": "<out>/fifo_regout_d4_w8",
       "checks": [
         {
@@ -814,7 +814,7 @@
       "name": "fifo_sync_rst_d4_w8",
       "top": "fifo_sync_rst_d4_w8",
       "exit_code": 0,
-      "seconds": 2.575,
+      "seconds": 2.858,
       "out_dir": "<out>/fifo_sync_rst_d4_w8",
       "checks": [
         {
@@ -845,7 +845,7 @@
       "name": "fsm_traffic",
       "top": "fsm_traffic",
       "exit_code": 0,
-      "seconds": 2.41,
+      "seconds": 2.416,
       "out_dir": "<out>/fsm_traffic",
       "checks": [],
       "status": "ok",
@@ -868,7 +868,7 @@
       "name": "full_adder",
       "top": "full_adder",
       "exit_code": 0,
-      "seconds": 2.165,
+      "seconds": 2.255,
       "out_dir": "<out>/full_adder",
       "checks": [
         {
@@ -913,7 +913,7 @@
       "name": "gray_counter4",
       "top": "gray_counter4",
       "exit_code": 0,
-      "seconds": 2.239,
+      "seconds": 2.273,
       "out_dir": "<out>/gray_counter4",
       "checks": [
         {
@@ -944,7 +944,7 @@
       "name": "half_adder",
       "top": "half_adder",
       "exit_code": 0,
-      "seconds": 2.182,
+      "seconds": 2.273,
       "out_dir": "<out>/half_adder",
       "checks": [
         {
@@ -989,7 +989,7 @@
       "name": "inv",
       "top": "inv",
       "exit_code": 0,
-      "seconds": 2.179,
+      "seconds": 2.328,
       "out_dir": "<out>/inv",
       "checks": [
         {
@@ -1041,7 +1041,7 @@
       "name": "lfsr8",
       "top": "lfsr8",
       "exit_code": 0,
-      "seconds": 2.273,
+      "seconds": 2.542,
       "out_dir": "<out>/lfsr8",
       "checks": [
         {
@@ -1072,7 +1072,7 @@
       "name": "mux2",
       "top": "mux2",
       "exit_code": 0,
-      "seconds": 2.263,
+      "seconds": 3.779,
       "out_dir": "<out>/mux2",
       "checks": [
         {
@@ -1124,7 +1124,7 @@
       "name": "mux4",
       "top": "mux4",
       "exit_code": 0,
-      "seconds": 2.328,
+      "seconds": 2.317,
       "out_dir": "<out>/mux4",
       "checks": [
         {
@@ -1176,7 +1176,7 @@
       "name": "or2",
       "top": "or2",
       "exit_code": 0,
-      "seconds": 2.253,
+      "seconds": 2.807,
       "out_dir": "<out>/or2",
       "checks": [
         {
@@ -1228,7 +1228,7 @@
       "name": "parity8",
       "top": "parity8",
       "exit_code": 0,
-      "seconds": 2.279,
+      "seconds": 2.429,
       "out_dir": "<out>/parity8",
       "checks": [
         {
@@ -1273,7 +1273,7 @@
       "name": "priority_enc8",
       "top": "priority_enc8",
       "exit_code": 0,
-      "seconds": 2.411,
+      "seconds": 2.538,
       "out_dir": "<out>/priority_enc8",
       "checks": [],
       "status": "ok",
@@ -1296,7 +1296,7 @@
       "name": "reg8_en",
       "top": "reg8_en",
       "exit_code": 0,
-      "seconds": 2.434,
+      "seconds": 3.096,
       "out_dir": "<out>/reg8_en",
       "checks": [
         {
@@ -1348,7 +1348,7 @@
       "name": "shift_reg8",
       "top": "shift_reg8",
       "exit_code": 0,
-      "seconds": 2.288,
+      "seconds": 2.362,
       "out_dir": "<out>/shift_reg8",
       "checks": [
         {
@@ -1400,7 +1400,7 @@
       "name": "skid_buffer",
       "top": "skid_buffer",
       "exit_code": 0,
-      "seconds": 2.633,
+      "seconds": 2.705,
       "out_dir": "<out>/skid_buffer",
       "checks": [],
       "status": "ok",
@@ -1423,7 +1423,7 @@
       "name": "sync_fifo_d16_w32",
       "top": "sync_fifo_d16_w32",
       "exit_code": 0,
-      "seconds": 11.132,
+      "seconds": 12.273,
       "out_dir": "<out>/sync_fifo_d16_w32",
       "checks": [],
       "status": "ok",
@@ -1446,7 +1446,7 @@
       "name": "sync_fifo_d16_w8",
       "top": "sync_fifo_d16_w8",
       "exit_code": 0,
-      "seconds": 5.025,
+      "seconds": 6.596,
       "out_dir": "<out>/sync_fifo_d16_w8",
       "checks": [],
       "status": "ok",
@@ -1469,7 +1469,7 @@
       "name": "sync_fifo_d4_w8",
       "top": "sync_fifo_d4_w8",
       "exit_code": 0,
-      "seconds": 3.145,
+      "seconds": 3.459,
       "out_dir": "<out>/sync_fifo_d4_w8",
       "checks": [],
       "status": "ok",
@@ -1492,7 +1492,7 @@
       "name": "sync_fifo_d8_w8",
       "top": "sync_fifo_d8_w8",
       "exit_code": 0,
-      "seconds": 3.658,
+      "seconds": 4.127,
       "out_dir": "<out>/sync_fifo_d8_w8",
       "checks": [],
       "status": "ok",
@@ -1515,7 +1515,7 @@
       "name": "xor2",
       "top": "xor2",
       "exit_code": 0,
-      "seconds": 2.397,
+      "seconds": 2.31,
       "out_dir": "<out>/xor2",
       "checks": [
         {
@@ -1567,7 +1567,7 @@
       "name": "sync_fifo",
       "top": "sync_fifo",
       "exit_code": 0,
-      "seconds": 11.137,
+      "seconds": 13.318,
       "out_dir": "<out>/sync_fifo",
       "checks": [],
       "status": "ok",
@@ -1590,7 +1590,7 @@
       "name": "async_fifo",
       "top": "async_fifo",
       "exit_code": 0,
-      "seconds": 3.497,
+      "seconds": 3.618,
       "out_dir": "<out>/async_fifo",
       "checks": [],
       "status": "ok",
@@ -1613,7 +1613,7 @@
       "name": "struct_fifo",
       "top": "struct_fifo",
       "exit_code": 0,
-      "seconds": 4.927,
+      "seconds": 5.455,
       "out_dir": "<out>/struct_fifo",
       "checks": [],
       "status": "ok",
@@ -1636,7 +1636,7 @@
       "name": "if_fifo",
       "top": "if_fifo_top",
       "exit_code": 0,
-      "seconds": 3.194,
+      "seconds": 3.555,
       "out_dir": "<out>/if_fifo",
       "checks": [],
       "status": "ok",
