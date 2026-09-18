@@ -7,8 +7,8 @@ produced:
 
     argv            the exact bool_area.py command line (sources, top, defines, includes, extra args)
     inputs          every source file, every file they `include (transitively, resolved next to the
-                    including file and then in the -I directories, as the frontends do), the profile
-                    and its Liberty files
+                    including file and then in the -I directories, as the frontends do), the profile,
+                    its Liberty files and every file its yosys commands name (`techmap -map x.v`)
     include_dirs    every file under every -I directory
     tools           the python interpreter, yosys (slang is linked in), the abc binary yosys runs (its
                     sibling yosys-abc, or for a build with an external ABC that path unless $ABC is set,
@@ -16,7 +16,8 @@ produced:
                     bool_area.py resolves it today (argv, $YOSYS/$SV2V/$ABC, ./build, PATH), so pointing
                     the environment at another binary is a miss
     yosys_share     every file in the share/ directory that yosys loads its `+/` support files from
-                    (techmap.v, simcells.v, ...), since `synth` reads them at run time
+                    (techmap.v, simcells.v, ...), since `synth` reads them at run time; asked of yosys
+                    itself, so it is the directory this build really uses
     code            every tools/synth_area/*.py module
     artifacts       every path the flow owns (bool_area.owned_files): the fixed artifacts, sv2v output,
                     equiv_* scripts/logs and the whole sim/ directory; absent ones are recorded as absent
@@ -25,6 +26,12 @@ On the next run the block is reused only if every one of those hashes is unchang
 artifact is still on disk byte-for-byte (and nothing that was absent has appeared). Anything else (a
 missing tool, an unreadable file, an older record) is a miss, never a guess. Failed runs are not
 recorded: a block that failed reruns.
+
+That is the whole dependency boundary: files named by the sources, the profile or the tool set are
+hashed; a dependency the text does not name (`include `MACRO, a path a yosys command computes at run
+time, a file a plugin opens on its own) cannot be, so wherever one is detected the block is recorded
+as not cacheable and always reruns. Anything yosys reads that is neither of those (environment
+variables other than the tool selectors, the system time) is outside it by design.
 """
 
 from __future__ import annotations
@@ -37,14 +44,17 @@ import shutil
 import subprocess
 from pathlib import Path
 
-from bool_area import ARTIFACTS, FlowError, abc_executable, liberty_paths, load_profile, owned_files
+from bool_area import ARTIFACTS, SCRIPT_STAGES, FlowError, abc_executable, liberty_paths, load_profile, owned_files
 from run_report import sha256_file
 from synth_area import find_sv2v, find_yosys
 
 CACHE_SCHEMA_VERSION = 2
 RECORD = "suite_cache.json"
 HERE = Path(__file__).resolve().parent
-INCLUDE_RE = re.compile(r'^[ \t]*`include[ \t]+["<]([^">\n]+)[">]', re.MULTILINE)
+INCLUDE_RE = re.compile(r'^[ \t]*`include[ \t]+(?:"([^"\n]*)"|<([^>\n]*)>|(\S+))', re.MULTILINE)
+FILE_TOKEN_RE = re.compile(r"/|\.(v|sv|vh|svh|lib|ys|json|il|blif|aig|lut|txt|tcl)$", re.IGNORECASE)
+SHARE_PROBE = "__suite_cache_share_probe__.v"
+SHARE_RE = re.compile(r"`(/[^`'\n]*)/" + re.escape(SHARE_PROBE) + "'")  # not the `+/...' command echo
 
 
 def try_sha256(path: Path) -> str | None:
@@ -86,8 +96,9 @@ def dir_hashes(root: Path) -> dict[str, str | None]:
 def include_files(sources: list[str], include_dirs: list[str]) -> dict[str, str | None]:
     """{path: sha256} of every file the sources `include, transitively, each resolved the way slang and
     sv2v resolve it: next to the including file first, then the -I directories in order. Every `include
-    line counts, also ones in an inactive `ifdef branch (conservative). One that resolves nowhere is
-    recorded under the including file as None, which keeps the block from being cached at all."""
+    line counts, also ones in an inactive `ifdef branch (conservative). One that resolves nowhere, or
+    whose file name is not literal (`include `HEADER), is recorded under the including file as None,
+    which keeps the block from being cached at all."""
     found: dict[str, str | None] = {}
     todo, seen = list(sources), set()
     while todo:
@@ -99,7 +110,11 @@ def include_files(sources: list[str], include_dirs: list[str]) -> dict[str, str 
             text = Path(src).read_text(errors="replace")
         except OSError:
             continue  # hashes as None wherever it is recorded, so the record is incomplete anyway
-        for name in INCLUDE_RE.findall(text):
+        for quoted, angled, other in INCLUDE_RE.findall(text):
+            name = quoted or angled
+            if not name:
+                found[f"{src}: `include {other}"] = None
+                continue
             for d in (Path(src).parent, *map(Path, include_dirs)):
                 if (d / name).is_file():
                     p = str(d / name)
@@ -111,21 +126,20 @@ def include_files(sources: list[str], include_dirs: list[str]) -> dict[str, str 
     return found
 
 
+@functools.cache
 def yosys_share_dir(yosys: str) -> Path | None:
-    """Where this yosys reads its `+/` support files from, looked up as init_share_dirname in kernel/yosys.cc
-    does from /proc/self/exe: `share/` beside the binary (a build tree), else `../share/yosys/` (an
-    install), else the compiled-in data directory, which the `yosys-config` beside it reports as
-    `--datdir`. None when none of those is a directory, which keeps the block from being cached."""
-    exe = Path(yosys).resolve()
-    candidates = [exe.parent / "share", exe.parent.parent / "share" / "yosys"]
+    """Where this yosys expands `+/` to, asked of yosys itself: reading a `+/` file that does not exist
+    makes it print the full path it tried, i.e. whichever of share/ beside the binary, ../share/<prefix>yosys/,
+    the compiled-in data directory or the pyosys one this build picked (init_share_dirname in
+    kernel/yosys.cc). None when yosys cannot be run or does not name a directory, which keeps the block
+    from being cached."""
     try:
-        out = subprocess.run([str(exe.with_name("yosys-config")), "--datdir"], capture_output=True, text=True,
-                             timeout=30, check=False)
-        if out.returncode == 0 and out.stdout.strip():
-            candidates.append(Path(out.stdout.strip()))
-    except (OSError, subprocess.SubprocessError):
-        pass
-    return next((d for d in candidates if d.is_dir()), None)
+        out = subprocess.run([yosys, "-Q", "-T", "-p", f"read_verilog +/{SHARE_PROBE}"], capture_output=True,
+                             text=True, timeout=60, check=False)
+        m = SHARE_RE.search(out.stdout + out.stderr)
+        return Path(m.group(1)) if m and Path(m.group(1)).is_dir() else None
+    except (OSError, ValueError, subprocess.SubprocessError):
+        return None
 
 
 @functools.cache
@@ -174,15 +188,35 @@ def tool_paths(argv: list[str], python: str) -> dict[str, str | None]:
     }
 
 
-def profile_files(profile_path: object) -> list[str]:
-    """The profile and the Liberty files it names; [''] (hashes as None) if it cannot be loaded."""
+def profile_inputs(profile_path: object) -> dict[str, str | None]:
+    """{path: sha256} of the profile, the Liberty files it names and the files its yosys commands name;
+    {'': None} (never complete) if it cannot be loaded."""
     if not isinstance(profile_path, str):
-        return [""]
+        return {"": None}
     try:
         profile, _ = load_profile(profile_path)
-        return [profile_path, *(str(p) for p in liberty_paths(profile, verify=False))]
+        libs = liberty_paths(profile, verify=False)
     except (FlowError, OSError, ValueError):
-        return [""]
+        return {"": None}
+    return {**{p: try_sha256(Path(p)) for p in [profile_path, *map(str, libs)]}, **script_files(profile)}
+
+
+def script_files(profile: dict) -> dict[str, str | None]:
+    """{path: sha256} of every file the profile's yosys commands name themselves (`techmap -map x.v`,
+    `read_liberty y.lib`, `script z.ys`): any word with a directory separator or a file extension that
+    is not an option or a `{placeholder}` (those are flow-owned outputs). `+/...` is yosys's own share/
+    directory, hashed as yosys_share. An absolute path is hashed as it is; a relative one is looked up
+    under tools/synth_area/ like liberty.dir; one that is not a file there is None, which keeps every
+    block using the profile from being cached (the command may compute the path at run time)."""
+    found: dict[str, str | None] = {}
+    for stage in SCRIPT_STAGES:
+        for cmd in profile["script"][stage]:
+            for word in cmd.split():
+                word = word.strip("\"'")
+                if word.startswith(("-", "+/")) or "{" in word or not FILE_TOKEN_RE.search(word):
+                    continue
+                found[word] = try_sha256(Path(word) if Path(word).is_absolute() else HERE / word)
+    return found
 
 
 def section(container: dict, key: str) -> dict:
@@ -212,7 +246,7 @@ def fingerprint_or_raise(argv: list[str], python: str, manifest: dict) -> dict:
     return {
         "argv": list(argv),
         "python": python,
-        "inputs": {**{p: try_sha256(Path(p)) for p in [*sources, *profile_files(profile)]},
+        "inputs": {**{p: try_sha256(Path(p)) for p in sources}, **profile_inputs(profile),
                    **include_files(sources, includes)},
         "include_dirs": {d: dir_hashes(Path(d)) for d in includes},
         "tools": {name: tool_sha256(path) if path else None for name, path in tools.items()},

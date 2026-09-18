@@ -322,14 +322,16 @@ def equiv_bmc_script(setup: list[str], depth: int, resets: dict[str, bool]) -> s
 
 
 ABC_HELP_RE = re.compile(r'instead of "([^"]+)" to execute ABC')
-ABC_BUILTIN = "<yosys-bindir>/yosys-abc"
+ABC_BINDIR = "<yosys-bindir>/"
+ABC_BUILTIN = ABC_BINDIR + "yosys-abc"
 
 
 @functools.cache
 def abc_default(yosys: str) -> str | None:
     """What this yosys's own `help abc` says the `-exe` default is: the literal `<yosys-bindir>/yosys-abc`
-    for a build with the bundled ABC, or the compiled-in path of a build configured with an external ABC
-    (ABCEXTERNAL). None when yosys cannot be run or the text is not recognised."""
+    (`<yosys-bindir>/<prefix>yosys-abc` for a build with YOSYS_PROGRAM_PREFIX) for a build with the bundled
+    ABC, or the compiled-in path of a build configured with an external ABC (ABCEXTERNAL). None when yosys
+    cannot be run or the text is not recognised."""
     try:
         out = subprocess.run([yosys, "-Q", "-T", "-p", "help abc"], capture_output=True, text=True, timeout=60,
                              check=False)
@@ -340,15 +342,15 @@ def abc_default(yosys: str) -> str | None:
 
 
 def abc_executable(yosys: str) -> str | None:
-    """The ABC binary this yosys runs (init_abc_executable_name in kernel/yosys.cc): `yosys-abc` next to
-    the resolved yosys executable (it is found from /proc/self/exe, i.e. after following symlinks) for a
-    build with the bundled ABC; for a build with an external ABC, `$ABC` when set, else the compiled-in
-    path. None if yosys will not say (cannot be run, unrecognised help text)."""
+    """The ABC binary this yosys runs (init_abc_executable_name in kernel/yosys.cc): `<prefix>yosys-abc`
+    next to the resolved yosys executable (it is found from /proc/self/exe, i.e. after following symlinks)
+    for a build with the bundled ABC; for a build with an external ABC, `$ABC` when set, else the
+    compiled-in path. None if yosys will not say (cannot be run, unrecognised help text)."""
     default = abc_default(yosys)
     if default is None:
         return None
-    if default == ABC_BUILTIN:
-        return str(Path(yosys).resolve().with_name("yosys-abc"))
+    if default.startswith(ABC_BINDIR):
+        return str(Path(yosys).resolve().with_name(default[len(ABC_BINDIR):]))
     return os.environ.get("ABC") or default
 
 

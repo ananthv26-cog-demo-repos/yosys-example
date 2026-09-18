@@ -32,6 +32,23 @@ from test_bool_area import run_flow
 YOSYS = synth_area.find_yosys(None)
 
 
+def fake(path: Path, body: str) -> str:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(body)
+    path.chmod(0o755)
+    return str(path)
+
+
+def fake_yosys(path: Path, abc_default: str, share: Path | None = None) -> str:
+    """A yosys stand-in that answers the two questions suite_cache asks the real one: `help abc` names
+    `abc_default` as the -exe default, and reading a missing `+/` file reports the path under `share`."""
+    lines = ["#!/bin/sh", f"echo '{path}'",
+             f'echo \'        use the specified command instead of "{abc_default}" to execute ABC.\'']
+    if share is not None:
+        lines.append(f"echo \"ERROR: File \\`{share}/{suite_cache.SHARE_PROBE}' not found or is a directory\"")
+    return fake(path, "\n".join(lines) + "\n")
+
+
 @unittest.skipUnless(YOSYS, "yosys binary not found")
 class HandCountTests(unittest.TestCase):
     def test_hand_counted_blocks(self) -> None:
@@ -376,6 +393,12 @@ class CacheFingerprintTests(unittest.TestCase):
             (src / "top.sv").write_text('`include "local.svh"\n  `include <shared.svh>\n'
                                         '// `include "commented.svh" is not an include line\n'
                                         '`ifdef NEVER\n`include "missing.svh"\n`endif\n')
+            # a file name only the preprocessor knows can never be hashed: the block is not cacheable
+            (src / "macro.sv").write_text('`define HEADER "local.svh"\n`include `HEADER\n')
+            found = suite_cache.include_files([str(src / "macro.sv")], [])
+            self.assertEqual(found, {f'{src / "macro.sv"}: `include `HEADER': None})
+            fp = suite_cache.fingerprint(["x"], sys.executable, {"sources": [{"path": str(src / "macro.sv")}]})
+            self.assertFalse(suite_cache.complete({"fingerprint": fp, "artifacts": {}}))
             (src / "local.svh").write_text('`include "local.svh"\n`include "shared.svh"\n')  # self-include: terminates
             (inc / "shared.svh").write_text("`define S 1\n")
             found = suite_cache.include_files([str(src / "top.sv")], [str(inc)])
@@ -404,20 +427,49 @@ class CacheFingerprintTests(unittest.TestCase):
         hashes = suite_cache.share_hashes(YOSYS)
         self.assertTrue(hashes["techmap.v"] and hashes["simcells.v"])
         with tempfile.TemporaryDirectory(prefix="suite_share_") as td:
-            # a build tree (bin/share) and an install (bin/../share/yosys); neither present -> never cached
-            for root, share_dir in ((Path(td) / "build", Path(td) / "build" / "share"),
-                                    (Path(td) / "prefix" / "bin", Path(td) / "prefix" / "share" / "yosys")):
-                root.mkdir(parents=True)
-                (root / "yosys").write_text("#!/bin/sh\n")
-                (root / "yosys").chmod(0o755)
-                self.assertIsNone(suite_cache.yosys_share_dir(str(root / "yosys")))
-                self.assertEqual(suite_cache.share_hashes(str(root / "yosys")), {"": None})
-                fp = suite_cache.fingerprint(["--yosys", str(root / "yosys")], sys.executable, {})
+            # the directory is whatever this yosys says it expands `+/` to, wherever that is
+            share_dir = Path(td) / "opt" / "acme-yosys"
+            share_dir.mkdir(parents=True)
+            (share_dir / "techmap.v").write_text("// t\n")
+            y = fake_yosys(Path(td) / "bin" / "yosys", bool_area.ABC_BUILTIN, share_dir)
+            self.assertEqual(suite_cache.yosys_share_dir(y), share_dir)
+            self.assertEqual(list(suite_cache.share_hashes(y)), ["techmap.v"])
+            # one that names no directory, or one that is not there -> never cached
+            for y in (fake(Path(td) / "mute" / "yosys", "#!/bin/sh\n"),
+                      fake_yosys(Path(td) / "gone" / "yosys", bool_area.ABC_BUILTIN, Path(td) / "nowhere")):
+                self.assertIsNone(suite_cache.yosys_share_dir(y))
+                self.assertEqual(suite_cache.share_hashes(y), {"": None})
+                fp = suite_cache.fingerprint(["--yosys", y], sys.executable, {})
                 self.assertFalse(suite_cache.complete({"fingerprint": fp, "artifacts": {}}))
-                share_dir.mkdir(parents=True)
-                (share_dir / "techmap.v").write_text("// t\n")
-                self.assertEqual(suite_cache.yosys_share_dir(str(root / "yosys")), share_dir)
-                self.assertEqual(list(suite_cache.dir_hashes(share_dir)), ["techmap.v"])
+
+    def test_profile_script_files_are_inputs(self) -> None:
+        """Files a profile's yosys commands name (`techmap -map x.v`) are hashed; one that cannot be found
+        keeps the profile's blocks out of the cache; placeholders, options and +/ share files are not files."""
+        base = json.loads((TOOL / "profiles" / "asap7_rvt_tt_v1.json").read_text())
+        self.assertEqual(suite_cache.script_files(base), {})
+        with tempfile.TemporaryDirectory(prefix="suite_prof_") as td:
+            mapping = Path(td) / "custom_map.v"
+            mapping.write_text("// v1\n")
+            profile = json.loads(json.dumps(base))
+            profile["script"]["lower"][1:1] = [f"techmap -map {mapping}", "techmap -map +/techmap.v",
+                                               'read_verilog -lib "lib/asap7/cells.v"', "tee -o {stat_txt} stat"]
+            path = Path(td) / "custom.json"
+            path.write_text(json.dumps(profile))
+            found = suite_cache.script_files(profile)
+            self.assertEqual(sorted(found), sorted(["lib/asap7/cells.v", str(mapping)]))
+            self.assertTrue(found[str(mapping)])
+            self.assertIsNone(found["lib/asap7/cells.v"])  # relative to tools/synth_area/, not there
+            manifest = {"profile": {"path": str(path)}}
+            fp = suite_cache.fingerprint(["x"], sys.executable, manifest)
+            self.assertFalse(suite_cache.complete({"fingerprint": fp, "artifacts": {}}))
+            del profile["script"]["lower"][3]
+            path.write_text(json.dumps(profile))
+            fp = suite_cache.fingerprint(["x"], sys.executable, manifest)
+            self.assertFalse([k for k in fp["inputs"] if k.startswith("lib/")])
+            self.assertTrue(fp["inputs"][str(mapping)] and fp["inputs"][str(path)])
+            mapping.write_text("// v2\n")
+            fp2 = suite_cache.fingerprint(["x"], sys.executable, manifest)
+            self.assertNotEqual(fp["inputs"][str(mapping)], fp2["inputs"][str(mapping)])
 
     def test_malformed_manifest_shapes_never_raise(self) -> None:
         for manifest in ({"sources": 3}, {"sources": [3, {"path": 4}]}, {"profile": {"path": 5}}, {"profile": 6},
@@ -454,17 +506,6 @@ class CacheFingerprintTests(unittest.TestCase):
 
     def test_tools_are_the_ones_a_run_today_would_use(self) -> None:
         """Tool hashes come from today's resolution (argv, $YOSYS/$SV2V/$ABC, PATH), not the old manifest."""
-        def fake(path: Path, body: str) -> str:
-            path.parent.mkdir(parents=True, exist_ok=True)
-            path.write_text(body)
-            path.chmod(0o755)
-            return str(path)
-
-        def fake_yosys(path: Path, abc_default: str) -> str:
-            """A yosys stand-in whose `help abc` names `abc_default` as the -exe default, as the real one does."""
-            return fake(path, f'#!/bin/sh\necho \'{path}\'\n'
-                              f'echo \'        use the specified command instead of "{abc_default}" to execute ABC.\'\n')
-
         with tempfile.TemporaryDirectory(prefix="suite_tools_") as td, \
                 unittest.mock.patch.dict(os.environ, {"PATH": ""}, clear=True):
             a, b = Path(td) / "a", Path(td) / "b"
@@ -489,6 +530,11 @@ class CacheFingerprintTests(unittest.TestCase):
                 self.assertEqual(bool_area.abc_executable(ya), str(a / "yosys-abc"))
             (Path(td) / "link").symlink_to(a / "yosys")
             self.assertEqual(bool_area.abc_executable(str(Path(td) / "link")), str(a / "yosys-abc"))
+            # a build with YOSYS_PROGRAM_PREFIX names its bundled ABC `<yosys-bindir>/<prefix>yosys-abc`
+            yp = fake_yosys(Path(td) / "p" / "acme-yosys", bool_area.ABC_BINDIR + "acme-yosys-abc")
+            pabc = fake(Path(td) / "p" / "acme-yosys-abc", "p")
+            self.assertEqual(bool_area.abc_executable(yp), pabc)
+            self.assertEqual(suite_cache.tool_paths(["--yosys", yp], py)["abc"], pabc)
             # a build with an external ABC (ABCEXTERNAL) runs the compiled-in path, or $ABC when set; a
             # non-executable one hashes as None (never a hit)
             ext2 = fake(Path(td) / "ext" / "abc2", "ext2")
