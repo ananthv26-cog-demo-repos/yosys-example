@@ -22,7 +22,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-EVIDENCE_SCHEMA_VERSION = 1
+EVIDENCE_SCHEMA_VERSION = 2
 
 # layer name -> the artifact key run_manifest.json records it under
 LAYERS = {"word_level": "word", "sequential_overlay": "sequential", "boolean_graph": "graph",
@@ -87,6 +87,14 @@ def block_evidence(result: dict) -> dict:
     warnings = metrics.get("warnings")
     ev["warnings"] = len(warnings) if isinstance(warnings, list) else 0
 
+    sources = metrics.get("sources")
+    ev["inputs"] = {
+        "sources": sorted(s.get("sha256") or "" for s in sources if isinstance(s, dict))
+        if isinstance(sources, list) else None,
+        "profile": section(metrics, "profile").get("sha256"),
+        "yosys_version": section(metrics, "tools").get("yosys_version"),
+    }
+
     covered, total = {}, {}
     for layer, key in (("word_level", "operations"), ("sequential_overlay", "registers"), ("mapped_cells", "cells")):
         covered[layer], total[layer] = src_coverage(out_dir / f"{layer}.json", key)
@@ -102,17 +110,25 @@ def determinism(blocks: list[dict], baseline: dict | None) -> dict:
     """Compare every block's layer hashes against an earlier suite_evidence.json."""
     if not baseline:
         return {"ok": None, "measured": "not checked (no --baseline)"}
-    prev = {b["name"]: b.get("artifacts", {}) for b in baseline.get("blocks", []) if isinstance(b, dict)}
+    prev = {b["name"]: b for b in baseline.get("blocks", []) if isinstance(b, dict) and "name" in b}
     shared = [b for b in blocks if b["name"] in prev]
     missing = [b["name"] for b in blocks if b["name"] not in prev]
-    differing = [f"{b['name']}/{layer}" for b in shared for layer in LAYERS
-                 if b["artifacts"][layer]["sha256"] != prev[b["name"]].get(layer, {}).get("sha256")]
-    measured = (f"{len(shared)} blocks x {len(LAYERS)} layer files byte-identical to the baseline"
+    # identical outputs only mean something if the inputs were identical too
+    changed = [b["name"] for b in shared if b["inputs"] != prev[b["name"]].get("inputs")]
+    comparable = [b for b in shared if b["name"] not in changed]
+    differing = [f"{b['name']}/{layer}" for b in comparable for layer in LAYERS
+                 if not b["artifacts"][layer]["sha256"]  # two missing files are not a match
+                 or b["artifacts"][layer]["sha256"] != prev[b["name"]].get("artifacts", {})
+                 .get(layer, {}).get("sha256")]
+    measured = (f"{len(comparable)} blocks x {len(LAYERS)} layer files byte-identical to the baseline"
                 if not differing else f"{len(differing)} layer files differ: {', '.join(differing[:5])}")
     if missing:  # a baseline from an --only run leaves the rest of this run unchecked
         measured += f"; {len(missing)} block(s) absent from the baseline: {', '.join(missing[:5])}"
-    return {"ok": not differing and not missing and bool(shared), "differing": differing,
-            "unchecked": missing, "measured": measured}
+    if changed:
+        measured += (f"; {len(changed)} block(s) built from different sources, profile or yosys: "
+                     f"{', '.join(changed[:5])}")
+    return {"ok": not differing and not missing and not changed and bool(comparable),
+            "differing": differing, "unchecked": missing, "changed_inputs": changed, "measured": measured}
 
 
 def criteria(blocks: list[dict], baseline: dict | None) -> list[dict]:
@@ -123,8 +139,12 @@ def criteria(blocks: list[dict], baseline: dict | None) -> list[dict]:
     with_layers = [b for b in blocks if b["layers_present"]]
     with_area = [b for b in blocks if (b["mapped"]["cells"] or 0) > 0 and (b["mapped"]["area"] or 0) > 0]
     eq_status = [b["equivalence"]["status"] for b in blocks]
+    # a bounded check keeps the induction pass's unproven pairs and settles them by BMC from reset:
+    # sound only up to that depth, so it cannot be folded into the unbounded proof count
     unproven = sum((c["unproven"] or 0) for b in blocks for c in b["equivalence"]["checks"].values()
-                   if c["status"] == "failed")
+                   if c["status"] not in ("proven", "bounded"))
+    bounded_pairs = sum((c["unproven"] or 0) for b in blocks for c in b["equivalence"]["checks"].values()
+                        if c["status"] == "bounded")
     # a run with --sim-cycles 0 or without iverilog has nothing to say here, which is not the same
     # as a clean simulation: only blocks that actually compared bits count as evidence
     simulated = [b for b in blocks if b["simulation"]["status"] == "match"
@@ -158,7 +178,9 @@ def criteria(blocks: list[dict], baseline: dict | None) -> list[dict]:
          "ok": all(b["status"] == "ok" and not b["errors"] for b in blocks)},
         {"id": "equivalence", "requirement": "the Boolean graph and the ASAP7 netlist are proven to match the RTL",
          "measured": f"{eq_status.count('proven')} proven, {eq_status.count('bounded')} bounded, "
-                     f"{eq_status.count('failed')} failed, {unproven} unproven pairs",
+                     f"{eq_status.count('failed')} failed, {unproven} unproven pairs"
+                     + (f"; {bounded_pairs} pair(s) settled by bounded check from reset, not by induction"
+                        if bounded_pairs else ""),
          "ok": unproven == 0 and not any(s in (None, "failed") for s in eq_status)},
         {"id": "simulation", "requirement": "random RTL vs netlist simulation finds no mismatch",
          "measured": f"{len(sims)}/{n} blocks simulated, {sum(s['compared_bits'] or 0 for s in sims)} bits compared, "
@@ -205,11 +227,33 @@ def render(evidence: dict) -> str:
     return "\n".join(lines) + "\n"
 
 
+def load_baseline(path: Path) -> dict:
+    """An earlier suite_evidence.json, or ValueError describing why it cannot be used as a baseline.
+    Callers read this before running a suite, so a typo does not surface as a traceback an hour later."""
+    try:
+        data = json.loads(path.read_text())
+    except OSError as e:
+        raise ValueError(f"cannot read {path}: {e.strerror}") from e
+    except ValueError as e:
+        raise ValueError(f"{path} is not valid JSON: {e}") from e
+    if not isinstance(data, dict) or not isinstance(data.get("blocks"), list):
+        # one exception type for every reason the file is unusable, so callers report it as one error
+        raise ValueError(f"{path} is not a suite_evidence.json (no `blocks` list)")  # noqa: TRY004
+    return data
+
+
+def write_atomic(path: Path, text: str) -> None:
+    """An interrupted run must leave the previous rollup, not half of a new one."""
+    tmp = path.with_suffix(path.suffix + ".tmp")
+    tmp.write_text(text)
+    tmp.replace(path)
+
+
 def write(results: list[dict], out_dir: Path, baseline_path: Path | None = None) -> dict:
-    baseline = json.loads(baseline_path.read_text()) if baseline_path else None
+    baseline = load_baseline(baseline_path) if baseline_path else None
     evidence = build(results, baseline)
-    (out_dir / "suite_evidence.json").write_text(json.dumps(evidence, indent=2) + "\n")
-    (out_dir / "EVIDENCE.md").write_text(render(evidence))
+    write_atomic(out_dir / "suite_evidence.json", json.dumps(evidence, indent=2) + "\n")
+    write_atomic(out_dir / "EVIDENCE.md", render(evidence))
     return evidence
 
 
