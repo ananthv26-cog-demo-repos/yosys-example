@@ -8,8 +8,9 @@ produced:
     argv            the exact bool_area.py command line (sources, top, defines, includes, extra args)
     inputs          every source file, include-directory file, the profile and its Liberty files
     tools           the python interpreter, yosys (slang is linked in), the abc binary yosys runs ($ABC or
-                    its sibling yosys-abc), and the sv2v, iverilog and vvp binaries the run actually
-                    resolved (all from its run_manifest.json)
+                    its sibling yosys-abc), sv2v, iverilog and vvp, each resolved the way bool_area.py
+                    resolves it today (argv, $YOSYS/$SV2V/$ABC, ./build, PATH), so pointing the
+                    environment at another binary is a miss
     code            every tools/synth_area/*.py module
     artifacts       every path the flow owns (bool_area.owned_files): the fixed artifacts, sv2v output,
                     equiv_* scripts/logs and the whole sim/ directory; absent ones are recorded as absent
@@ -30,7 +31,7 @@ from pathlib import Path
 
 from bool_area import ARTIFACTS, FlowError, abc_executable, liberty_paths, load_profile, owned_files
 from run_report import sha256_file
-from synth_area import find_sv2v
+from synth_area import find_sv2v, find_yosys
 
 CACHE_SCHEMA_VERSION = 1
 RECORD = "suite_cache.json"
@@ -53,7 +54,10 @@ def tool_sha256(path: str) -> str | None:
 def dir_hashes(root: Path) -> dict[str, str | None]:
     """{relative path: sha256} for every file under `root` (an include directory), keyed by the path the
     frontend would use. Directory symlinks are followed (the frontend does), each target once."""
-    if not root.is_dir():
+    try:
+        if not root.is_dir():
+            return {"": None}
+    except (OSError, ValueError):
         return {"": None}
     hashes: dict[str, str | None] = {}
     seen: set[str] = set()
@@ -74,22 +78,38 @@ def code_hashes() -> dict[str, str | None]:
     return {p.name: try_sha256(p) for p in sorted(HERE.glob("*.py"))}
 
 
-def tool_paths(generated_by: dict, python: str) -> dict[str, str | None]:
-    """Binaries the run depended on. Those the run resolved itself are taken from its manifest so a
-    replaced file at the same path is caught; one the run did not have falls back to today's lookup so
-    a tool that has since appeared is a miss too."""
-    def recorded(key: str, default: str | None) -> str | None:
-        v = generated_by.get(key)
-        return v if isinstance(v, str) else default
+def option(argv: list[str], name: str) -> str | None:
+    """Value of `--name X` / `--name=X` in a bool_area.py argument list (last one wins, as argparse)."""
+    value = None
+    for i, a in enumerate(argv):
+        if a == name and i + 1 < len(argv):
+            value = argv[i + 1]
+        elif a.startswith(name + "="):
+            value = a[len(name) + 1:]
+    return value
 
-    yosys = recorded("yosys", None)
+
+def executable(tool: str | None) -> str | None:
+    """The file a bare name or path runs today (executable regular file, PATH lookup for bare names)."""
+    try:
+        return shutil.which(tool) if tool else None
+    except (OSError, ValueError):
+        return None
+
+
+def tool_paths(argv: list[str], python: str) -> dict[str, str | None]:
+    """The binaries a bool_area.py run with `argv` would use *now*, resolved exactly as bool_area.py
+    resolves them (explicit option, then $YOSYS/$SV2V/$ABC, ./build/yosys, PATH). Comparing today's
+    resolution with the recorded one catches both a replaced file at the same path and the environment
+    or PATH selecting a different one; a tool that has vanished or appeared is a miss too."""
+    yosys = executable(find_yosys(option(argv, "--yosys")))
     return {
-        "python": recorded("python_executable", shutil.which(python)),
+        "python": executable(python),
         "yosys": yosys,
-        "abc": recorded("abc", abc_executable(yosys) if yosys else None),
-        "sv2v": recorded("sv2v", find_sv2v(None)),
-        "iverilog": recorded("iverilog", shutil.which("iverilog")),
-        "vvp": recorded("vvp", shutil.which("vvp")),
+        "abc": executable(abc_executable(yosys)) if yosys else None,
+        "sv2v": executable(find_sv2v(option(argv, "--sv2v"))),
+        "iverilog": executable("iverilog"),
+        "vvp": executable("vvp"),
     }
 
 
@@ -100,7 +120,7 @@ def profile_files(profile_path: object) -> list[str]:
     try:
         profile, _ = load_profile(profile_path)
         return [profile_path, *(str(p) for p in liberty_paths(profile, verify=False))]
-    except FlowError:
+    except (FlowError, OSError, ValueError):
         return [""]
 
 
@@ -109,9 +129,18 @@ def section(container: dict, key: str) -> dict:
     return v if isinstance(v, dict) else {}
 
 
-def fingerprint(argv: list[str], python: str, manifest: dict) -> dict:
+def fingerprint(argv: list[str], python: str, manifest: dict) -> dict | None:
     """Hashes of everything a bool_area.py run with `argv` depends on. The manifest of the run being
-    recorded (or reused) says which files those were: sources, include dirs, profile, tool binaries."""
+    recorded (or reused) says which input files those were (sources, include dirs, profile); the tool
+    binaries are whatever `argv` and the environment select today. None if a path in there cannot even
+    be looked at (a NUL byte, a permission error): the caller treats that as a miss."""
+    try:
+        return fingerprint_or_raise(argv, python, manifest)
+    except (OSError, ValueError):
+        return None
+
+
+def fingerprint_or_raise(argv: list[str], python: str, manifest: dict) -> dict:
     profile = section(manifest, "profile").get("path")
     entries = manifest.get("sources")
     sources = [str(s.get("path")) for s in entries if isinstance(s, dict)] if isinstance(entries, list) else []
@@ -123,8 +152,7 @@ def fingerprint(argv: list[str], python: str, manifest: dict) -> dict:
         "python": python,
         "inputs": {p: try_sha256(Path(p)) for p in [*sources, *profile_files(profile)]},
         "include_dirs": {d: dir_hashes(Path(d)) for d in includes},
-        "tools": {name: tool_sha256(path) if path else None
-                  for name, path in tool_paths(section(manifest, "generated_by"), python).items()},
+        "tools": {name: tool_sha256(path) if path else None for name, path in tool_paths(argv, python).items()},
         "code": code_hashes(),
     }
 
@@ -146,7 +174,7 @@ def record(block_out: Path, argv: list[str], python: str) -> bool:
         return False
     data = {"schema_version": CACHE_SCHEMA_VERSION, "fingerprint": fingerprint(argv, python, manifest),
             "artifacts": artifact_hashes(block_out)}
-    if not complete(data):
+    if data["fingerprint"] is None or not complete(data):
         return False
     try:
         (block_out / RECORD).write_text(json.dumps(data, indent=1) + "\n")
@@ -179,6 +207,9 @@ def is_hit(block_out: Path, argv: list[str], python: str) -> bool:
         return False
     if not isinstance(data, dict) or data.get("schema_version") != CACHE_SCHEMA_VERSION or not isinstance(manifest, dict):
         return False
-    if not complete(data) or data["fingerprint"] != fingerprint(argv, python, manifest):
+    if not complete(data):
+        return False
+    fp = fingerprint(argv, python, manifest)
+    if fp is None or data["fingerprint"] != fp:
         return False
     return data["artifacts"] == artifact_hashes(block_out)

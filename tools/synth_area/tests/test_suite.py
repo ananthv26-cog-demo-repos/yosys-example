@@ -351,9 +351,14 @@ class CacheFingerprintTests(unittest.TestCase):
         for manifest in ({"sources": 3}, {"sources": [3, {"path": 4}]}, {"profile": {"path": 5}}, {"profile": 6},
                          {"frontend": {"include_dirs": "x"}}, {"frontend": {"include_dirs": [{}, None]}},
                          {"generated_by": []}, {"generated_by": {"yosys": 1, "abc": [], "sv2v": 2}},
-                         {"sources": [{"path": "a\0b"}]}):
+                         {"sources": [{"path": "a\0b"}]}, {"profile": {"path": "a\0b"}},
+                         {"frontend": {"include_dirs": ["a\0b"]}}):
             fp = suite_cache.fingerprint(["x"], sys.executable, manifest)
-            self.assertFalse(suite_cache.complete({"fingerprint": fp, "artifacts": {}}), manifest)
+            self.assertFalse(suite_cache.complete({"fingerprint": fp or {}, "artifacts": {}}), manifest)
+        # a NUL in the command line itself is a miss too, not a traceback
+        for argv in (["--yosys", "a\0b"], ["--yosys", "/a\0b"], ["--yosys", "./a\0b"], ["--sv2v=./a\0b"]):
+            fp = suite_cache.fingerprint(argv, sys.executable, {})
+            self.assertFalse(suite_cache.complete({"fingerprint": fp or {}, "artifacts": {}}), argv)
 
     def test_include_dir_hashes_follow_directory_symlinks_once(self) -> None:
         with tempfile.TemporaryDirectory(prefix="suite_inc_") as td:
@@ -375,18 +380,54 @@ class CacheFingerprintTests(unittest.TestCase):
             self.assertIn("linked/c.svh", suite_cache.dir_hashes(inc))
             self.assertEqual(suite_cache.dir_hashes(Path(td) / "missing"), {"": None})
 
-    def test_abc_binary_is_the_one_yosys_runs(self) -> None:
-        recorded = {"yosys": "/opt/yosys/bin/yosys", "abc": "/opt/abc/abc"}
-        self.assertEqual(suite_cache.tool_paths(recorded, sys.executable)["abc"], "/opt/abc/abc")
-        with unittest.mock.patch.dict(os.environ, {"ABC": "/opt/external/abc"}):
-            self.assertEqual(bool_area.abc_executable("/opt/yosys/bin/yosys"), "/opt/external/abc")
-            self.assertEqual(suite_cache.tool_paths({"yosys": "/opt/yosys/bin/yosys"}, sys.executable)["abc"],
-                             "/opt/external/abc")
-        with unittest.mock.patch.dict(os.environ, {}, clear=True), tempfile.TemporaryDirectory() as td:
-            (Path(td) / "bin").mkdir()
-            (Path(td) / "bin" / "yosys").write_text("")
-            (Path(td) / "link").symlink_to(Path(td) / "bin" / "yosys")
-            self.assertEqual(bool_area.abc_executable(str(Path(td) / "link")), str(Path(td) / "bin" / "yosys-abc"))
+    def test_tools_are_the_ones_a_run_today_would_use(self) -> None:
+        """Tool hashes come from today's resolution (argv, $YOSYS/$SV2V/$ABC, PATH), not the old manifest."""
+        def fake(path: Path, body: str) -> str:
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(body)
+            path.chmod(0o755)
+            return str(path)
+
+        with tempfile.TemporaryDirectory(prefix="suite_tools_") as td, \
+                unittest.mock.patch.dict(os.environ, {"PATH": ""}, clear=True):
+            a, b = Path(td) / "a", Path(td) / "b"
+            ya, yb = fake(a / "yosys", "#!/bin/sh\necho a\n"), fake(b / "yosys", "#!/bin/sh\necho b\n")
+            fake(a / "yosys-abc", "a"), fake(b / "yosys-abc", "b")
+            py = sys.executable
+            # explicit option, both spellings, last one wins
+            self.assertEqual(suite_cache.tool_paths(["--yosys", ya], py)["yosys"], ya)
+            self.assertEqual(suite_cache.tool_paths([f"--yosys={yb}"], py)["abc"], str(b / "yosys-abc"))
+            self.assertEqual(suite_cache.tool_paths(["--yosys", ya, f"--yosys={yb}"], py)["yosys"], yb)
+            # the environment selecting another binary changes the hash: that is the miss
+            with unittest.mock.patch.dict(os.environ, {"YOSYS": ya}):
+                fa = suite_cache.fingerprint(["x"], py, {})
+            with unittest.mock.patch.dict(os.environ, {"YOSYS": yb}):
+                fb = suite_cache.fingerprint(["x"], py, {})
+            self.assertTrue(fa["tools"]["yosys"] and fb["tools"]["yosys"])
+            self.assertNotEqual(fa["tools"]["yosys"], fb["tools"]["yosys"])
+            self.assertNotEqual(fa["tools"]["abc"], fb["tools"]["abc"])
+            # $ABC overrides the sibling; a non-executable $ABC hashes as None (never a hit)
+            ext = fake(Path(td) / "ext" / "abc", "ext")
+            with unittest.mock.patch.dict(os.environ, {"ABC": ext}):
+                self.assertEqual(bool_area.abc_executable(ya), ext)
+                self.assertEqual(suite_cache.tool_paths(["--yosys", ya], py)["abc"], ext)
+            with unittest.mock.patch.dict(os.environ, {"ABC": str(Path(td) / "nope")}):
+                self.assertIsNone(suite_cache.tool_paths(["--yosys", ya], py)["abc"])
+            # yosys resolves its sibling through symlinks (/proc/self/exe)
+            (Path(td) / "link").symlink_to(a / "yosys")
+            self.assertEqual(bool_area.abc_executable(str(Path(td) / "link")), str(a / "yosys-abc"))
+            # sv2v / iverilog / vvp: $SV2V and PATH as bool_area uses them; absent -> None
+            self.assertIsNone(suite_cache.tool_paths([], py)["iverilog"])
+            sv = fake(Path(td) / "tools" / "sv2v", "s")
+            fake(Path(td) / "tools" / "iverilog", "i")
+            with unittest.mock.patch.dict(os.environ, {"SV2V": sv, "PATH": str(Path(td) / "tools")}):
+                paths = suite_cache.tool_paths([], py)
+            self.assertEqual((paths["sv2v"], paths["iverilog"], paths["vvp"]),
+                             (sv, str(Path(td) / "tools" / "iverilog"), None))
+            self.assertEqual(suite_cache.tool_paths(["--sv2v", ya], py)["sv2v"], ya)
+            # a non-executable yosys is None: the record can never be complete
+            (a / "yosys").chmod(0o644)
+            self.assertIsNone(suite_cache.tool_paths(["--yosys", ya], py)["yosys"])
         # a record without an abc hash can never hit
         fp = {"inputs": {"a": "0" * 64}, "tools": {"python": "1" * 64, "yosys": "2" * 64, "abc": None}}
         artifacts = {"metrics.json": "3" * 64, "run_manifest.json": "4" * 64}
