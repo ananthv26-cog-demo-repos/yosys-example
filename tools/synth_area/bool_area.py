@@ -12,6 +12,8 @@ Writes into the output directory:
     word_yosys.json      write_json after `proc; flatten; opt_dff` (multi-bit RTLIL cells)
     word_level.json      word-level operations (ADD/EQ/MUX/REG/MEMRD ...), widths, signedness,
                          operand signals, memories, source locations
+    sequential_overlay.json  per register: clock/edge, reset kind/polarity/value, enable, init,
+                         RTL name of every Q/D bit, source location
     generic_yosys.json   write_json of the generic Boolean-gate netlist
     mapped_yosys.json    write_json of the ASAP7-mapped netlist
     mapped_netlist.v     same, as structural Verilog
@@ -46,6 +48,7 @@ from pathlib import Path
 
 from boolean_graph import GRAPH_SCHEMA_VERSION, UnsupportedCell, build_graph, compute_metrics
 from diff_sim import classify_ports, run_diff_sim
+from sequential_overlay import SEQ_SCHEMA_VERSION, build_overlay
 from synth_area import (
     IDENT_RE,
     SLANG_SYNTH_DEFAULTS,
@@ -70,6 +73,7 @@ ARTIFACTS = {
     "word_log": "word.log",
     "word_json": "word_yosys.json",
     "word": "word_level.json",
+    "sequential": "sequential_overlay.json",
     "generic_json": "generic_yosys.json",
     "mapped_json": "mapped_yosys.json",
     "netlist": "mapped_netlist.v",
@@ -559,13 +563,17 @@ def main(argv: list[str] | None = None) -> int:
 
     # --- 2a. word-level operations (before any bit-level mapping) ---
     try:
-        word = build_report(json.loads(out["word_json"].read_text()), args.top, src_base=out_dir)
+        word_data = json.loads(out["word_json"].read_text())
+        word = build_report(word_data, args.top, src_base=out_dir)
         out["word"].write_text(json.dumps(word, indent=1) + "\n")
+        seq = build_overlay(word_data, args.top, src_base=out_dir)
+        out["sequential"].write_text(json.dumps(seq, indent=1) + "\n")
     except UnsupportedCell as e:
         return fail("word", str(e))
     except (ValueError, KeyError) as e:
         return fail("word", f"could not build word-level report: {e}")
     metrics["word_level"] = {"schema_version": WORD_SCHEMA_VERSION, **word["summary"]}
+    metrics["sequential"] = {"schema_version": SEQ_SCHEMA_VERSION, **seq["summary"]}
 
     # --- 2b. Boolean graph + structural metrics ---
     try:
