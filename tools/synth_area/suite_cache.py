@@ -6,11 +6,16 @@ output directory. It records the sha256 of everything the run depended on and of
 produced:
 
     argv            the exact bool_area.py command line (sources, top, defines, includes, extra args)
-    inputs          every source file, include-directory file, the profile and its Liberty files
+    inputs          every source file, every file they `include (transitively, resolved next to the
+                    including file and then in the -I directories, as the frontends do), the profile
+                    and its Liberty files
+    include_dirs    every file under every -I directory
     tools           the python interpreter, yosys (slang is linked in), the abc binary yosys runs ($ABC or
                     its sibling yosys-abc), sv2v, iverilog and vvp, each resolved the way bool_area.py
                     resolves it today (argv, $YOSYS/$SV2V/$ABC, ./build, PATH), so pointing the
                     environment at another binary is a miss
+    yosys_share     every file in the share/ directory that yosys loads its `+/` support files from
+                    (techmap.v, simcells.v, ...), since `synth` reads them at run time
     code            every tools/synth_area/*.py module
     artifacts       every path the flow owns (bool_area.owned_files): the fixed artifacts, sv2v output,
                     equiv_* scripts/logs and the whole sim/ directory; absent ones are recorded as absent
@@ -26,6 +31,7 @@ from __future__ import annotations
 import functools
 import json
 import os
+import re
 import shutil
 from pathlib import Path
 
@@ -33,9 +39,10 @@ from bool_area import ARTIFACTS, FlowError, abc_executable, liberty_paths, load_
 from run_report import sha256_file
 from synth_area import find_sv2v, find_yosys
 
-CACHE_SCHEMA_VERSION = 1
+CACHE_SCHEMA_VERSION = 2
 RECORD = "suite_cache.json"
 HERE = Path(__file__).resolve().parent
+INCLUDE_RE = re.compile(r'^[ \t]*`include[ \t]+["<]([^">\n]+)[">]', re.MULTILINE)
 
 
 def try_sha256(path: Path) -> str | None:
@@ -72,6 +79,52 @@ def dir_hashes(root: Path) -> dict[str, str | None]:
             p = Path(dirpath, name)
             hashes[str(p.relative_to(root))] = try_sha256(p)
     return hashes
+
+
+def include_files(sources: list[str], include_dirs: list[str]) -> dict[str, str | None]:
+    """{path: sha256} of every file the sources `include, transitively, each resolved the way slang and
+    sv2v resolve it: next to the including file first, then the -I directories in order. Every `include
+    line counts, also ones in an inactive `ifdef branch (conservative). One that resolves nowhere is
+    recorded under the including file as None, which keeps the block from being cached at all."""
+    found: dict[str, str | None] = {}
+    todo, seen = list(sources), set()
+    while todo:
+        src = todo.pop()
+        if src in seen:
+            continue
+        seen.add(src)
+        try:
+            text = Path(src).read_text(errors="replace")
+        except OSError:
+            continue  # hashes as None wherever it is recorded, so the record is incomplete anyway
+        for name in INCLUDE_RE.findall(text):
+            for d in (Path(src).parent, *map(Path, include_dirs)):
+                if (d / name).is_file():
+                    p = str(d / name)
+                    found[p] = try_sha256(Path(p))
+                    todo.append(p)
+                    break
+            else:
+                found[f"{src}: `include {name}"] = None
+    return found
+
+
+def yosys_share_dir(yosys: str) -> Path | None:
+    """Where this yosys reads its `+/` support files from: `share/` beside the binary (a build tree), else
+    `../share/yosys/` (an install) -- the same lookup yosys does from /proc/self/exe. None when neither
+    exists (a build with a compiled-in data directory), which keeps the block from being cached."""
+    exe = Path(yosys).resolve()
+    for d in (exe.parent / "share", exe.parent.parent / "share" / "yosys"):
+        if d.is_dir():
+            return d
+    return None
+
+
+@functools.cache
+def share_hashes(yosys: str) -> dict[str, str | None]:
+    """dir_hashes of yosys_share_dir(yosys) (a few hundred files, shared by every block: hash once)."""
+    share = yosys_share_dir(yosys)
+    return dir_hashes(share) if share else {"": None}
 
 
 def code_hashes() -> dict[str, str | None]:
@@ -147,12 +200,15 @@ def fingerprint_or_raise(argv: list[str], python: str, manifest: dict) -> dict:
     sources = sources or [""]
     includes = section(manifest, "frontend").get("include_dirs")
     includes = [str(d) for d in includes] if isinstance(includes, list) else []
+    tools = tool_paths(argv, python)
     return {
         "argv": list(argv),
         "python": python,
-        "inputs": {p: try_sha256(Path(p)) for p in [*sources, *profile_files(profile)]},
+        "inputs": {**{p: try_sha256(Path(p)) for p in [*sources, *profile_files(profile)]},
+                   **include_files(sources, includes)},
         "include_dirs": {d: dir_hashes(Path(d)) for d in includes},
-        "tools": {name: tool_sha256(path) if path else None for name, path in tool_paths(argv, python).items()},
+        "tools": {name: tool_sha256(path) if path else None for name, path in tools.items()},
+        "yosys_share": share_hashes(tools["yosys"]) if tools["yosys"] else {"": None},
         "code": code_hashes(),
     }
 
@@ -184,18 +240,25 @@ def record(block_out: Path, argv: list[str], python: str) -> bool:
 
 
 def complete(data: dict) -> bool:
-    """A record can only ever match if every input, the python, yosys and abc binaries, metrics.json and
-    run_manifest.json hashed."""
+    """A record can only ever match if every input (sources, includes, profile, Liberty), every yosys
+    share/ file, the python, yosys and abc binaries, metrics.json and run_manifest.json hashed."""
     fp, artifacts = section(data, "fingerprint"), section(data, "artifacts")
     tools = section(fp, "tools")
     return (all(artifacts.get(ARTIFACTS[k]) is not None for k in ("metrics", "manifest"))
             and None not in section(fp, "inputs").values()
+            and None not in section(fp, "yosys_share").values()
             and all(tools.get(t) is not None for t in ("python", "yosys", "abc")))
 
 
-def forget(block_out: Path) -> None:
-    """Drop the record before a block reruns so an interrupted run never leaves a stale hit."""
-    (block_out / RECORD).unlink(missing_ok=True)
+def forget(block_out: Path) -> bool:
+    """Drop the record before a block reruns so an interrupted run never leaves a stale hit. False if it
+    could not be removed (a directory of that name, no permission): the block reruns regardless, and a
+    leftover record can only match again if the rerun reproduces every artifact byte-for-byte."""
+    try:
+        (block_out / RECORD).unlink(missing_ok=True)
+    except OSError:
+        return False
+    return True
 
 
 def is_hit(block_out: Path, argv: list[str], python: str) -> bool:

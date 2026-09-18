@@ -274,6 +274,19 @@ class SuiteCacheTests(unittest.TestCase):
             (tmp / "and2.sv").write_text((tmp / "and2.sv").read_text() + "\n// edited\n")
             code, s4, _ = run()
             self.assertEqual((code, cached(s4)), (0, {"inv": True, "and2": False}))
+            # a header found next to the source (no -I) is an input too: editing it reruns the block
+            (tmp / "inv_cfg.svh").write_text("`define INV_CFG 1\n")
+            (tmp / "inv.sv").write_text('`include "inv_cfg.svh"\n' + (tmp / "inv.sv").read_text())
+            code, s4b, _ = run()
+            self.assertEqual((code, cached(s4b)), (0, {"inv": False, "and2": True}))
+            data = json.loads((out / "inv" / suite_cache.RECORD).read_text())
+            self.assertTrue(data["fingerprint"]["inputs"][str(tmp / "inv_cfg.svh")])
+            self.assertTrue(data["fingerprint"]["yosys_share"]["techmap.v"])
+            (tmp / "inv_cfg.svh").write_text("`define INV_CFG 2\n")
+            code, s4c, _ = run()
+            self.assertEqual((code, cached(s4c)), (0, {"inv": False, "and2": True}))
+            code, s4d, _ = run()
+            self.assertEqual((code, cached(s4d)), (0, {"inv": True, "and2": True}))
             # a missing or altered artifact is a miss, never served from the record
             (out / "inv" / "boolean_graph.json").unlink()
             code, s5, _ = run()
@@ -318,15 +331,16 @@ class SuiteCacheTests(unittest.TestCase):
             argv = [str(TOOL / "bool_area.py"), str(tmp / "inv.sv"), "--top", "inv", "-o", str(out / "inv"), "-q",
                     "--sim-cycles", "0", "--equiv-seq", "3"]
             self.assertTrue(suite_cache.is_hit(out / "inv", argv, sys.executable))
-            suite_cache.forget(out / "inv")
+            self.assertTrue(suite_cache.forget(out / "inv"))
             self.assertFalse(suite_cache.is_hit(out / "inv", argv, sys.executable))
             self.assertTrue(suite_cache.record(out / "inv", argv, sys.executable))
             self.assertTrue(suite_cache.is_hit(out / "inv", argv, sys.executable))
-            # a record whose tool-code, tool-binary or interpreter hash differs is a miss
+            # a record whose tool-code, tool-binary, yosys share file or interpreter hash differs is a miss
             data = json.loads((out / "inv" / suite_cache.RECORD).read_text())
             for path, value in (("code", {"bool_area.py": "0" * 64}), ("tools", {"yosys": "0" * 64}),
                                 ("tools", {"python": "0" * 64}), ("tools", {"sv2v": "0" * 64}),
-                                ("tools", {"abc": "0" * 64}), ("python", "/p")):
+                                ("tools", {"abc": "0" * 64}), ("yosys_share", {"techmap.v": "0" * 64}),
+                                ("python", "/p")):
                 edited = json.loads(json.dumps(data))
                 if isinstance(value, dict):
                     edited["fingerprint"][path].update(value)
@@ -342,10 +356,68 @@ class SuiteCacheTests(unittest.TestCase):
                                    "--python", str(tmp / "true_python")], capture_output=True, text=True, check=False)
             self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
             self.assertFalse((out / "inv" / suite_cache.RECORD).exists())
+            # something in the record's way (a directory of that name) is not a hit, and a rerun still starts
+            (out / "inv" / suite_cache.RECORD).mkdir()
+            self.assertFalse(suite_cache.is_hit(out / "inv", argv, sys.executable))
+            self.assertFalse(suite_cache.forget(out / "inv"))
+            code, s10, _ = run(extra=("--sim-cycles", "0", "--equiv-seq", "3"))
+            self.assertEqual((code, cached(s10)), (0, {"inv": False, "and2": True}))
+            self.assertTrue((out / "inv" / suite_cache.RECORD).is_dir())
 
 
 class CacheFingerprintTests(unittest.TestCase):
     """Fingerprint pieces that need no yosys run."""
+
+    def test_included_files_are_inputs(self) -> None:
+        """`include is resolved next to the including file, then along -I, transitively; unresolved -> None."""
+        with tempfile.TemporaryDirectory(prefix="suite_incf_") as td:
+            src, inc = Path(td) / "src", Path(td) / "inc"
+            src.mkdir(), inc.mkdir()
+            (src / "top.sv").write_text('`include "local.svh"\n  `include <shared.svh>\n'
+                                        '// `include "commented.svh" is not an include line\n'
+                                        '`ifdef NEVER\n`include "missing.svh"\n`endif\n')
+            (src / "local.svh").write_text('`include "local.svh"\n`include "shared.svh"\n')  # self-include: terminates
+            (inc / "shared.svh").write_text("`define S 1\n")
+            found = suite_cache.include_files([str(src / "top.sv")], [str(inc)])
+            self.assertEqual(sorted(found), [str(inc / "shared.svh"), str(src / "local.svh"),
+                                             f'{src / "top.sv"}: `include missing.svh'])
+            self.assertTrue(found[str(inc / "shared.svh")] and found[str(src / "local.svh")])
+            self.assertIsNone(found[f'{src / "top.sv"}: `include missing.svh'])
+            # the unresolved include keeps the block out of the cache; resolving it lets it back in
+            manifest = {"sources": [{"path": str(src / "top.sv")}], "frontend": {"include_dirs": [str(inc)]}}
+            fp = suite_cache.fingerprint(["x"], sys.executable, manifest)
+            self.assertIsNone(fp["inputs"][f'{src / "top.sv"}: `include missing.svh'])
+            (src / "missing.svh").write_text("")
+            fp2 = suite_cache.fingerprint(["x"], sys.executable, manifest)
+            self.assertTrue(fp2["inputs"][str(src / "missing.svh")])
+            self.assertFalse([k for k in fp2["inputs"] if "`include" in k])
+            # a header found beside the source wins over one of the same name on -I (as the frontends do)
+            (src / "shared.svh").write_text("`define S 2\n")
+            found = suite_cache.include_files([str(src / "top.sv")], [str(inc)])
+            self.assertIn(str(src / "shared.svh"), found)
+            self.assertNotIn(str(inc / "shared.svh"), found)
+            self.assertEqual(suite_cache.include_files(["", str(src / "nope.sv")], []), {})
+
+    def test_yosys_share_files_are_inputs(self) -> None:
+        share = suite_cache.yosys_share_dir(YOSYS)
+        self.assertTrue(share and (share / "techmap.v").is_file(), share)
+        hashes = suite_cache.share_hashes(YOSYS)
+        self.assertTrue(hashes["techmap.v"] and hashes["simcells.v"])
+        with tempfile.TemporaryDirectory(prefix="suite_share_") as td:
+            # a build tree (bin/share) and an install (bin/../share/yosys); neither present -> never cached
+            for root, share_dir in ((Path(td) / "build", Path(td) / "build" / "share"),
+                                    (Path(td) / "prefix" / "bin", Path(td) / "prefix" / "share" / "yosys")):
+                root.mkdir(parents=True)
+                (root / "yosys").write_text("#!/bin/sh\n")
+                (root / "yosys").chmod(0o755)
+                self.assertIsNone(suite_cache.yosys_share_dir(str(root / "yosys")))
+                self.assertEqual(suite_cache.share_hashes(str(root / "yosys")), {"": None})
+                fp = suite_cache.fingerprint(["--yosys", str(root / "yosys")], sys.executable, {})
+                self.assertFalse(suite_cache.complete({"fingerprint": fp, "artifacts": {}}))
+                share_dir.mkdir(parents=True)
+                (share_dir / "techmap.v").write_text("// t\n")
+                self.assertEqual(suite_cache.yosys_share_dir(str(root / "yosys")), share_dir)
+                self.assertEqual(list(suite_cache.dir_hashes(share_dir)), ["techmap.v"])
 
     def test_malformed_manifest_shapes_never_raise(self) -> None:
         for manifest in ({"sources": 3}, {"sources": [3, {"path": 4}]}, {"profile": {"path": 5}}, {"profile": 6},
