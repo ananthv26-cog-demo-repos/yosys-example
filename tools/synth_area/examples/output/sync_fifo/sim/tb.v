@@ -73,10 +73,10 @@ module tb;
       end
     end
     cycle = cycle + 1;
-    push_i = $random(seed) & {1{1'b1}};
-    data_i = $random(seed);
-    pop_i = $random(seed) & {1{1'b1}};
-    rst_ni = (cycle < 4 || ($random(seed) & 63) == 0) ? 1'b0 : 1'b1;
+    push_i <= $random(seed) & {1{1'b1}};
+    data_i <= $random(seed);
+    pop_i <= $random(seed) & {1{1'b1}};
+    rst_ni <= (cycle < 4 || ($random(seed) & 63) == 0) ? 1'b0 : 1'b1;
     if (cycle == 200) begin
       $display("DIFFSIM cycles=%0d compared_bits=%0d mismatches=%0d gate_x_bits=%0d", cycle, compared_bits, mismatches, gate_x_bits);
       $finish;

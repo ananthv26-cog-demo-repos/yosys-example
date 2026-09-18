@@ -58,7 +58,7 @@
     "edge_total": 4540,
     "max_depth": 14,
     "max_fanout": 170,
-    "avg_fanout": 2.1868,
+    "avg_fanout": 2.1797,
     "mapped_cell_area": 323.07822,
     "area_unit": "um^2"
   },
@@ -70,9 +70,9 @@
   ],
   "profile": {
     "name": "asap7_rvt_tt_v1",
-    "version": 1,
+    "version": 2,
     "path": "<repo>/tools/synth_area/profiles/asap7_rvt_tt_v1.json",
-    "sha256": "0bce66648ccfcc40c92ddf1c1c1995ef7c09bd46a52253b483355793993baf1b",
+    "sha256": "53f00dd357a390548114d0810bc9afa4e0e20e9f009a0e20c10ff35c4eefc464",
     "liberty": [
       {
         "file": "asap7sc7p5t_AO_RVT_TT_nldm_211120.lib.gz",
@@ -145,9 +145,12 @@
     "edge_total": 4540,
     "max_depth": 14,
     "max_fanout": 170,
-    "avg_fanout": 2.1868,
+    "avg_fanout": 2.1797,
     "clock_fanout": {
       "clk_i": 525
+    },
+    "control_fanout": {
+      "rst_ni": 13
     },
     "input_bits": 36,
     "output_bits": 39,
@@ -223,7 +226,9 @@
     "area_unit": "um^2",
     "sequential_area": 191.55204,
     "area_is_lower_bound": false,
-    "unknown_area_cell_types": {}
+    "unknown_area_cell_types": {},
+    "cells_schema_version": 1,
+    "pin_connections": 8404
   },
   "equivalence": {
     "status": "proven",
@@ -233,7 +238,7 @@
         "equiv_cells": 560,
         "proven": 560,
         "unproven": 0,
-        "seconds": 0.316,
+        "seconds": 0.352,
         "log": "<out>/equiv_rtl_vs_graph.log",
         "status": "proven"
       },
@@ -241,7 +246,7 @@
         "equiv_cells": 559,
         "proven": 559,
         "unproven": 0,
-        "seconds": 5.88,
+        "seconds": 7.13,
         "log": "<out>/equiv_graph_vs_mapped.log",
         "status": "proven"
       }
@@ -266,23 +271,92 @@
     "method": "iverilog random differential simulation, RTL (via sv2v) vs mapped netlist + Liberty-derived cell models"
   },
   "artifacts": {
+    "word_script": "<out>/word.ys",
+    "word_log": "<out>/word.log",
+    "word_json": "<out>/word_yosys.json",
+    "word": "<out>/word_level.json",
+    "sequential": "<out>/sequential_overlay.json",
     "generic_json": "<out>/generic_yosys.json",
     "mapped_json": "<out>/mapped_yosys.json",
     "netlist": "<out>/mapped_netlist.v",
     "graph": "<out>/boolean_graph.json",
+    "mapped_cells": "<out>/mapped_cells.json",
     "metrics": "<out>/metrics.json",
+    "manifest": "<out>/run_manifest.json",
+    "summary": "<out>/summary.md",
     "log": "<out>/yosys.log"
   },
   "timing": {
-    "synth_seconds": 1.246,
-    "equiv_rtl_vs_graph_seconds": 0.316,
-    "equiv_graph_vs_mapped_seconds": 5.88,
-    "sim_seconds": 0.604
+    "word_seconds": 0.009,
+    "synth_seconds": 1.51,
+    "equiv_rtl_vs_graph_seconds": 0.352,
+    "equiv_graph_vs_mapped_seconds": 7.13,
+    "sim_seconds": 0.686
   },
   "warnings": [
     "ABC: Warning: The network is combinational (run \"fraig\" or \"fraig_sweep\").",
     "ABC: Warning: Detected 2 multi-output cells (for example, \"FAx1_ASAP7_75t_R\")."
   ],
   "errors": [],
-  "wall_seconds": 8.129
+  "wall_seconds": 10.499,
+  "word_level": {
+    "schema_version": 1,
+    "operations": 26,
+    "by_kind": {
+      "ADD": 3,
+      "EQ": 4,
+      "LOGIC_AND": 2,
+      "LOGIC_NOT": 4,
+      "LOGIC_OR": 1,
+      "MEMRD": 1,
+      "MEMWR": 1,
+      "MUX": 4,
+      "NE": 1,
+      "PMUX": 1,
+      "REG": 3,
+      "SUB": 1
+    },
+    "by_category": {
+      "arithmetic": 4,
+      "compare": 5,
+      "logical": 7,
+      "memory": 2,
+      "mux": 5,
+      "register": 3
+    },
+    "register_bits": 13,
+    "memory_bits": 512,
+    "input_bits": 36,
+    "output_bits": 39
+  },
+  "sequential": {
+    "schema_version": 1,
+    "registers": 3,
+    "register_bits": 13,
+    "by_type": {
+      "$adffe": 3
+    },
+    "clocks": [
+      {
+        "signal": "clk_i",
+        "edge": "posedge",
+        "registers": 3,
+        "bits": 13
+      }
+    ],
+    "resets": [
+      {
+        "signal": "rst_ni",
+        "kind": "async",
+        "active": "low",
+        "registers": 3,
+        "bits": 13
+      }
+    ],
+    "reset_bits": {
+      "async": 13
+    },
+    "enable_bits": 13,
+    "init_bits": 0
+  }
 }

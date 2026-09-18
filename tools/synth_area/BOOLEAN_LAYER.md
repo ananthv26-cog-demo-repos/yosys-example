@@ -1,14 +1,17 @@
-# Yosys Boolean-Layer Area Prototype (v1)
+# Yosys Design-Layer Reporter (v2)
 
-`bool_area.py` is the v1 flow: one SystemVerilog block in, a restricted
-one-bit Boolean gate graph + ASAP7-mapped cell counts/area out, with every output checked
-for functional equivalence against the RTL. Everything is pinned in a versioned profile so
-two runs are comparable only when their `profile.sha256` matches.
+`bool_area.py` takes one SystemVerilog block and reports the same design at four layers —
+word-level operations, registers, one-bit Boolean gates, ASAP7 cells — one JSON file each,
+with the gate and cell layers proven equivalent to the RTL. Everything is pinned in a
+versioned profile so two runs are comparable only when their `profile.sha256` matches.
 
 ```
-                      ┌── generic_yosys.json ──► boolean_graph.json ──► metrics.json (gates, depth, fanout)
- block.sv ─► slang ─► synth ─► abc -g ─┤
-                      └── dfflibmap + abc -liberty (ASAP7 RVT/TT) ─► mapped_yosys.json / mapped_netlist.v ─► cells, area
+ block.sv ─► slang ─► proc; flatten; opt_dff ─► word_yosys.json ─┬► word_level.json         (layer 1: ADD/MUX/EQ/MEMRD…, widths, src lines)
+                                    │                       └► sequential_overlay.json (layer 2: per-register clk/reset/enable/init)
+                                    └► synth ─► abc -g ─┬─► generic_yosys.json ─► boolean_graph.json (layer 3: gates, DFFs, depth, fanout)
+                                                       └─► dfflibmap + abc -liberty (ASAP7 RVT/TT) ─► mapped_yosys.json / mapped_netlist.v
+                                                                                                       └► mapped_cells.json (layer 4: cell, area, function, pin→net)
+ metrics.json  per-layer totals + verdicts      summary.md  one page      run_manifest.json  argv, versions, sha256 of every in/output
  equivalence:  RTL ≡ Boolean graph   (equiv_simple + equiv_induct, fallback bounded miter/SAT from reset)
                Boolean graph ≡ ASAP7 netlist
  simulation:   RTL vs ASAP7 netlist, random stimulus, iverilog (sample, not proof)
@@ -16,9 +19,25 @@ two runs are comparable only when their `profile.sha256` matches.
 
 ```sh
 python3 tools/synth_area/bool_area.py block.sv --top block -o out/block
-# [bool_area] OK top=sync_fifo gates=1275 dffs=525 depth=14 cells=2383 area=323.07822 equiv=proven (7.9s)
-python3 tools/synth_area/run_suite.py -o out/suite        # the 36-block corpus, hand-count checks, Markdown table
+# [bool_area] OK top=sync_fifo gates=1275 dffs=525 depth=14 cells=2383 area=323.07822 equiv=proven (10.5s)
+python3 tools/synth_area/run_suite.py -o out/suite        # the 49-block corpus, hand-count checks, Markdown table
 ```
+
+## The four layers
+
+| Layer | File | Produced from | One record |
+|---|---|---|---|
+| 1 word-level | `word_level.json` | the word-level checkpoint: RTLIL after `proc; flatten; opt_clean; opt_dff` (`word.ys`, before `synth`, so operators are still multi-bit) via `write_json` → `word_level.py` | `{kind: "ADD", width: 8, signed: {A: false, B: false}, inputs: {A: {width: 8, signal: "count"}, B: {… "8'b00000001"}}, outputs: {Y: …}, src: "counter8_en.sv:5.31-5.43"}`; memories get `{name, width, size, write_ports, read_ports}`; any `$`-cell not in the kind table → `UnsupportedCell` |
+| 2 sequential | `sequential_overlay.json` | the register cells of the same checkpoint (`word_yosys.json`) via `sequential_overlay.py` | `{width: 8, yosys_type: "$sdffe", clock: {signal: "clk", edge: "posedge"}, reset: {kind: "sync", signal: "rst", active: "high", value: "8'b0…"}, enable: {…}, init: null, bits: [{q: "count[0]", d: …}, …]}`; reset kinds `sync`, `async`, `async_set`, `async_clear`; `bits[].q` use the same net-name choice as the `boolean_graph.json` DFF node labels (shared `alias_rank`), so the two files join by register name |
+| 3 Boolean | `boolean_graph.json` | `generic_yosys.json` via `boolean_graph.py` | one node per gate/DFF/port bit/constant with `type`, `label`, `src`; one edge per (driver, sink, pin); per-type counts, `max_depth` (cut at DFF `D`) and fanout go to `metrics.json → boolean` |
+| 4 mapped | `mapped_cells.json` | `mapped_yosys.json` + the pinned Liberty files via `mapped_cells.py` | `{type: "AOI21xp33_ASAP7_75t_R", area: 0.08748, pins: {A1: {direction: "input", net: …}, A2: …, B: …, Y: {direction: "output", net: …, function: "(!A1 * !B) + (!A2 * !B)"}}}`; `summary`: `cells`, `area`, `by_type`, `pins` |
+
+`metrics.json` carries each layer's totals under `word_level`, `sequential`, `boolean`,
+`mapped`; `summary.md` renders them for a reader; `run_manifest.json` lists every layer's
+`schema_version` (`layers`) and the sha256 of every artifact, so a report can be checked
+against the run that made it. Layers 1 and 2 are descriptive: they are read off the
+checkpoint between RTL and gates and are not proven separately; layers 3 and 4 are what the
+equivalence checks below compare to the RTL.
 
 ## Requirement → implementation
 
@@ -30,11 +49,12 @@ python3 tools/synth_area/run_suite.py -o out/suite        # the 36-block corpus,
 | DFF as sequential cut | `compute_metrics` | depth resets at DFF inputs; clock edges are reported separately (`clock_fanout`) and excluded from data fanout |
 | Metrics: per-gate counts, gate total, DFF count, edges, depth, fanout | `metrics.json` → `summary` (flat shape) and `boolean` (full) | `max_fanout`, `avg_fanout` over data edges only |
 | Map to ASAP7, mapped cell counts + Liberty area | `script.map`: `dfflibmap` + `abc -liberty` on the 5 pinned RVT/TT NLDM libs; `stat -liberty -json` | `mapped_cell_area` is the sum of Liberty `area` attributes (um², pre-layout). Cells without an `area` attribute make the run fail rather than under-report |
-| Artifacts | `generic_yosys.json`, `mapped_yosys.json`, `mapped_netlist.v`, `boolean_graph.json`, `metrics.json`, `yosys.log`, `synth.ys`, `equiv_*.ys/.log`, `sim/` | all paths listed under `metrics.artifacts` |
+| Word-level / sequential / mapped-cell reports | `word_level.py`, `sequential_overlay.py`, `mapped_cells.py` | see "The four layers" above |
+| Artifacts | `word_level.json`, `sequential_overlay.json`, `boolean_graph.json`, `mapped_cells.json`, `metrics.json`, `summary.md`, `run_manifest.json`, `generic_yosys.json`, `mapped_yosys.json`, `mapped_netlist.v`, `word.ys/.log`, `synth.ys`, `yosys.log`, `equiv_*.ys/.log`, `sim/` | all paths listed under `metrics.artifacts`; the manifest hashes each one. A report that cannot be written marks the run `failed`/`artifacts` and the remaining reports are still written and say so |
 | Provenance | `metrics.profile` (name, version, sha256, Liberty files + sha256), `metrics.tools` (yosys version, sv2v), `metrics.frontend` (name, slang args, include dirs, defines), `metrics.sources` (resolved path + sha256 per RTL file given on the command line; files pulled in via `-I` are not hashed), `metrics.timing` per stage, `wall_seconds` | Liberty hashes are verified against the profile on every run (`--no-verify-libs` to skip) |
 | Determinism | same profile + sources ⇒ byte-identical `generic_yosys.json`, `mapped_yosys.json`, `mapped_netlist.v`, `boolean_graph.json` | tested in `tests/test_bool_area.py::test_determinism` |
 | Behaviour matches RTL | formal: `equiv_rtl_vs_graph`, `equiv_graph_vs_mapped`; simulation: `diff_sim.py` | see below |
-| ≥ 20 small blocks incl. hand-countable + FIFOs | `corpus/` (32 blocks) + 4 `examples/` FIFOs, manifest `corpus/suite.json` | 19 blocks carry exact `expect` values (e.g. `inv`: 1 NOT; `parity8`: 7 gates, depth 3; `reg8_en`: 8 DFF + 8 MUX) |
+| ≥ 20 small blocks incl. hand-countable + ≥ 20 FIFOs | `corpus/` (45 blocks) + 4 `examples/` FIFOs, manifest `corpus/suite.json` | 32 blocks carry `expect` / `expect_max` values (e.g. `inv`: 1 NOT; `parity8`: 7 gates, depth 3; `reg8_en`: 8 DFF + 8 MUX; every new FIFO: its hand-counted flop total). 24 blocks are FIFO variants — pointer, shift, one-hot, Gray, FWFT, registered-output, bypass, elastic pipeline, almost-full flags, sticky error flags, `last` sideband, enum state, generate storage, sync/async reset, flush, struct/interface/package ports, dual clock |
 | Nonzero exit on any failure | `metrics.status/stage/errors` + exit code (2 = setup/inputs, 1 = flow) | `metrics.json` is written on failure too, for every run that gets past argument parsing; a usage error (unknown flag, malformed `--top`, `--equiv-bmc 1`) exits 2 with argparse's message before an output directory exists |
 
 ### Out of scope in v1
@@ -96,11 +116,11 @@ X-pessimism, and the formal check above already proves those bits functionally e
 is a sample, not a proof — it is kept because it also exercises the Liberty cell models,
 which the formal check does not. `--sim-cycles 0` disables it.
 
-## Corpus results (`run_suite.py`, profile `asap7_rvt_tt_v1`, one core)
+## Corpus results (`run_suite.py`, profile `asap7_rvt_tt_v1` v2, one core)
 
-36/36 blocks pass; median 1.4s per block including both proofs and 200 simulated cycles.
-The largest block (16×32 FIFO, 525 flops) takes 7.9s, of which 5.8s is the
-graph-vs-ASAP7 proof.
+49/49 blocks pass, 47 `proven` and 2 `bounded`, all 49 `match` in simulation. Median
+2.4 s per block including the four layer reports, both proofs and 200 simulated cycles;
+the largest block (16×32 FIFO, 525 flops) takes 10.4 s, most of it the graph-vs-ASAP7 proof.
 
 | block | equiv | gates | dff | depth | max fanout | ASAP7 cells | area (um²) |
 |---|---|---|---|---|---|---|---|
@@ -123,6 +143,11 @@ graph-vs-ASAP7 proof.
 | fifo_d2_w4 | proven | 33 | 12 | 6 | 5 | 64 | 8.019 |
 | fifo_fwft_d4_w8 | proven | 94 | 39 | 8 | 18 | 184 | 24.567 |
 | fifo_shift_d4_w8 | bounded (10) | 92 | 35 | 10 | 25 | 185 | 23.022 |
+| fifo_pipe_d3_w8 | bounded (10) | 40 | 27 | 6 | 8 | 105 | 15.076 |
+| fifo_enum_state_d4_w8 | bounded (10) | 104 | 39 | 10 | 19 | 193 | 24.728 |
+| fifo_sync_rst / clr / bypass / generate (d4_w8) | proven | 104 / 109 / 104 / 140 | 41 / 39 / 39 / 39 | 9 / 11 / 7 / 8 | 16 / 18 / 18 / 9 | 195 / 210 / 223 / 171 | 25.909 / 25.530 / 27.702 / 23.882 |
+| fifo_regout / onehot / err_flags / last (d4_w8) | proven | 103 / 121 / 103 / 115 | 48 / 43 / 41 / 46 | 8 / 8 / 8 / 9 | 18 / 10 / 18 / 20 | 204 / 183 / 194 / 224 | 28.737 / 25.136 / 25.777 / 29.729 |
+| fifo_ptr_wrap / gray_ptr / almost_flags (d8_w8) | proven | 230 / 179 / 179 | 72 / 78 / 74 | 9 / 8 / 10 | 20 / 31 / 31 | 317 / 354 / 357 | 44.279 / 49.018 / 47.239 |
 | sync_fifo_d4_w8 / d8_w8 | proven | 95 / 184 | 39 / 74 | 7 / 11 | 18 / 33 | 192 / 350 | 24.567 / 46.904 |
 | sync_fifo_d16_w8 / d16_w32 | proven | 391 / 1261 | 141 / 525 | 14 | 46 / 170 | 660 / 2400 | 88.355 / 322.451 |
 | examples: sync_fifo | proven | 1275 | 525 | 14 | 170 | 2383 | 323.078 |
@@ -130,7 +155,14 @@ graph-vs-ASAP7 proof.
 | examples: struct_fifo / if_fifo | proven | 392 / 150 | 186 / 71 | 12 / 8 | 89 / 34 | 876 / 329 | 115.240 / 43.871 |
 
 \* single-clock abstraction, see above. Full table with edge counts and per-block times:
-`run_suite.py` writes `suite_table.md` / `suite_summary.json`.
+`run_suite.py` writes `suite_table.md` / `suite_summary.json`; the committed copy is
+`examples/output/suite/suite_table.md`.
+
+The two new `bounded` blocks fail k-induction for the same reason as `fifo_shift_d4_w8`:
+state the RTL never reaches. `fifo_pipe_d3_w8` has un-reset data registers that only matter
+while their stage's `full` flag is set; `fifo_enum_state_d4_w8` has a 2-bit enum that
+`fsm` re-encodes, so RTL and netlist disagree on the unused encoding. The bounded proof from
+reset covers the reachable states.
 
 Things worth knowing when reading the numbers:
 
@@ -139,6 +171,11 @@ Things worth knowing when reading the numbers:
 - A hand count is exact for the Boolean layer only when there is one optimal structure
   (`inv`, `parity8`, `reg8_en`…). For `full_adder`/`dec2to4` the manifest bounds the count
   instead of fixing it — ABC may legitimately pick NAND/NOR forms.
+- Flop counts are exact but not always the naive RTL sum: `memory_dff` can absorb a
+  registered read pointer into the memory (`fifo_sync_rst_d4_w8`: +2), `opt_merge` folds
+  identical bits (`fifo_gray_ptr_d8_w8`: Gray MSB ≡ binary MSB, −2), `fsm` re-encodes
+  enums. Each FIFO's header comment gives the derivation; `sequential_overlay.json` shows
+  which registers survived and what drives them.
 - Gate counts depend on the frontend and on the profile; never compare runs across
   profiles (the profile hash is in every `metrics.json`, and the profile file says so).
 - A profile is build configuration, like a Makefile: its `script.lower` / `script.map`
@@ -160,10 +197,13 @@ extras so a run-wide `--sim-cycles 0` still wins).
 
 | | |
 |---|---|
-| `bool_area.py` | the flow (CLI, stages, metrics, equivalence orchestration) |
+| `bool_area.py` | the flow (CLI, stages, metrics, `summary.md`, `run_manifest.json`, equivalence orchestration) |
+| `word_level.py` | RTLIL-after-`proc` `write_json` → `word_level.json`; also a standalone CLI |
+| `sequential_overlay.py` | flop cells → `sequential_overlay.json`; also a standalone CLI |
 | `boolean_graph.py` | `write_json` → Boolean graph + metrics; also a standalone CLI |
+| `mapped_cells.py` | Liberty parser + mapped netlist → `mapped_cells.json`; also a standalone CLI |
 | `diff_sim.py` | random differential simulation RTL vs mapped netlist |
 | `run_suite.py`, `corpus/suite.json`, `corpus/*.sv` | corpus and its runner |
 | `profiles/asap7_rvt_tt_v1.json` | pinned frontend, gate set, DFF policy, pass order, Liberty set + hashes |
 | `lib/asap7/` | the 5 ASAP7 RVT/TT NLDM Liberty files (gzip), `PROVENANCE.md`, `LICENSE` |
-| `tests/test_bool_area.py` | graph unit tests, hand counts, determinism, broken-netlist detection, BMC fallback, suite runner |
+| `tests/` | `test_word_level.py`, `test_sequential_overlay.py`, `test_boolean_graph.py`, `test_mapped_cells.py` (one per layer, hand-built netlists + real runs); `test_bool_area.py` (flow, determinism, broken-netlist detection, BMC fallback); `test_suite.py`, `test_diff_sim.py`, `test_synth_area.py` |

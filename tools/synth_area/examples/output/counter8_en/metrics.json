@@ -42,9 +42,9 @@
   ],
   "profile": {
     "name": "asap7_rvt_tt_v1",
-    "version": 1,
+    "version": 2,
     "path": "<repo>/tools/synth_area/profiles/asap7_rvt_tt_v1.json",
-    "sha256": "0bce66648ccfcc40c92ddf1c1c1995ef7c09bd46a52253b483355793993baf1b",
+    "sha256": "53f00dd357a390548114d0810bc9afa4e0e20e9f009a0e20c10ff35c4eefc464",
     "liberty": [
       {
         "file": "asap7sc7p5t_AO_RVT_TT_nldm_211120.lib.gz",
@@ -121,6 +121,7 @@
     "clock_fanout": {
       "clk": 8
     },
+    "control_fanout": {},
     "input_bits": 3,
     "output_bits": 8,
     "constants": {},
@@ -163,7 +164,9 @@
     "area_unit": "um^2",
     "sequential_area": 2.916,
     "area_is_lower_bound": false,
-    "unknown_area_cell_types": {}
+    "unknown_area_cell_types": {},
+    "cells_schema_version": 1,
+    "pin_connections": 110
   },
   "equivalence": {
     "status": "proven",
@@ -173,7 +176,7 @@
         "equiv_cells": 8,
         "proven": 8,
         "unproven": 0,
-        "seconds": 0.011,
+        "seconds": 0.012,
         "log": "<out>/equiv_rtl_vs_graph.log",
         "status": "proven"
       },
@@ -181,7 +184,7 @@
         "equiv_cells": 8,
         "proven": 8,
         "unproven": 0,
-        "seconds": 0.243,
+        "seconds": 0.288,
         "log": "<out>/equiv_graph_vs_mapped.log",
         "status": "proven"
       }
@@ -206,23 +209,82 @@
     "method": "iverilog random differential simulation, RTL (via sv2v) vs mapped netlist + Liberty-derived cell models"
   },
   "artifacts": {
+    "word_script": "<out>/word.ys",
+    "word_log": "<out>/word.log",
+    "word_json": "<out>/word_yosys.json",
+    "word": "<out>/word_level.json",
+    "sequential": "<out>/sequential_overlay.json",
     "generic_json": "<out>/generic_yosys.json",
     "mapped_json": "<out>/mapped_yosys.json",
     "netlist": "<out>/mapped_netlist.v",
     "graph": "<out>/boolean_graph.json",
+    "mapped_cells": "<out>/mapped_cells.json",
     "metrics": "<out>/metrics.json",
+    "manifest": "<out>/run_manifest.json",
+    "summary": "<out>/summary.md",
     "log": "<out>/yosys.log"
   },
   "timing": {
-    "synth_seconds": 1.35,
-    "equiv_rtl_vs_graph_seconds": 0.011,
-    "equiv_graph_vs_mapped_seconds": 0.243,
-    "sim_seconds": 0.262
+    "word_seconds": 0.008,
+    "synth_seconds": 1.013,
+    "equiv_rtl_vs_graph_seconds": 0.012,
+    "equiv_graph_vs_mapped_seconds": 0.288,
+    "sim_seconds": 0.309
   },
   "warnings": [
     "ABC: Warning: The network is combinational (run \"fraig\" or \"fraig_sweep\").",
     "ABC: Warning: Detected 2 multi-output cells (for example, \"FAx1_ASAP7_75t_R\")."
   ],
   "errors": [],
-  "wall_seconds": 1.902
+  "wall_seconds": 2.187,
+  "word_level": {
+    "schema_version": 1,
+    "operations": 5,
+    "by_kind": {
+      "ADD": 1,
+      "MUX": 2,
+      "NE": 1,
+      "REG": 1
+    },
+    "by_category": {
+      "arithmetic": 1,
+      "compare": 1,
+      "mux": 2,
+      "register": 1
+    },
+    "register_bits": 8,
+    "memory_bits": 0,
+    "input_bits": 3,
+    "output_bits": 8
+  },
+  "sequential": {
+    "schema_version": 1,
+    "registers": 1,
+    "register_bits": 8,
+    "by_type": {
+      "$sdffe": 1
+    },
+    "clocks": [
+      {
+        "signal": "clk",
+        "edge": "posedge",
+        "registers": 1,
+        "bits": 8
+      }
+    ],
+    "resets": [
+      {
+        "signal": "rst",
+        "kind": "sync",
+        "active": "high",
+        "registers": 1,
+        "bits": 8
+      }
+    ],
+    "reset_bits": {
+      "sync": 8
+    },
+    "enable_bits": 8,
+    "init_bits": 0
+  }
 }

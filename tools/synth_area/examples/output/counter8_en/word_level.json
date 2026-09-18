@@ -1,0 +1,224 @@
+{
+ "schema_version": 1,
+ "top": "counter8_en",
+ "src": "<repo>/tools/synth_area/corpus/counter8_en.sv:2.8",
+ "ports": {
+  "clk": {
+   "direction": "input",
+   "width": 1
+  },
+  "rst": {
+   "direction": "input",
+   "width": 1
+  },
+  "en": {
+   "direction": "input",
+   "width": 1
+  },
+  "count": {
+   "direction": "output",
+   "width": 8
+  }
+ },
+ "operations": [
+  {
+   "id": "op0000",
+   "kind": "ADD",
+   "category": "arithmetic",
+   "yosys_type": "$add",
+   "yosys_cell": "$1",
+   "width": 8,
+   "signed": {
+    "A": false,
+    "B": false
+   },
+   "inputs": {
+    "A": {
+     "width": 8,
+     "signal": "count"
+    },
+    "B": {
+     "width": 8,
+     "signal": "8'b00000001"
+    }
+   },
+   "outputs": {
+    "Y": {
+     "width": 8,
+     "signal": "$1y"
+    }
+   },
+   "parameters": {
+    "A_SIGNED": 0,
+    "A_WIDTH": 8,
+    "B_SIGNED": 0,
+    "B_WIDTH": 8,
+    "Y_WIDTH": 8
+   },
+   "src": "<repo>/tools/synth_area/corpus/counter8_en.sv:5.31-5.43"
+  },
+  {
+   "id": "op0001",
+   "kind": "MUX",
+   "category": "mux",
+   "yosys_type": "$mux",
+   "yosys_cell": "$procmux$4",
+   "width": 8,
+   "signed": {},
+   "inputs": {
+    "A": {
+     "width": 8,
+     "signal": "$procmux$1_Y"
+    },
+    "B": {
+     "width": 8,
+     "signal": "8'bxxxxxxxx"
+    },
+    "S": {
+     "width": 1,
+     "signal": "rst"
+    }
+   },
+   "outputs": {
+    "Y": {
+     "width": 8,
+     "signal": "$count$2"
+    }
+   },
+   "parameters": {
+    "WIDTH": 8
+   },
+   "src": "<repo>/tools/synth_area/corpus/counter8_en.sv:4.22-4.34|<repo>/tools/synth_area/corpus/counter8_en.sv:4.9-5.44"
+  },
+  {
+   "id": "op0002",
+   "kind": "MUX",
+   "category": "mux",
+   "yosys_type": "$mux",
+   "yosys_cell": "$procmux$1",
+   "width": 8,
+   "signed": {},
+   "inputs": {
+    "A": {
+     "width": 8,
+     "signal": "8'bxxxxxxxx"
+    },
+    "B": {
+     "width": 8,
+     "signal": "$1y"
+    },
+    "S": {
+     "width": 1,
+     "signal": "en"
+    }
+   },
+   "outputs": {
+    "Y": {
+     "width": 8,
+     "signal": "$procmux$1_Y"
+    }
+   },
+   "parameters": {
+    "WIDTH": 8
+   },
+   "src": "<repo>/tools/synth_area/corpus/counter8_en.sv:5.22-5.44|<repo>/tools/synth_area/corpus/counter8_en.sv:5.14-5.44"
+  },
+  {
+   "id": "op0003",
+   "kind": "NE",
+   "category": "compare",
+   "yosys_type": "$ne",
+   "yosys_cell": "$auto$simple.cc:194:make_patterns_logic$13",
+   "width": 1,
+   "signed": {
+    "A": false,
+    "B": false
+   },
+   "inputs": {
+    "A": {
+     "width": 2,
+     "signal": "{en, rst}"
+    },
+    "B": {
+     "width": 2,
+     "signal": "2'b00"
+    }
+   },
+   "outputs": {
+    "Y": {
+     "width": 1,
+     "signal": "$auto$simple.cc:193:make_patterns_logic$12"
+    }
+   },
+   "parameters": {
+    "A_SIGNED": 0,
+    "A_WIDTH": 2,
+    "B_SIGNED": 0,
+    "B_WIDTH": 2,
+    "Y_WIDTH": 1
+   },
+   "src": null
+  },
+  {
+   "id": "op0004",
+   "kind": "REG",
+   "category": "register",
+   "yosys_type": "$sdffe",
+   "yosys_cell": "$auto$ff.cc:337:slice$11",
+   "width": 8,
+   "signed": {},
+   "inputs": {
+    "CLK": {
+     "width": 1,
+     "signal": "clk"
+    },
+    "D": {
+     "width": 8,
+     "signal": "$count$2"
+    },
+    "EN": {
+     "width": 1,
+     "signal": "$auto$simple.cc:193:make_patterns_logic$12"
+    },
+    "SRST": {
+     "width": 1,
+     "signal": "rst"
+    }
+   },
+   "outputs": {
+    "Q": {
+     "width": 8,
+     "signal": "count"
+    }
+   },
+   "parameters": {
+    "CLK_POLARITY": 1,
+    "EN_POLARITY": 1,
+    "SRST_POLARITY": 1,
+    "SRST_VALUE": 0,
+    "WIDTH": 8
+   },
+   "src": "<repo>/tools/synth_area/corpus/counter8_en.sv:3.5"
+  }
+ ],
+ "memories": [],
+ "summary": {
+  "operations": 5,
+  "by_kind": {
+   "ADD": 1,
+   "MUX": 2,
+   "NE": 1,
+   "REG": 1
+  },
+  "by_category": {
+   "arithmetic": 1,
+   "compare": 1,
+   "mux": 2,
+   "register": 1
+  },
+  "register_bits": 8,
+  "memory_bits": 0,
+  "input_bits": 3,
+  "output_bits": 8
+ }
+}

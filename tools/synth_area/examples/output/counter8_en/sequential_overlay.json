@@ -1,0 +1,102 @@
+{
+ "schema_version": 1,
+ "top": "counter8_en",
+ "registers": [
+  {
+   "id": "reg0000",
+   "width": 8,
+   "yosys_type": "$sdffe",
+   "yosys_cell": "$auto$ff.cc:337:slice$11",
+   "clock": {
+    "signal": "clk",
+    "edge": "posedge"
+   },
+   "reset": {
+    "kind": "sync",
+    "signal": "rst",
+    "active": "high",
+    "value": "8'b00000000",
+    "gated_by_enable": false
+   },
+   "enable": {
+    "signal": "$auto$simple.cc:193:make_patterns_logic$12",
+    "active": "high"
+   },
+   "init": null,
+   "d": "$count$2",
+   "q": "count",
+   "bits": [
+    {
+     "q": "count[0]",
+     "d": "$count$2[0]",
+     "init": null
+    },
+    {
+     "q": "count[1]",
+     "d": "$count$2[1]",
+     "init": null
+    },
+    {
+     "q": "count[2]",
+     "d": "$count$2[2]",
+     "init": null
+    },
+    {
+     "q": "count[3]",
+     "d": "$count$2[3]",
+     "init": null
+    },
+    {
+     "q": "count[4]",
+     "d": "$count$2[4]",
+     "init": null
+    },
+    {
+     "q": "count[5]",
+     "d": "$count$2[5]",
+     "init": null
+    },
+    {
+     "q": "count[6]",
+     "d": "$count$2[6]",
+     "init": null
+    },
+    {
+     "q": "count[7]",
+     "d": "$count$2[7]",
+     "init": null
+    }
+   ],
+   "src": "<repo>/tools/synth_area/corpus/counter8_en.sv:3.5"
+  }
+ ],
+ "summary": {
+  "registers": 1,
+  "register_bits": 8,
+  "by_type": {
+   "$sdffe": 1
+  },
+  "clocks": [
+   {
+    "signal": "clk",
+    "edge": "posedge",
+    "registers": 1,
+    "bits": 8
+   }
+  ],
+  "resets": [
+   {
+    "signal": "rst",
+    "kind": "sync",
+    "active": "high",
+    "registers": 1,
+    "bits": 8
+   }
+  ],
+  "reset_bits": {
+   "sync": 8
+  },
+  "enable_bits": 8,
+  "init_bits": 0
+ }
+}

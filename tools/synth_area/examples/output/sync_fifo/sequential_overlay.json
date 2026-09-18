@@ -1,0 +1,178 @@
+{
+ "schema_version": 1,
+ "top": "sync_fifo",
+ "registers": [
+  {
+   "id": "reg0000",
+   "width": 5,
+   "yosys_type": "$adffe",
+   "yosys_cell": "$auto$ff.cc:337:slice$14",
+   "clock": {
+    "signal": "clk_i",
+    "edge": "posedge"
+   },
+   "reset": {
+    "kind": "async",
+    "signal": "rst_ni",
+    "active": "low",
+    "value": "5'b00000"
+   },
+   "enable": {
+    "signal": "$auto$simple.cc:193:make_patterns_logic$15",
+    "active": "high"
+   },
+   "init": null,
+   "d": "$count_q$25",
+   "q": "count_o",
+   "bits": [
+    {
+     "q": "count_o[0]",
+     "d": "$count_q$25[0]",
+     "init": null
+    },
+    {
+     "q": "count_o[1]",
+     "d": "$count_q$25[1]",
+     "init": null
+    },
+    {
+     "q": "count_o[2]",
+     "d": "$count_q$25[2]",
+     "init": null
+    },
+    {
+     "q": "count_o[3]",
+     "d": "$count_q$25[3]",
+     "init": null
+    },
+    {
+     "q": "count_o[4]",
+     "d": "$count_q$25[4]",
+     "init": null
+    }
+   ],
+   "src": "<repo>/tools/synth_area/examples/sync_fifo.sv:32.5"
+  },
+  {
+   "id": "reg0001",
+   "width": 4,
+   "yosys_type": "$adffe",
+   "yosys_cell": "$auto$ff.cc:337:slice$13",
+   "clock": {
+    "signal": "clk_i",
+    "edge": "posedge"
+   },
+   "reset": {
+    "kind": "async",
+    "signal": "rst_ni",
+    "active": "low",
+    "value": "4'b0000"
+   },
+   "enable": {
+    "signal": "do_pop",
+    "active": "high"
+   },
+   "init": null,
+   "d": "$21y",
+   "q": "rd_ptr_q",
+   "bits": [
+    {
+     "q": "rd_ptr_q[0]",
+     "d": "$21y[0]",
+     "init": null
+    },
+    {
+     "q": "rd_ptr_q[1]",
+     "d": "$21y[1]",
+     "init": null
+    },
+    {
+     "q": "rd_ptr_q[2]",
+     "d": "$21y[2]",
+     "init": null
+    },
+    {
+     "q": "rd_ptr_q[3]",
+     "d": "$21y[3]",
+     "init": null
+    }
+   ],
+   "src": "<repo>/tools/synth_area/examples/sync_fifo.sv:32.5"
+  },
+  {
+   "id": "reg0002",
+   "width": 4,
+   "yosys_type": "$adffe",
+   "yosys_cell": "$auto$ff.cc:337:slice$12",
+   "clock": {
+    "signal": "clk_i",
+    "edge": "posedge"
+   },
+   "reset": {
+    "kind": "async",
+    "signal": "rst_ni",
+    "active": "low",
+    "value": "4'b0000"
+   },
+   "enable": {
+    "signal": "do_push",
+    "active": "high"
+   },
+   "init": null,
+   "d": "$17y",
+   "q": "wr_ptr_q",
+   "bits": [
+    {
+     "q": "wr_ptr_q[0]",
+     "d": "$17y[0]",
+     "init": null
+    },
+    {
+     "q": "wr_ptr_q[1]",
+     "d": "$17y[1]",
+     "init": null
+    },
+    {
+     "q": "wr_ptr_q[2]",
+     "d": "$17y[2]",
+     "init": null
+    },
+    {
+     "q": "wr_ptr_q[3]",
+     "d": "$17y[3]",
+     "init": null
+    }
+   ],
+   "src": "<repo>/tools/synth_area/examples/sync_fifo.sv:32.5"
+  }
+ ],
+ "summary": {
+  "registers": 3,
+  "register_bits": 13,
+  "by_type": {
+   "$adffe": 3
+  },
+  "clocks": [
+   {
+    "signal": "clk_i",
+    "edge": "posedge",
+    "registers": 3,
+    "bits": 13
+   }
+  ],
+  "resets": [
+   {
+    "signal": "rst_ni",
+    "kind": "async",
+    "active": "low",
+    "registers": 3,
+    "bits": 13
+   }
+  ],
+  "reset_bits": {
+   "async": 13
+  },
+  "enable_bits": 13,
+  "init_bits": 0
+ }
+}
