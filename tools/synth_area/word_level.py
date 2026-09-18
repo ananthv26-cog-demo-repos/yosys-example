@@ -27,7 +27,7 @@ import sys
 from collections import Counter
 from pathlib import Path
 
-from boolean_graph import UnsupportedCell, pick_module
+from boolean_graph import UnsupportedCell, alias_rank, pick_module
 
 WORD_SCHEMA_VERSION = 1
 
@@ -109,12 +109,9 @@ BitName = tuple[str, int, int, int]  # (wire, HDL index, wire offset, wire width
 
 def bit_names(mod: dict) -> dict[int, BitName]:
     """bit -> preferred wire of every bit. Yosys keeps every alias of a net (`count_o`,
-    `u_fifo.count_o`, `u_fifo.count_q`): public names beat Yosys-internal (`hide_name`) ones,
-    then the shallowest, shortest name wins so top-level ports beat hierarchical internals."""
-    ranked = sorted(
-        mod.get("netnames", {}).items(),
-        key=lambda kv: (kv[1].get("hide_name", 0), kv[0].count("."), len(kv[0]), kv[0]),
-    )
+    `u_fifo.count_o`, `u_fifo.count_q`); `boolean_graph.alias_rank` picks one, the same one the
+    Boolean graph names its nodes after."""
+    ranked = sorted(mod.get("netnames", {}).items(), key=alias_rank)
     names: dict[int, BitName] = {}
     for wname, w in ranked:
         width = len(w.get("bits", []))
