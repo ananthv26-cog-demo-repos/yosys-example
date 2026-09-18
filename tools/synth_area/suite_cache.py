@@ -8,7 +8,8 @@ produced:
     argv            the exact bool_area.py command line (sources, top, defines, includes, extra args)
     inputs          every source file, every file they `include (transitively, resolved next to the
                     including file and then in the -I directories, as the frontends do), the profile,
-                    its Liberty files and every file its yosys commands name (`techmap -map x.v`)
+                    its Liberty files and every file its yosys commands name (`techmap -map x.v`, a
+                    relative one from the block's output directory, which is where yosys runs)
     include_dirs    every file under every -I directory
     tools           the python interpreter, yosys (slang is linked in), the abc binary yosys runs (its
                     sibling yosys-abc, or for a build with an external ABC that path unless $ABC is set,
@@ -25,7 +26,10 @@ produced:
 On the next run the block is reused only if every one of those hashes is unchanged and every
 artifact is still on disk byte-for-byte (and nothing that was absent has appeared). Anything else (a
 missing tool, an unreadable file, an older record) is a miss, never a guess. Failed runs are not
-recorded: a block that failed reruns.
+recorded: a block that failed reruns. Neither is a run during which an input changed: the inputs and
+tools are fingerprinted once before the block is launched and once after it has finished, and the
+record is written only if the two agree, so an edit that lands mid-run (whichever contents yosys
+happened to read) leaves no record and the block reruns next time.
 
 That is the whole dependency boundary: files named by the sources, the profile or the tool set are
 hashed; a dependency the text does not name (`include `MACRO, a path a yosys command computes at run
@@ -44,7 +48,16 @@ import shutil
 import subprocess
 from pathlib import Path
 
-from bool_area import ARTIFACTS, SCRIPT_STAGES, FlowError, abc_executable, liberty_paths, load_profile, owned_files
+from bool_area import (
+    ARTIFACTS,
+    DEFAULT_PROFILE,
+    SCRIPT_STAGES,
+    FlowError,
+    abc_executable,
+    liberty_paths,
+    load_profile,
+    owned_files,
+)
 from run_report import sha256_file
 from synth_area import find_sv2v, find_yosys
 
@@ -153,15 +166,42 @@ def code_hashes() -> dict[str, str | None]:
     return {p.name: try_sha256(p) for p in sorted(HERE.glob("*.py"))}
 
 
-def option(argv: list[str], name: str) -> str | None:
-    """Value of `--name X` / `--name=X` in a bool_area.py argument list (last one wins, as argparse)."""
-    value = None
+def options(argv: list[str], *names: str) -> list[str]:
+    """Every value of `--name X` / `--name=X` (any of `names`) in a bool_area.py argument list, in order."""
+    values = []
     for i, a in enumerate(argv):
-        if a == name and i + 1 < len(argv):
-            value = argv[i + 1]
-        elif a.startswith(name + "="):
-            value = a[len(name) + 1:]
-    return value
+        for name in names:
+            if a == name and i + 1 < len(argv):
+                values.append(argv[i + 1])
+            elif a.startswith(name + "="):
+                values.append(a[len(name) + 1:])
+    return values
+
+
+def option(argv: list[str], *names: str) -> str | None:
+    """The last such value (as argparse takes it), or None."""
+    values = options(argv, *names)
+    return values[-1] if values else None
+
+
+def out_dir(argv: list[str]) -> Path | None:
+    """The block's output directory as bool_area.py resolves `-o`: the working directory of every yosys
+    run, hence what a relative path in a profile command is relative to."""
+    value = option(argv, "-o", "--out-dir")
+    return Path(value).resolve() if value else None
+
+
+def planned_manifest(sources: list[str], argv: list[str]) -> dict:
+    """What run_manifest.json will say about the inputs of the run `argv` is about to make (the resolved
+    sources, the -I directories resolved, the profile file as bool_area.py finds it), so the inputs can
+    be fingerprinted before the block starts and compared with what it reports afterwards."""
+    try:
+        profile: str | None = str(load_profile(option(argv, "--profile") or DEFAULT_PROFILE)[1])
+        includes = [str(Path(i).resolve()) for i in options(argv, "-I", "--include")]
+    except (FlowError, OSError, ValueError):  # the run will fail on this too; nothing to compare against
+        profile, includes = None, []
+    return {"sources": [{"path": s} for s in sources], "profile": {"path": profile},
+            "frontend": {"include_dirs": includes}}
 
 
 def executable(tool: str | None) -> str | None:
@@ -188,7 +228,7 @@ def tool_paths(argv: list[str], python: str) -> dict[str, str | None]:
     }
 
 
-def profile_inputs(profile_path: object) -> dict[str, str | None]:
+def profile_inputs(profile_path: object, cwd: Path | None) -> dict[str, str | None]:
     """{path: sha256} of the profile, the Liberty files it names and the files its yosys commands name;
     {'': None} (never complete) if it cannot be loaded."""
     if not isinstance(profile_path, str):
@@ -198,16 +238,17 @@ def profile_inputs(profile_path: object) -> dict[str, str | None]:
         libs = liberty_paths(profile, verify=False)
     except (FlowError, OSError, ValueError):
         return {"": None}
-    return {**{p: try_sha256(Path(p)) for p in [profile_path, *map(str, libs)]}, **script_files(profile)}
+    return {**{p: try_sha256(Path(p)) for p in [profile_path, *map(str, libs)]}, **script_files(profile, cwd)}
 
 
-def script_files(profile: dict) -> dict[str, str | None]:
+def script_files(profile: dict, cwd: Path | None) -> dict[str, str | None]:
     """{path: sha256} of every file the profile's yosys commands name themselves (`techmap -map x.v`,
     `read_liberty y.lib`, `script z.ys`): any word with a directory separator or a file extension that
     is not an option or a `{placeholder}` (those are flow-owned outputs). `+/...` is yosys's own share/
     directory, hashed as yosys_share. An absolute path is hashed as it is; a relative one is looked up
-    under tools/synth_area/ like liberty.dir; one that is not a file there is None, which keeps every
-    block using the profile from being cached (the command may compute the path at run time)."""
+    from `cwd`, the directory bool_area.py runs yosys in (its output directory); one that is not a file
+    there, or any relative one when `cwd` is unknown, is None, which keeps every block using the profile
+    from being cached (the command may compute the path at run time)."""
     found: dict[str, str | None] = {}
     for stage in SCRIPT_STAGES:
         for cmd in profile["script"][stage]:
@@ -215,7 +256,10 @@ def script_files(profile: dict) -> dict[str, str | None]:
                 word = word.strip("\"'")
                 if word.startswith(("-", "+/")) or "{" in word or not FILE_TOKEN_RE.search(word):
                     continue
-                found[word] = try_sha256(Path(word) if Path(word).is_absolute() else HERE / word)
+                if Path(word).is_absolute():
+                    found[word] = try_sha256(Path(word))
+                else:
+                    found[word] = try_sha256(cwd / word) if cwd else None
     return found
 
 
@@ -246,7 +290,7 @@ def fingerprint_or_raise(argv: list[str], python: str, manifest: dict) -> dict:
     return {
         "argv": list(argv),
         "python": python,
-        "inputs": {**{p: try_sha256(Path(p)) for p in sources}, **profile_inputs(profile),
+        "inputs": {**{p: try_sha256(Path(p)) for p in sources}, **profile_inputs(profile, out_dir(argv)),
                    **include_files(sources, includes)},
         "include_dirs": {d: dir_hashes(Path(d)) for d in includes},
         "tools": {name: tool_sha256(path) if path else None for name, path in tools.items()},
@@ -261,8 +305,11 @@ def artifact_hashes(block_out: Path) -> dict[str, str | None]:
     return {str(p.relative_to(block_out)): try_sha256(p) for p in owned_files(block_out)}
 
 
-def record(block_out: Path, argv: list[str], python: str) -> bool:
-    """Write the cache record for a block that just ran successfully. False if it could not be written."""
+def record(block_out: Path, argv: list[str], python: str, before: dict | None) -> bool:
+    """Write the cache record for a block that just ran successfully. `before` is the fingerprint taken
+    (from planned_manifest) right before the block was launched: the record is written only if the
+    fingerprint of what the run's manifest says it read is the same now, i.e. no input or tool changed
+    while it ran. False if not recorded, for that or because it could not be written."""
     manifest_path = block_out / ARTIFACTS["manifest"]
     try:
         manifest = json.loads(manifest_path.read_text())
@@ -272,7 +319,7 @@ def record(block_out: Path, argv: list[str], python: str) -> bool:
         return False
     data = {"schema_version": CACHE_SCHEMA_VERSION, "fingerprint": fingerprint(argv, python, manifest),
             "artifacts": artifact_hashes(block_out)}
-    if data["fingerprint"] is None or not complete(data):
+    if data["fingerprint"] is None or data["fingerprint"] != before or not complete(data):
         return False
     try:
         (block_out / RECORD).write_text(json.dumps(data, indent=1) + "\n")

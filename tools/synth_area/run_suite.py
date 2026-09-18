@@ -67,9 +67,13 @@ def metrics_schema_error(metrics: object) -> str | None:
     return None
 
 
+def block_sources(entry: dict) -> list[str]:
+    return [str((HERE / s).resolve()) for s in entry["sources"]]
+
+
 def block_command(entry: dict, out_dir: Path, extra: list[str], python: str) -> list[str]:
-    sources = [str((HERE / s).resolve()) for s in entry["sources"]]
-    cmd = [python, str(HERE / "bool_area.py"), *sources, "--top", entry["top"], "-o", str(out_dir / entry["name"]), "-q"]
+    cmd = [python, str(HERE / "bool_area.py"), *block_sources(entry), "--top", entry["top"], "-o",
+           str(out_dir / entry["name"]), "-q"]
     for inc in entry.get("include", []):
         cmd += ["-I", str((HERE / inc).resolve())]
     for d in entry.get("define", []):
@@ -88,6 +92,8 @@ def run_block(entry: dict, out_dir: Path, extra: list[str], python: str, cache: 
         res.update(exit_code=0, cached=True, seconds=round(time.time() - t0, 3))
         return collect(entry, res, block_out, "")
     suite_cache.forget(block_out)
+    # the inputs as they are now; the run is recorded only if they are the same once it is over
+    before = suite_cache.fingerprint(cmd[1:], python, suite_cache.planned_manifest(block_sources(entry), cmd[1:]))
     try:
         p = subprocess.run(cmd, capture_output=True, text=True, check=False)
     except OSError as e:
@@ -103,7 +109,7 @@ def run_block(entry: dict, out_dir: Path, extra: list[str], python: str, cache: 
     res.update(exit_code=p.returncode, seconds=round(time.time() - t0, 3))
     collect(entry, res, block_out, p.stderr)
     if res["exit_code"] == 0 and res["status"] == "ok":  # recorded even for --no-cache: the next run may reuse it
-        suite_cache.record(block_out, cmd[1:], python)
+        suite_cache.record(block_out, cmd[1:], python, before)
     return res
 
 

@@ -350,7 +350,31 @@ class SuiteCacheTests(unittest.TestCase):
             self.assertTrue(suite_cache.is_hit(out / "inv", argv, sys.executable))
             self.assertTrue(suite_cache.forget(out / "inv"))
             self.assertFalse(suite_cache.is_hit(out / "inv", argv, sys.executable))
-            self.assertTrue(suite_cache.record(out / "inv", argv, sys.executable))
+            # recorded only if the inputs fingerprinted before the launch are what the finished run reports
+            before = suite_cache.fingerprint(argv, sys.executable, suite_cache.planned_manifest([str(tmp / "inv.sv")], argv))
+            self.assertEqual(before, suite_cache.fingerprint(argv, sys.executable,
+                                                             json.loads((out / "inv" / "run_manifest.json").read_text())))
+            for stale in (None, {**before, "inputs": {**before["inputs"], str(tmp / "inv.sv"): "0" * 64}}):
+                self.assertFalse(suite_cache.record(out / "inv", argv, sys.executable, stale))
+                self.assertFalse((out / "inv" / suite_cache.RECORD).exists())
+            self.assertTrue(suite_cache.record(out / "inv", argv, sys.executable, before))
+            self.assertTrue(suite_cache.is_hit(out / "inv", argv, sys.executable))
+            # a source edited while its block runs (here: by the interpreter wrapper, before bool_area starts)
+            # is not recorded, whichever contents the run read; the next run redoes it and then it caches
+            (tmp / "editing_python").write_text(f"#!/bin/sh\necho '// edited mid-run' >> '{tmp / 'inv.sv'}'\n"
+                                                f"exec '{sys.executable}' \"$@\"\n")
+            (tmp / "editing_python").chmod(0o755)
+            proc = subprocess.run([sys.executable, str(SUITE), str(manifest), "-o", str(out), "--only", "inv",
+                                   "--python", str(tmp / "editing_python"), "--", "--sim-cycles", "0", "--equiv-seq", "3"],
+                                  capture_output=True, text=True, check=False)
+            self.assertEqual(proc.returncode, 0, proc.stdout + proc.stderr)
+            self.assertEqual(json.loads((out / "inv" / "metrics.json").read_text())["status"], "ok")
+            self.assertIn("edited mid-run", (tmp / "inv.sv").read_text())
+            self.assertFalse((out / "inv" / suite_cache.RECORD).exists())
+            code, s9b, _ = run(extra=("--sim-cycles", "0", "--equiv-seq", "3"))
+            self.assertEqual((code, cached(s9b)), (0, {"inv": False, "and2": True}))
+            code, s9c, _ = run(extra=("--sim-cycles", "0", "--equiv-seq", "3"))
+            self.assertEqual((code, cached(s9c)), (0, {"inv": True, "and2": True}))
             self.assertTrue(suite_cache.is_hit(out / "inv", argv, sys.executable))
             # a record whose tool-code, tool-binary, yosys share file or interpreter hash differs is a miss
             data = json.loads((out / "inv" / suite_cache.RECORD).read_text())
@@ -443,25 +467,36 @@ class CacheFingerprintTests(unittest.TestCase):
                 self.assertFalse(suite_cache.complete({"fingerprint": fp, "artifacts": {}}))
 
     def test_profile_script_files_are_inputs(self) -> None:
-        """Files a profile's yosys commands name (`techmap -map x.v`) are hashed; one that cannot be found
-        keeps the profile's blocks out of the cache; placeholders, options and +/ share files are not files."""
+        """Files a profile's yosys commands name (`techmap -map x.v`) are hashed, a relative one from the
+        block's output directory (yosys runs there); one that cannot be found keeps the profile's blocks
+        out of the cache; placeholders, options and +/ share files are not files."""
         base = json.loads((TOOL / "profiles" / "asap7_rvt_tt_v1.json").read_text())
-        self.assertEqual(suite_cache.script_files(base), {})
+        self.assertEqual(suite_cache.script_files(base, None), {})
         with tempfile.TemporaryDirectory(prefix="suite_prof_") as td:
-            mapping = Path(td) / "custom_map.v"
+            mapping, block_out = Path(td) / "custom_map.v", Path(td) / "out" / "blk"
             mapping.write_text("// v1\n")
             profile = json.loads(json.dumps(base))
             profile["script"]["lower"][1:1] = [f"techmap -map {mapping}", "techmap -map +/techmap.v",
                                                'read_verilog -lib "lib/asap7/cells.v"', "tee -o {stat_txt} stat"]
             path = Path(td) / "custom.json"
             path.write_text(json.dumps(profile))
-            found = suite_cache.script_files(profile)
+            found = suite_cache.script_files(profile, block_out)
             self.assertEqual(sorted(found), sorted(["lib/asap7/cells.v", str(mapping)]))
             self.assertTrue(found[str(mapping)])
-            self.assertIsNone(found["lib/asap7/cells.v"])  # relative to tools/synth_area/, not there
+            self.assertIsNone(found["lib/asap7/cells.v"])  # not under the block's output directory
             manifest = {"profile": {"path": str(path)}}
-            fp = suite_cache.fingerprint(["x"], sys.executable, manifest)
+            argv = ["x", "-o", str(block_out)]
+            fp = suite_cache.fingerprint(argv, sys.executable, manifest)
             self.assertFalse(suite_cache.complete({"fingerprint": fp, "artifacts": {}}))
+            # put it where yosys would find it (relative to -o, as bool_area.py resolves it): now an input
+            (block_out / "lib" / "asap7").mkdir(parents=True)
+            (block_out / "lib" / "asap7" / "cells.v").write_text("// cells\n")
+            fp = suite_cache.fingerprint(argv, sys.executable, manifest)
+            self.assertTrue(fp["inputs"]["lib/asap7/cells.v"])
+            for other in (["x", "-o", str(td)], ["x"]):  # another output directory, or none known
+                self.assertIsNone(suite_cache.fingerprint(other, sys.executable, manifest)["inputs"]["lib/asap7/cells.v"])
+            self.assertEqual(suite_cache.fingerprint(["x", f"--out-dir={block_out}"], sys.executable, manifest)["inputs"],
+                             fp["inputs"])
             del profile["script"]["lower"][3]
             path.write_text(json.dumps(profile))
             fp = suite_cache.fingerprint(["x"], sys.executable, manifest)
@@ -480,7 +515,7 @@ class CacheFingerprintTests(unittest.TestCase):
             fp = suite_cache.fingerprint(["x"], sys.executable, manifest)
             self.assertFalse(suite_cache.complete({"fingerprint": fp or {}, "artifacts": {}}), manifest)
         # a NUL in the command line itself is a miss too, not a traceback
-        for argv in (["--yosys", "a\0b"], ["--yosys", "/a\0b"], ["--yosys", "./a\0b"], ["--sv2v=./a\0b"]):
+        for argv in (["--yosys", "a\0b"], ["--yosys", "/a\0b"], ["--yosys", "./a\0b"], ["--sv2v=./a\0b"], ["-o", "a\0b"]):
             fp = suite_cache.fingerprint(argv, sys.executable, {})
             self.assertFalse(suite_cache.complete({"fingerprint": fp or {}, "artifacts": {}}), argv)
 
