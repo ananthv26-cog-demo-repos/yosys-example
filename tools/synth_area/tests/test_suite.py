@@ -129,7 +129,12 @@ class SuiteRunnerTests(unittest.TestCase):
             self.assertIn("built from different sources, profile or yosys", proc.stdout)
             # an unusable baseline is a usage error before any block runs, not a traceback after all of them
             (tmp / "notevidence.json").write_text('{"blocks": 3}')
-            for bad_baseline in (str(tmp / "typo.json"), str(tmp / "notevidence.json")):
+            # a `blocks` list alone is not enough: determinism indexes by name and reads nested dicts
+            (tmp / "badblock.json").write_text(json.dumps(
+                {"schema_version": suite_evidence.EVIDENCE_SCHEMA_VERSION, "blocks": [{"name": []}]}))
+            (tmp / "oldschema.json").write_text(json.dumps({"schema_version": 1, "blocks": []}))
+            for bad_baseline in (str(tmp / "typo.json"), str(tmp / "notevidence.json"),
+                                 str(tmp / "badblock.json"), str(tmp / "oldschema.json")):
                 proc = subprocess.run([sys.executable, str(SUITE), str(manifest), "-o", str(tmp / "nobase"),
                                        "--baseline", bad_baseline], capture_output=True, text=True, check=False)
                 self.assertEqual(proc.returncode, 2, proc.stderr)
@@ -221,7 +226,8 @@ class EvidenceAccountingTests(unittest.TestCase):
              "layers_present": True, "mapped": {"cells": 1, "area": 1.0},
              "equivalence": {"status": "proven", "checks": {}},
              "simulation": {"status": "match", "compared_bits": 8, "mismatches": 0},
-             "inputs": {"sources": ["b" * 64], "profile": "c" * 64, "yosys_version": "Yosys 0.69+"},
+             "inputs": {"sources": ["b" * 64], "profile": "c" * 64, "yosys_version": "Yosys 0.69+",
+                        "top": name, "frontend": {"name": "slang", "defines": [], "include_dirs": []}},
              "src_coverage": {"with_src": dict.fromkeys(suite_evidence.LAYERS, 1),
                               "items": dict.fromkeys(suite_evidence.LAYERS, 1)}}
         return {**b, **over}
@@ -242,6 +248,15 @@ class EvidenceAccountingTests(unittest.TestCase):
         det = suite_evidence.determinism(blocks, {"blocks": blocks})
         self.assertFalse(det["ok"])
         self.assertEqual(len(det["differing"]), len(suite_evidence.LAYERS))
+
+    def test_frontend_options_are_part_of_the_inputs(self) -> None:
+        """Same sources and profile, different defines: the layer files are not a reproduction."""
+        before = self.block("inv")
+        after = json.loads(json.dumps(before))
+        after["inputs"]["frontend"]["defines"] = ["UNUSED=1"]
+        det = suite_evidence.determinism([after], {"blocks": [before]})
+        self.assertFalse(det["ok"])
+        self.assertEqual(det["changed_inputs"], ["inv"])
 
 
 if __name__ == "__main__":

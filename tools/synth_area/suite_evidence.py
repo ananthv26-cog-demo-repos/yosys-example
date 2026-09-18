@@ -93,6 +93,9 @@ def block_evidence(result: dict) -> dict:
         if isinstance(sources, list) else None,
         "profile": section(metrics, "profile").get("sha256"),
         "yosys_version": section(metrics, "tools").get("yosys_version"),
+        "top": metrics.get("top"),
+        # defines, include dirs and frontend args change the layers without changing a source hash
+        "frontend": section(metrics, "frontend") or None,
     }
 
     covered, total = {}, {}
@@ -236,9 +239,21 @@ def load_baseline(path: Path) -> dict:
         raise ValueError(f"cannot read {path}: {e.strerror}") from e
     except ValueError as e:
         raise ValueError(f"{path} is not valid JSON: {e}") from e
-    if not isinstance(data, dict) or not isinstance(data.get("blocks"), list):
+    blocks = data.get("blocks") if isinstance(data, dict) else None
+    if not isinstance(blocks, list):
         # one exception type for every reason the file is unusable, so callers report it as one error
         raise ValueError(f"{path} is not a suite_evidence.json (no `blocks` list)")  # noqa: TRY004
+    if data.get("schema_version") != EVIDENCE_SCHEMA_VERSION:
+        raise ValueError(f"{path} is schema_version {data.get('schema_version')!r}, not "
+                         f"{EVIDENCE_SCHEMA_VERSION}: rerun the suite to regenerate it")
+    # determinism indexes blocks by name and reads nested dicts; reject that here, not after the corpus has run
+    for b in blocks:
+        if not isinstance(b, dict) or not isinstance(b.get("name"), str):
+            raise ValueError(f"{path} has a block that is not an object with a `name` string")  # noqa: TRY004
+        if not isinstance(b.get("inputs"), dict) or not isinstance(b.get("artifacts"), dict):
+            raise ValueError(f"{path}: block {b['name']} has no `inputs`/`artifacts` object")  # noqa: TRY004
+        if any(not isinstance(b["artifacts"].get(layer, {}), dict) for layer in LAYERS):
+            raise ValueError(f"{path}: block {b['name']} has a malformed artifact entry")
     return data
 
 

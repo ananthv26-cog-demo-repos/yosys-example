@@ -195,8 +195,8 @@ def main(argv: list[str] | None = None) -> int:
     summary = {"manifest": str(manifest_path), "blocks": len(results), "passed": passed,
                "failed": len(results) - passed, "jobs": jobs, "wall_seconds": round(time.time() - t0, 3),
                "results": results}
-    (out_dir / "suite_summary.json").write_text(json.dumps(summary, indent=2) + "\n")
-    (out_dir / "suite_table.md").write_text(markdown_table(results))
+    suite_evidence.write_atomic(out_dir / "suite_summary.json", json.dumps(summary, indent=2) + "\n")
+    suite_evidence.write_atomic(out_dir / "suite_table.md", markdown_table(results))
     evidence = suite_evidence.write(results, out_dir, baseline_path)
     for c in evidence["criteria"]:
         if c["ok"] is not True:
