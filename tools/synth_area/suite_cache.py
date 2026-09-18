@@ -243,16 +243,16 @@ def profile_inputs(profile_path: object, cwd: Path | None) -> dict[str, str | No
 
 def script_files(profile: dict, cwd: Path | None) -> dict[str, str | None]:
     """{path: sha256} of every file the profile's yosys commands name themselves (`techmap -map x.v`,
-    `read_liberty y.lib`, `script z.ys`): any word with a directory separator or a file extension that
-    is not an option or a `{placeholder}` (those are flow-owned outputs). `+/...` is yosys's own share/
-    directory, hashed as yosys_share. An absolute path is hashed as it is; a relative one is looked up
-    from `cwd`, the directory bool_area.py runs yosys in (its output directory); one that is not a file
-    there, or any relative one when `cwd` is unknown, is None, which keeps every block using the profile
-    from being cached (the command may compute the path at run time)."""
+    `read_liberty y.lib`, `script z.ys`): any word of any of the `;`-separated commands with a directory
+    separator or a file extension that is not an option or a `{placeholder}` (those are flow-owned
+    outputs). `+/...` is yosys's own share/ directory, hashed as yosys_share. An absolute path is hashed
+    as it is; a relative one is looked up from `cwd`, the directory bool_area.py runs yosys in (its output
+    directory); one that is not a file there, or any relative one when `cwd` is unknown, is None, which
+    keeps every block using the profile from being cached (the command may compute the path at run time)."""
     found: dict[str, str | None] = {}
     for stage in SCRIPT_STAGES:
         for cmd in profile["script"][stage]:
-            for word in cmd.split():
+            for word in cmd.replace(";", " ").split():
                 word = word.strip("\"'")
                 if word.startswith(("-", "+/")) or "{" in word or not FILE_TOKEN_RE.search(word):
                     continue
