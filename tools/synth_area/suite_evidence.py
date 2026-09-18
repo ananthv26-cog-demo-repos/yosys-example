@@ -27,7 +27,8 @@ EVIDENCE_SCHEMA_VERSION = 1
 # layer name -> the artifact key run_manifest.json records it under
 LAYERS = {"word_level": "word", "sequential_overlay": "sequential", "boolean_graph": "graph",
           "mapped_cells": "mapped_cells"}
-RUN_ARTIFACTS = ("metrics", "manifest", "summary")
+# run_manifest.json cannot hash itself, so it is checked on disk rather than looked up in its own map
+RUN_ARTIFACTS = ("metrics", "summary")
 MIN_FIFO_VARIANTS = 20
 # RTL constructs keep their source location; cells Yosys invents while lowering (mux trees for
 # `case`, carry chains) and everything ABC restructures do not, so only registers are required to
@@ -66,6 +67,7 @@ def block_evidence(result: dict) -> dict:
         return e if isinstance(e, dict) else {}
     ev["artifacts"] = {name: {"present": bool(entry(key).get("exists")), "sha256": entry(key).get("sha256")}
                        for name, key in list(LAYERS.items()) + [(k, k) for k in RUN_ARTIFACTS]}
+    ev["artifacts"]["manifest"] = {"present": (out_dir / "run_manifest.json").is_file(), "sha256": None}
     ev["layers_present"] = all(ev["artifacts"][name]["present"] for name in LAYERS)
 
     metrics = read_object(out_dir / "metrics.json")
@@ -102,11 +104,15 @@ def determinism(blocks: list[dict], baseline: dict | None) -> dict:
         return {"ok": None, "measured": "not checked (no --baseline)"}
     prev = {b["name"]: b.get("artifacts", {}) for b in baseline.get("blocks", []) if isinstance(b, dict)}
     shared = [b for b in blocks if b["name"] in prev]
+    missing = [b["name"] for b in blocks if b["name"] not in prev]
     differing = [f"{b['name']}/{layer}" for b in shared for layer in LAYERS
                  if b["artifacts"][layer]["sha256"] != prev[b["name"]].get(layer, {}).get("sha256")]
-    return {"ok": not differing and bool(shared), "differing": differing,
-            "measured": (f"{len(shared)} blocks x {len(LAYERS)} layer files byte-identical to the baseline"
-                         if not differing else f"{len(differing)} layer files differ: {', '.join(differing[:5])}")}
+    measured = (f"{len(shared)} blocks x {len(LAYERS)} layer files byte-identical to the baseline"
+                if not differing else f"{len(differing)} layer files differ: {', '.join(differing[:5])}")
+    if missing:  # a baseline from an --only run leaves the rest of this run unchecked
+        measured += f"; {len(missing)} block(s) absent from the baseline: {', '.join(missing[:5])}"
+    return {"ok": not differing and not missing and bool(shared), "differing": differing,
+            "unchecked": missing, "measured": measured}
 
 
 def criteria(blocks: list[dict], baseline: dict | None) -> list[dict]:
@@ -119,7 +125,12 @@ def criteria(blocks: list[dict], baseline: dict | None) -> list[dict]:
     eq_status = [b["equivalence"]["status"] for b in blocks]
     unproven = sum((c["unproven"] or 0) for b in blocks for c in b["equivalence"]["checks"].values()
                    if c["status"] == "failed")
-    sims = [b["simulation"] for b in blocks if b["simulation"]["status"]]
+    # a run with --sim-cycles 0 or without iverilog has nothing to say here, which is not the same
+    # as a clean simulation: only blocks that actually compared bits count as evidence
+    simulated = [b for b in blocks if b["simulation"]["status"] == "match"
+                 and (b["simulation"]["compared_bits"] or 0) > 0]
+    sims = [b["simulation"] for b in simulated]
+    not_run = [b["name"] for b in blocks if b not in simulated]
     mismatches = sum(s["mismatches"] or 0 for s in sims)
     src = {layer: (sum(b["src_coverage"]["with_src"][layer] for b in blocks),
                    sum(b["src_coverage"]["items"][layer] for b in blocks))
@@ -150,8 +161,10 @@ def criteria(blocks: list[dict], baseline: dict | None) -> list[dict]:
                      f"{eq_status.count('failed')} failed, {unproven} unproven pairs",
          "ok": unproven == 0 and not any(s in (None, "failed") for s in eq_status)},
         {"id": "simulation", "requirement": "random RTL vs netlist simulation finds no mismatch",
-         "measured": f"{len(sims)} blocks simulated, {sum(s['compared_bits'] or 0 for s in sims)} bits compared, "
-                     f"{mismatches} mismatches", "ok": mismatches == 0},
+         "measured": f"{len(sims)}/{n} blocks simulated, {sum(s['compared_bits'] or 0 for s in sims)} bits compared, "
+                     f"{mismatches} mismatches"
+                     + (f"; not simulated: {', '.join(not_run[:5])}" if not_run else ""),
+         "ok": mismatches == 0 and len(sims) == n if sims else None},
         {"id": "provenance", "requirement": "report nodes link back to RTL source locations where Yosys has them",
          "measured": "`src` on " + ", ".join(f"{pct(*src[layer])} {layer}" for layer in src),
          "ok": src_ok},

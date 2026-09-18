@@ -91,6 +91,9 @@ class SuiteRunnerTests(unittest.TestCase):
             self.assertFalse(by_id["blocks_pass"]["ok"])
             self.assertFalse(by_id["fifo_variants"]["ok"])
             self.assertIsNone(by_id["determinism"]["ok"])
+            # --sim-cycles 0 compared no bits, so the simulation criterion is unknown, not a pass
+            self.assertIsNone(by_id["simulation"]["ok"], by_id["simulation"])
+            self.assertTrue(all(b["artifacts"]["manifest"]["present"] for b in evidence["blocks"]))
             self.assertIn("PASS", (tmp / "out" / "EVIDENCE.md").read_text())
             # rerunning the same blocks against that evidence proves the layer files are reproducible
             proc = subprocess.run([sys.executable, str(SUITE), str(manifest), "-o", str(tmp / "out2"),
@@ -103,6 +106,25 @@ class SuiteRunnerTests(unittest.TestCase):
             self.assertEqual([r["name"] for r in
                               json.loads((tmp / "out2" / "suite_summary.json").read_text())["results"]],
                              ["inv", "and2_wrong"], "-j must not reorder the results")
+            # layer files that do not reproduce fail the run even when every block itself passed
+            faked = json.loads((tmp / "out" / "suite_evidence.json").read_text())
+            faked["blocks"][0]["artifacts"]["boolean_graph"]["sha256"] = "0" * 64
+            (tmp / "faked.json").write_text(json.dumps(faked))
+            inv_only = [sys.executable, str(SUITE), str(manifest), "--only", "inv", "-o", str(tmp / "out3")]
+            proc = subprocess.run([*inv_only, "--baseline", str(tmp / "faked.json")],
+                                  capture_output=True, text=True, check=False)
+            self.assertEqual(proc.returncode, 1, proc.stdout)
+            self.assertIn("criterion FAILED: determinism", proc.stdout)
+            # ... while the same selection without a baseline is a clean run
+            self.assertEqual(subprocess.run(inv_only, capture_output=True, text=True, check=False).returncode, 0)
+            # duplicate names would have two concurrent blocks writing one output directory
+            (tmp / "dupes.json").write_text(json.dumps({"blocks": [
+                {"name": "inv", "sources": [str(CORPUS / "inv.sv")], "top": "inv"},
+                {"name": "inv", "sources": [str(CORPUS / "and2.sv")], "top": "and2"}]}))
+            proc = subprocess.run([sys.executable, str(SUITE), str(tmp / "dupes.json"), "-o", str(tmp / "dup"),
+                                   "-j", "2"], capture_output=True, text=True, check=False)
+            self.assertEqual(proc.returncode, 2, proc.stderr)
+            self.assertIn("duplicate block names in the manifest: inv", proc.stderr)
             # a selection with a name the manifest does not have is a usage error, even next to valid names
             for only in (["--only", "typo"], ["--only", "inv", "--only", "typo"]):
                 proc = subprocess.run([sys.executable, str(SUITE), str(manifest), "-o", str(tmp / "none"), *only],

@@ -43,7 +43,7 @@
     {
       "id": "simulation",
       "requirement": "random RTL vs netlist simulation finds no mismatch",
-      "measured": "49 blocks simulated, 66012 bits compared, 0 mismatches",
+      "measured": "49/49 blocks simulated, 66012 bits compared, 0 mismatches",
       "ok": true
     },
     {
@@ -64,7 +64,7 @@
       "name": "adder8",
       "passed": true,
       "status": "ok",
-      "seconds": 2.499,
+      "seconds": 2.269,
       "errors": [],
       "artifacts": {
         "word_level": {
@@ -85,15 +85,15 @@
         },
         "metrics": {
           "present": true,
-          "sha256": "e03d7a483a6a1078f15183a71ce78c43b371225099647a022e53b941f077a623"
-        },
-        "manifest": {
-          "present": false,
-          "sha256": null
+          "sha256": "c0c656e493655cc24be9b006446464b70e90018028f161780766d1b1b13cf579"
         },
         "summary": {
           "present": true,
-          "sha256": "cb2eb24dde9418ba6d473cc6e1b448ab272b2bb3ee9d79082f045cf4442f2223"
+          "sha256": "564371ba78d12e21b15570b234eb3eefc80b141ef4c5fca657768b37ead9c3b3"
+        },
+        "manifest": {
+          "present": true,
+          "sha256": null
         }
       },
       "layers_present": true,
@@ -141,7 +141,7 @@
       "name": "alu4",
       "passed": true,
       "status": "ok",
-      "seconds": 2.629,
+      "seconds": 2.364,
       "errors": [],
       "artifacts": {
         "word_level": {
@@ -162,15 +162,15 @@
         },
         "metrics": {
           "present": true,
-          "sha256": "df09e9247f00097519fdf1b48b492daa16deb77fbb2bc4e69caf3e28f2df8fbb"
-        },
-        "manifest": {
-          "present": false,
-          "sha256": null
+          "sha256": "d58e8225eb6bb70b9b3310fe8513095bc6f923972769ec276cb798ac62cb8b3d"
         },
         "summary": {
           "present": true,
-          "sha256": "7668df4b26ff5b13f5004e02dddff904097d668d25a09d67ee8350af2f01e242"
+          "sha256": "cb17e2968c130f39097972cbf99ee38153b6dc1cbbadf20f6b2d5745ef03cf08"
+        },
+        "manifest": {
+          "present": true,
+          "sha256": null
         }
       },
       "layers_present": true,
@@ -218,7 +218,7 @@
       "name": "and2",
       "passed": true,
       "status": "ok",
-      "seconds": 2.364,
+      "seconds": 2.181,
       "errors": [],
       "artifacts": {
         "word_level": {
@@ -239,15 +239,15 @@
         },
         "metrics": {
           "present": true,
-          "sha256": "1ec779e3da037b67cb7f158de32f7a3bbd491c7f0127d4c11c8a1fbc0e14381d"
-        },
-        "manifest": {
-          "present": false,
-          "sha256": null
+          "sha256": "cee21a6bf09eeaf05524df90fbdf11cc9a2ce461ef0729a7879a113d6b2e6246"
         },
         "summary": {
           "present": true,
-          "sha256": "8e3b983427fc87b1e7065c0c2cbdad7d533720fcf1df159df6a063907662f703"
+          "sha256": "d502fe9dd6c24ad946b9012796e5e1587cb37eb081240e3f9aa962cf55d5d761"
+        },
+        "manifest": {
+          "present": true,
+          "sha256": null
         }
       },
       "layers_present": true,
@@ -295,7 +295,7 @@
       "name": "comparator8",
       "passed": true,
       "status": "ok",
-      "seconds": 2.69,
+      "seconds": 2.26,
       "errors": [],
       "artifacts": {
         "word_level": {
@@ -316,15 +316,15 @@
         },
         "metrics": {
           "present": true,
-          "sha256": "2a664a535f45704eb40332d30c19527214548946921781a64451b93e26755645"
-        },
-        "manifest": {
-          "present": false,
-          "sha256": null
+          "sha256": "ea579cafe3733be761d56738468c1ab3a09fef1d340d0d37297ea9958d66fb32"
         },
         "summary": {
           "present": true,
-          "sha256": "77632d5039a0e19c2f7e5a403023ab61efc270981828343f08c35f7089b3480f"
+          "sha256": "131bae68292561634aff1becaaf850222442f4c68f09ad2b90e29b6844d93670"
+        },
+        "manifest": {
+          "present": true,
+          "sha256": null
         }
       },
       "layers_present": true,
@@ -372,7 +372,7 @@
       "name": "counter4",
       "passed": true,
       "status": "ok",
-      "seconds": 2.604,
+      "seconds": 2.231,
       "errors": [],
       "artifacts": {
         "word_level": {
@@ -393,15 +393,15 @@
         },
         "metrics": {
           "present": true,
-          "sha256": "37634d27ec77b4d51ec2c5a862795b7ba24f8817191b5f3d9187ef417a83a294"
-        },
-        "manifest": {
-          "present": false,
-          "sha256": null
+          "sha256": "2e5f4549c760271c2b45ad8f77b36b8c7659853aba9db41da61d004bc97a5900"
         },
         "summary": {
           "present": true,
-          "sha256": "ee566881c5e50933ae93f418731302c8d832e3d9f2415f1003c1c4990e980dfb"
+          "sha256": "2387af226d17ccd0c45343e2eb197c61ee635f806c97271c1a59f3725da7a4b5"
+        },
+        "manifest": {
+          "present": true,
+          "sha256": null
         }
       },
       "layers_present": true,
@@ -449,7 +449,7 @@
       "name": "counter8_en",
       "passed": true,
       "status": "ok",
-      "seconds": 2.431,
+      "seconds": 2.287,
       "errors": [],
       "artifacts": {
         "word_level": {
@@ -470,15 +470,15 @@
         },
         "metrics": {
           "present": true,
-          "sha256": "9216d6c032b80334eec3e0113080e60a7eea78b66216d4b018b58da5619a99bf"
-        },
-        "manifest": {
-          "present": false,
-          "sha256": null
+          "sha256": "78ac4143d2384b25c6d1f695f66cbe72965dad81cdf3e0234c2eda735d28de86"
         },
         "summary": {
           "present": true,
-          "sha256": "7fe584ffd09b6beba3018659bb1f04ab31abf309c5a7023c7c95e367649e31f6"
+          "sha256": "d11696e9a1f288addad4e08cf9a604805064ec419a6c30c3ddc36ecf7d01923e"
+        },
+        "manifest": {
+          "present": true,
+          "sha256": null
         }
       },
       "layers_present": true,
@@ -526,7 +526,7 @@
       "name": "dec2to4",
       "passed": true,
       "status": "ok",
-      "seconds": 2.747,
+      "seconds": 2.322,
       "errors": [],
       "artifacts": {
         "word_level": {
@@ -547,15 +547,15 @@
         },
         "metrics": {
           "present": true,
-          "sha256": "e5ebd9ecd3247616ac3e9e8b98b69511941ed611f95d9c367c087bca1612418f"
-        },
-        "manifest": {
-          "present": false,
-          "sha256": null
+          "sha256": "6ec1dd1df3b6290acfdce83c9301b23fd6ca47cc13f14a0f61760c9f4cda0124"
         },
         "summary": {
           "present": true,
-          "sha256": "427e85ddb0b1f17b77c4beb48c13bc2c9a98451961bcc373c5f84a001b47102b"
+          "sha256": "bee524fcd907ad03a246758d8acfcd4a69f34f2fa9d841cddc48103bbe552a73"
+        },
+        "manifest": {
+          "present": true,
+          "sha256": null
         }
       },
       "layers_present": true,
@@ -603,7 +603,7 @@
       "name": "dff",
       "passed": true,
       "status": "ok",
-      "seconds": 3.179,
+      "seconds": 2.074,
       "errors": [],
       "artifacts": {
         "word_level": {
@@ -624,15 +624,15 @@
         },
         "metrics": {
           "present": true,
-          "sha256": "4811adad99eaa3d049cb2df35bd4d50c2e505c08ceb0dd59332075b3d5dd58ad"
-        },
-        "manifest": {
-          "present": false,
-          "sha256": null
+          "sha256": "8da5894eba13e3cb36fbc71231f83974e51f9862692b12014db4c8797beb3bfd"
         },
         "summary": {
           "present": true,
-          "sha256": "c2d3d617b6fde8c6257f9370ccb56033e1b83a2cff2834cc92fc0f2550f5823a"
+          "sha256": "e4150067de89cc4ce3b388ca108345221b9b0e0cd03ed3cbcabf1359008d89c8"
+        },
+        "manifest": {
+          "present": true,
+          "sha256": null
         }
       },
       "layers_present": true,
@@ -680,7 +680,7 @@
       "name": "dff_async_rst",
       "passed": true,
       "status": "ok",
-      "seconds": 2.321,
+      "seconds": 2.374,
       "errors": [],
       "artifacts": {
         "word_level": {
@@ -701,15 +701,15 @@
         },
         "metrics": {
           "present": true,
-          "sha256": "c8747ac748781750e142ecc82a7e866be6c4501a2862e0fdd3c7ac483a2e8f66"
-        },
-        "manifest": {
-          "present": false,
-          "sha256": null
+          "sha256": "2300461ec1c2c2cfb92912ca7618210caea43223c5968b727becfbafde9e3b47"
         },
         "summary": {
           "present": true,
-          "sha256": "a056ed956e692c97eac22d037c7cfdbff2d0ef1fc698a8ffac9f2daada2b4378"
+          "sha256": "d2361d598ac500ca3570552ebd8bcbb6c50cf5ea363a9e2a86567924c3cf0156"
+        },
+        "manifest": {
+          "present": true,
+          "sha256": null
         }
       },
       "layers_present": true,
@@ -757,7 +757,7 @@
       "name": "dff_sync_rst",
       "passed": true,
       "status": "ok",
-      "seconds": 2.561,
+      "seconds": 2.428,
       "errors": [],
       "artifacts": {
         "word_level": {
@@ -778,15 +778,15 @@
         },
         "metrics": {
           "present": true,
-          "sha256": "801bf4e5f1b6bc09b8ab27dbf0dcb902d4f30e8872d53dd144f74e622f12d5e7"
-        },
-        "manifest": {
-          "present": false,
-          "sha256": null
+          "sha256": "a87cf8b781d7e09c0a54dfbfe818a3a015279137020d9fc6f97843dfb3e2b253"
         },
         "summary": {
           "present": true,
-          "sha256": "b94df8f678a89871c586933a5aef00a219e2106c58f11a3d0ca59e1ac153fb5e"
+          "sha256": "fd1492e678b63ee02425260aeed8fb57dcba62ca8aa75ee4ab638c92f7dd8830"
+        },
+        "manifest": {
+          "present": true,
+          "sha256": null
         }
       },
       "layers_present": true,
@@ -834,7 +834,7 @@
       "name": "fifo_d2_w4",
       "passed": true,
       "status": "ok",
-      "seconds": 3.162,
+      "seconds": 2.58,
       "errors": [],
       "artifacts": {
         "word_level": {
@@ -855,15 +855,15 @@
         },
         "metrics": {
           "present": true,
-          "sha256": "e331763af8530371c79ce933d1d0ce5f0a9c78aa1e5a5aacea40be8aa77b68c1"
-        },
-        "manifest": {
-          "present": false,
-          "sha256": null
+          "sha256": "f2b0d58124a2e083d4996663312501a4a1db0109d438d16de6221b7043c252f8"
         },
         "summary": {
           "present": true,
-          "sha256": "140b162c96486bc7cf19a49648712eb25ef3d60198a11b98d813cab67fc287b9"
+          "sha256": "f8079d13944ec56f77e5d1d00b8381a3c405b8643bd847c7f2b9255ceb24b6bf"
+        },
+        "manifest": {
+          "present": true,
+          "sha256": null
         }
       },
       "layers_present": true,
@@ -911,7 +911,7 @@
       "name": "fifo_fwft_d4_w8",
       "passed": true,
       "status": "ok",
-      "seconds": 3.707,
+      "seconds": 3.116,
       "errors": [],
       "artifacts": {
         "word_level": {
@@ -932,15 +932,15 @@
         },
         "metrics": {
           "present": true,
-          "sha256": "9d6e982298572cc6d11f6b42fd88412505f5652745cde5431f7894630b598334"
-        },
-        "manifest": {
-          "present": false,
-          "sha256": null
+          "sha256": "84b87e879b124a60a8b1f8e97ae16161663515d44e719b47a13f33b87d7609cc"
         },
         "summary": {
           "present": true,
-          "sha256": "c7bf900181adbf8177fdf01cd5a7df89200060a8a0566779b7a1988ca5bd6dd3"
+          "sha256": "514c6813b3147027d97029a94d9ecfa951463b9de8270b59b94043bdc39f695d"
+        },
+        "manifest": {
+          "present": true,
+          "sha256": null
         }
       },
       "layers_present": true,
@@ -988,7 +988,7 @@
       "name": "fifo_shift_d4_w8",
       "passed": true,
       "status": "ok",
-      "seconds": 5.467,
+      "seconds": 4.767,
       "errors": [],
       "artifacts": {
         "word_level": {
@@ -1009,15 +1009,15 @@
         },
         "metrics": {
           "present": true,
-          "sha256": "cdbf508036197249efcd14ea637014a0b4ad18fb92bfc9794769439240b6d207"
-        },
-        "manifest": {
-          "present": false,
-          "sha256": null
+          "sha256": "2b911cd3690568d879a4c97f8b7454d4ec7badfb72cebb8282d01726b8a3c139"
         },
         "summary": {
           "present": true,
-          "sha256": "142a09fb1e1cc4a1f152f9f6bddae452bf1e5ce38529c246f973ddd72d1bf97f"
+          "sha256": "acde186f72cfdb8e2829ef5b5870fe6e5ca2ec76239adb03fe2afde3c310045a"
+        },
+        "manifest": {
+          "present": true,
+          "sha256": null
         }
       },
       "layers_present": true,
@@ -1065,7 +1065,7 @@
       "name": "fifo_almost_flags_d8_w8",
       "passed": true,
       "status": "ok",
-      "seconds": 4.241,
+      "seconds": 3.772,
       "errors": [],
       "artifacts": {
         "word_level": {
@@ -1086,15 +1086,15 @@
         },
         "metrics": {
           "present": true,
-          "sha256": "255b43d27e2149518ae3a007a2f8458ce13c9a49a405ebdac542de575f1b3a9e"
-        },
-        "manifest": {
-          "present": false,
-          "sha256": null
+          "sha256": "04b878fa0a2f80274af76bd5bb8babe544f2d7476d2f115868d04767f304a213"
         },
         "summary": {
           "present": true,
-          "sha256": "a2667b4070f2f584d7226a206134fd65da72d56cbff2c0f347b8b95595bee122"
+          "sha256": "820139abd3e407635f7c9f1ec3c3f0fb24ff1cf62087ed7fe42a83cf483ee37d"
+        },
+        "manifest": {
+          "present": true,
+          "sha256": null
         }
       },
       "layers_present": true,
@@ -1142,7 +1142,7 @@
       "name": "fifo_bypass_d4_w8",
       "passed": true,
       "status": "ok",
-      "seconds": 3.954,
+      "seconds": 3.315,
       "errors": [],
       "artifacts": {
         "word_level": {
@@ -1163,15 +1163,15 @@
         },
         "metrics": {
           "present": true,
-          "sha256": "473d524b008d8cd12802acd3f3bc751e5be642b7860b8ab6b82dd4e66795a461"
-        },
-        "manifest": {
-          "present": false,
-          "sha256": null
+          "sha256": "1bdcf556dc9edd35b5f8b044b6a46952f84cd4872683aacf29908bb9d0a35a3a"
         },
         "summary": {
           "present": true,
-          "sha256": "d41f4b716666d366996849c2e16ef9356b9f0111aa9f6491c1760d9901e7ecea"
+          "sha256": "dca10bad2a25792a0c6e7bf055757ad4f3a93740792050f03b915e340bf0c187"
+        },
+        "manifest": {
+          "present": true,
+          "sha256": null
         }
       },
       "layers_present": true,
@@ -1219,7 +1219,7 @@
       "name": "fifo_clr_d4_w8",
       "passed": true,
       "status": "ok",
-      "seconds": 3.827,
+      "seconds": 3.213,
       "errors": [],
       "artifacts": {
         "word_level": {
@@ -1240,15 +1240,15 @@
         },
         "metrics": {
           "present": true,
-          "sha256": "312429fc5e34663b7f79e50169b50f18860062c7cb653fb18583b2e475d14cb0"
-        },
-        "manifest": {
-          "present": false,
-          "sha256": null
+          "sha256": "8833941116525d2c6c8cfbe4bea02632f7a2f1e2e69f15f53c8b11460c6b5c11"
         },
         "summary": {
           "present": true,
-          "sha256": "6d86b7c82568897e8571d71a83af3767fc2e343a722af5764b9199ea6ea91c79"
+          "sha256": "8d75fdb0c92cb83726f0ad51ac3c15308716080b8e813c9cfbb265aa040337c0"
+        },
+        "manifest": {
+          "present": true,
+          "sha256": null
         }
       },
       "layers_present": true,
@@ -1296,7 +1296,7 @@
       "name": "fifo_enum_state_d4_w8",
       "passed": true,
       "status": "ok",
-      "seconds": 4.999,
+      "seconds": 4.516,
       "errors": [],
       "artifacts": {
         "word_level": {
@@ -1317,15 +1317,15 @@
         },
         "metrics": {
           "present": true,
-          "sha256": "e1997a89735be5f506ab84fe0cb1545cb00b9c4674cfde90cd92916805f64be1"
-        },
-        "manifest": {
-          "present": false,
-          "sha256": null
+          "sha256": "28d723725511bfca1e24b5c47b10c1960bb231f07ed774608488c7ee309fd38d"
         },
         "summary": {
           "present": true,
-          "sha256": "84d841b586ed72a3b1566e0f0932bcccc6499b20ca117080c5d218a04e9b0fde"
+          "sha256": "f09404a2852c7b7c9b057844fd7696a7f2f57494a759e945d3debf71348a96c8"
+        },
+        "manifest": {
+          "present": true,
+          "sha256": null
         }
       },
       "layers_present": true,
@@ -1373,7 +1373,7 @@
       "name": "fifo_err_flags_d4_w8",
       "passed": true,
       "status": "ok",
-      "seconds": 3.225,
+      "seconds": 3.138,
       "errors": [],
       "artifacts": {
         "word_level": {
@@ -1394,15 +1394,15 @@
         },
         "metrics": {
           "present": true,
-          "sha256": "cb72a9f06e12d5346b319638fb9b7b40cd7ba5f5b67004fe3c981cef12ba868c"
-        },
-        "manifest": {
-          "present": false,
-          "sha256": null
+          "sha256": "f1c0afe3facc7757ed68ae46176d24b798087ef4604cb127ac6ef230d8c2fc83"
         },
         "summary": {
           "present": true,
-          "sha256": "641467c495bc28853f8bb84be16c5e3ddc50ff1ddd2d835da4d52d8de9ad6513"
+          "sha256": "32e0571eeb4ffb15f312497c562845538008dea97f10b5b3d8139c1d92ad767f"
+        },
+        "manifest": {
+          "present": true,
+          "sha256": null
         }
       },
       "layers_present": true,
@@ -1450,7 +1450,7 @@
       "name": "fifo_generate_d4_w8",
       "passed": true,
       "status": "ok",
-      "seconds": 3.454,
+      "seconds": 3.183,
       "errors": [],
       "artifacts": {
         "word_level": {
@@ -1471,15 +1471,15 @@
         },
         "metrics": {
           "present": true,
-          "sha256": "59eeef61e20da95db4005378d8c0f6ddfc3f7e015067d72bd932bfbff5f98122"
-        },
-        "manifest": {
-          "present": false,
-          "sha256": null
+          "sha256": "9d11a4000efca3c02677578049f880ea37ae0cef31ec9689edc3eeacc11b431b"
         },
         "summary": {
           "present": true,
-          "sha256": "2ef47f1b1fa0b2de65b26df299fde361ed1c444e321de18a64f26b9686abee4a"
+          "sha256": "84c23ab21b7600337f9c1ee2ff6b45fbb2b5bd66995fa577ca726019c6770146"
+        },
+        "manifest": {
+          "present": true,
+          "sha256": null
         }
       },
       "layers_present": true,
@@ -1527,7 +1527,7 @@
       "name": "fifo_gray_ptr_d8_w8",
       "passed": true,
       "status": "ok",
-      "seconds": 3.992,
+      "seconds": 3.815,
       "errors": [],
       "artifacts": {
         "word_level": {
@@ -1548,15 +1548,15 @@
         },
         "metrics": {
           "present": true,
-          "sha256": "2e6a914c72b897e7a24a4a0647c8e2def00b4f2386a9e611d57aced29d0fcdc0"
-        },
-        "manifest": {
-          "present": false,
-          "sha256": null
+          "sha256": "cdd0d4210988d89df1c05cf6243e447273cd6d7e1d01c206773d66972b382a3a"
         },
         "summary": {
           "present": true,
-          "sha256": "9d8d9b363f662db806279b5f9be66d24ce730d1c795a77d00205411e9e2688a2"
+          "sha256": "eefd471ff812a104c70a58a5c8c104a414adeec9e9f90c92942dc98a13dacf1a"
+        },
+        "manifest": {
+          "present": true,
+          "sha256": null
         }
       },
       "layers_present": true,
@@ -1604,7 +1604,7 @@
       "name": "fifo_last_d4_w8",
       "passed": true,
       "status": "ok",
-      "seconds": 3.382,
+      "seconds": 3.212,
       "errors": [],
       "artifacts": {
         "word_level": {
@@ -1625,15 +1625,15 @@
         },
         "metrics": {
           "present": true,
-          "sha256": "ca796a856ff024c17d0836dc1b0ada4c601171875252ba2a2107205d028b5052"
-        },
-        "manifest": {
-          "present": false,
-          "sha256": null
+          "sha256": "6e2c1b25f2d123977ffb0c9cd355df3188dd9d1a96eba007737b904fbadc512e"
         },
         "summary": {
           "present": true,
-          "sha256": "53195cce22a4af47bce3bec8c3b3e6074603ebf4e4c6b47c067ddc43cf7b88e4"
+          "sha256": "bde5fb038d973648079f3b3602014ada17ecf18fe92441f0d3e797a8e892a9be"
+        },
+        "manifest": {
+          "present": true,
+          "sha256": null
         }
       },
       "layers_present": true,
@@ -1681,7 +1681,7 @@
       "name": "fifo_onehot_d4_w8",
       "passed": true,
       "status": "ok",
-      "seconds": 3.05,
+      "seconds": 2.872,
       "errors": [],
       "artifacts": {
         "word_level": {
@@ -1702,15 +1702,15 @@
         },
         "metrics": {
           "present": true,
-          "sha256": "9f1e130a05f33c7c3b5980ca8e5cf9f1a5c4cb2216687ab989029ff663927876"
-        },
-        "manifest": {
-          "present": false,
-          "sha256": null
+          "sha256": "86a4c19ddff3e91929316d5172a7b03cb3cc2a296a89b4d72f41f2c70cf65dc8"
         },
         "summary": {
           "present": true,
-          "sha256": "a448e2412c1d02ad93936cea73f43fad61fc6159aa0ac65dd6b45bebb6abb995"
+          "sha256": "e2ddd9da863b3ee93d115021341b7a08d375d3f320a00be52bd38a45a913b2e0"
+        },
+        "manifest": {
+          "present": true,
+          "sha256": null
         }
       },
       "layers_present": true,
@@ -1758,7 +1758,7 @@
       "name": "fifo_pipe_d3_w8",
       "passed": true,
       "status": "ok",
-      "seconds": 3.099,
+      "seconds": 3.079,
       "errors": [],
       "artifacts": {
         "word_level": {
@@ -1779,15 +1779,15 @@
         },
         "metrics": {
           "present": true,
-          "sha256": "d2b6131754f4c7a11f02ad4d69cd40823efa6c25697d366acd00dfa35073323d"
-        },
-        "manifest": {
-          "present": false,
-          "sha256": null
+          "sha256": "91b6f17eef187aaa736ca51ed38ebe4bcc988b534c292667dcf2e5f8f06be0e3"
         },
         "summary": {
           "present": true,
-          "sha256": "f37591ad81a69f729fe1a61fc37e6c7b425e0a3513f45202b6a4f9439acbf159"
+          "sha256": "c6ffb0e3c1cf338d1cb7d35239740c7293047417bb6b0cf9c18fecac8409f8b6"
+        },
+        "manifest": {
+          "present": true,
+          "sha256": null
         }
       },
       "layers_present": true,
@@ -1835,7 +1835,7 @@
       "name": "fifo_ptr_wrap_d8_w8",
       "passed": true,
       "status": "ok",
-      "seconds": 4.066,
+      "seconds": 3.518,
       "errors": [],
       "artifacts": {
         "word_level": {
@@ -1856,15 +1856,15 @@
         },
         "metrics": {
           "present": true,
-          "sha256": "97ced1cdf0eaf4fa072d75b878172e616aded8053c401172d1744c9634f9b7f3"
-        },
-        "manifest": {
-          "present": false,
-          "sha256": null
+          "sha256": "35e324b6c734ad98a8e26ddd581fcf099417b9559655d49fbf5dd0aca5da550b"
         },
         "summary": {
           "present": true,
-          "sha256": "cb24245e838a50ab6c9ffc86ed6b9d03e5f8602cd03b5dc446f01f7cb8b8a68d"
+          "sha256": "beb66e52163bc1b313c6fd4277afbff60eeed89e4878ce932807d94569c716e8"
+        },
+        "manifest": {
+          "present": true,
+          "sha256": null
         }
       },
       "layers_present": true,
@@ -1912,7 +1912,7 @@
       "name": "fifo_regout_d4_w8",
       "passed": true,
       "status": "ok",
-      "seconds": 3.163,
+      "seconds": 3.005,
       "errors": [],
       "artifacts": {
         "word_level": {
@@ -1933,15 +1933,15 @@
         },
         "metrics": {
           "present": true,
-          "sha256": "348ed0bc6cbce71e612269610341d9bccc0842c077366cb5e30e760c8422add6"
-        },
-        "manifest": {
-          "present": false,
-          "sha256": null
+          "sha256": "417df0ca47031a26b0f7b3c9695e3fbf4c498dec86c0f6f435f2879de912af54"
         },
         "summary": {
           "present": true,
-          "sha256": "50fe1b9a7b2f5a275aa056ad41b25d460075f52701eece35b098004fd227b6c1"
+          "sha256": "b743b9f21b9291d5d5b9dd02db1e940d12fc916811997aff868f3db580beca4c"
+        },
+        "manifest": {
+          "present": true,
+          "sha256": null
         }
       },
       "layers_present": true,
@@ -1989,7 +1989,7 @@
       "name": "fifo_sync_rst_d4_w8",
       "passed": true,
       "status": "ok",
-      "seconds": 2.911,
+      "seconds": 2.575,
       "errors": [],
       "artifacts": {
         "word_level": {
@@ -2010,15 +2010,15 @@
         },
         "metrics": {
           "present": true,
-          "sha256": "d02cc6d8fb616b358bd43586d4419bd7370696b1e4715e0f5a7e8d4180d168fc"
-        },
-        "manifest": {
-          "present": false,
-          "sha256": null
+          "sha256": "d093857e003889c2dfd98030ad65eae889d6cea3fdaf523979795a01ad85c7e8"
         },
         "summary": {
           "present": true,
-          "sha256": "20b7c5326464cd082e4574d3adeaf65ae78da3b30fc2090388c6dc2d38ea8728"
+          "sha256": "25dd8e012a6dbefd484050f75e09006ca3e8b7a12443553ec83349d0c34aba0b"
+        },
+        "manifest": {
+          "present": true,
+          "sha256": null
         }
       },
       "layers_present": true,
@@ -2066,7 +2066,7 @@
       "name": "fsm_traffic",
       "passed": true,
       "status": "ok",
-      "seconds": 2.524,
+      "seconds": 2.41,
       "errors": [],
       "artifacts": {
         "word_level": {
@@ -2087,15 +2087,15 @@
         },
         "metrics": {
           "present": true,
-          "sha256": "aea258bfd7ab2fd36cdf90ba03095492895ec960007b58b8b1f0ef7fb62f28b0"
-        },
-        "manifest": {
-          "present": false,
-          "sha256": null
+          "sha256": "f7dcc5de0a2ce2efd2ae8636fc6656d3b1ce04c10375eac52cdb2fc2c02c463c"
         },
         "summary": {
           "present": true,
-          "sha256": "d3dbb9e301cd482a99299a288acca60ac6148649ac6f3aa9538b027e79447504"
+          "sha256": "903eba2815e2566f876b3181c57848b592de221b8e0682296d80ce9e3aed9187"
+        },
+        "manifest": {
+          "present": true,
+          "sha256": null
         }
       },
       "layers_present": true,
@@ -2143,7 +2143,7 @@
       "name": "full_adder",
       "passed": true,
       "status": "ok",
-      "seconds": 2.271,
+      "seconds": 2.165,
       "errors": [],
       "artifacts": {
         "word_level": {
@@ -2164,15 +2164,15 @@
         },
         "metrics": {
           "present": true,
-          "sha256": "71b5520e81e0ad893151400d4215d6d0d454decf234e441b6a2e5f98a43d63f1"
-        },
-        "manifest": {
-          "present": false,
-          "sha256": null
+          "sha256": "cb54decb12555205cc206e03f19018bcb2e37fc5596e2da30b9cfd56aac752c3"
         },
         "summary": {
           "present": true,
-          "sha256": "f3acf419546188b465ee288bfe1c3eec839a6866ab458fdf2e22a1973e32a6ff"
+          "sha256": "3da066f1377d26a808fd285a989574878d03e0f3c942f8472b6f07ad907e6c23"
+        },
+        "manifest": {
+          "present": true,
+          "sha256": null
         }
       },
       "layers_present": true,
@@ -2220,7 +2220,7 @@
       "name": "gray_counter4",
       "passed": true,
       "status": "ok",
-      "seconds": 2.4,
+      "seconds": 2.239,
       "errors": [],
       "artifacts": {
         "word_level": {
@@ -2241,15 +2241,15 @@
         },
         "metrics": {
           "present": true,
-          "sha256": "a62fe6163a50b68bfe0718a6c767d986f0fedaa73871da555eb7cdf5a494350f"
-        },
-        "manifest": {
-          "present": false,
-          "sha256": null
+          "sha256": "0df5b00550a7b1db24ef07e115d5ea8156ba643b7bb3894d66cc0e4e884e959e"
         },
         "summary": {
           "present": true,
-          "sha256": "4f8d492d2e311954c8f8fcb075f907c2ca9a85c5a0111569a1bbac45c03e5006"
+          "sha256": "16afe8a633d37c17d89f937f4df90263ab8bb8c6ab15415ff76ecae9469d6eac"
+        },
+        "manifest": {
+          "present": true,
+          "sha256": null
         }
       },
       "layers_present": true,
@@ -2297,7 +2297,7 @@
       "name": "half_adder",
       "passed": true,
       "status": "ok",
-      "seconds": 2.328,
+      "seconds": 2.182,
       "errors": [],
       "artifacts": {
         "word_level": {
@@ -2318,15 +2318,15 @@
         },
         "metrics": {
           "present": true,
-          "sha256": "ec6f1031ad2360562d9e560e76d88816d816a5ae1218d7c2806b3f1a1873eb70"
-        },
-        "manifest": {
-          "present": false,
-          "sha256": null
+          "sha256": "d957559a36701d0c72f7fc7c0425e63a04ed2a44b510b33a64c6784a5f4ad4bb"
         },
         "summary": {
           "present": true,
-          "sha256": "4b7b3324d2ee3e134a3ac675e58b2751ba19af73e9a23073203984e9b5deda2b"
+          "sha256": "fcadc3ac40bff2c1e2951cddc0735555b02289bc885f061cd9afd517501a4546"
+        },
+        "manifest": {
+          "present": true,
+          "sha256": null
         }
       },
       "layers_present": true,
@@ -2374,7 +2374,7 @@
       "name": "inv",
       "passed": true,
       "status": "ok",
-      "seconds": 2.457,
+      "seconds": 2.179,
       "errors": [],
       "artifacts": {
         "word_level": {
@@ -2395,15 +2395,15 @@
         },
         "metrics": {
           "present": true,
-          "sha256": "509bdcdcf1ab9cf5406b8acc6fd57bc3042264f490c966967959a7da80c20586"
-        },
-        "manifest": {
-          "present": false,
-          "sha256": null
+          "sha256": "641f0396e34011b646c2d75d11ed206f8b4360c2d3a661d249e16b467c39ddee"
         },
         "summary": {
           "present": true,
-          "sha256": "e6e7d1ccde15601f595ba6544a7529a2a9bdce932b8af165bef029796ffaa135"
+          "sha256": "afc0d265003db85bcc73d2e18d817b5b3d79638b9892b1833eab60409b8be9c9"
+        },
+        "manifest": {
+          "present": true,
+          "sha256": null
         }
       },
       "layers_present": true,
@@ -2451,7 +2451,7 @@
       "name": "lfsr8",
       "passed": true,
       "status": "ok",
-      "seconds": 2.396,
+      "seconds": 2.273,
       "errors": [],
       "artifacts": {
         "word_level": {
@@ -2472,15 +2472,15 @@
         },
         "metrics": {
           "present": true,
-          "sha256": "fc6f15ed81fe2454d9f3f7a848d5e64ea87db9b0cc633d84bc7cc1f523a06e08"
-        },
-        "manifest": {
-          "present": false,
-          "sha256": null
+          "sha256": "31b9f42592984aa1f45635f206721e4ec6a002e20684b1332f328dfd28d1ad55"
         },
         "summary": {
           "present": true,
-          "sha256": "a0a9c9cc0543ba2c3f735b61c6e52831203d1690ace29e306afa4c37abf96979"
+          "sha256": "236a78a0a0d3ed0fccb67df5c24f929c936fd07d0b52ce4dcf2481ba0c10f8ce"
+        },
+        "manifest": {
+          "present": true,
+          "sha256": null
         }
       },
       "layers_present": true,
@@ -2528,7 +2528,7 @@
       "name": "mux2",
       "passed": true,
       "status": "ok",
-      "seconds": 2.416,
+      "seconds": 2.263,
       "errors": [],
       "artifacts": {
         "word_level": {
@@ -2549,15 +2549,15 @@
         },
         "metrics": {
           "present": true,
-          "sha256": "cd8060a3b355ae830f9db2ff12b611758a4c2ac3d87323f868f7dd6f88d5ddef"
-        },
-        "manifest": {
-          "present": false,
-          "sha256": null
+          "sha256": "5fe85dfb0afbeb424ac9c7e87db14b94b8581db0fd9a6403c35303a33a0dbad3"
         },
         "summary": {
           "present": true,
-          "sha256": "4a12c7dc1eece2d6409ef2c5f88bd7c66a334e9268d429852f0d4e53df690ff7"
+          "sha256": "87cf3ea4bfa259ef5356db0d38a3771221ea2c09bc4881fee0ec857a302339e3"
+        },
+        "manifest": {
+          "present": true,
+          "sha256": null
         }
       },
       "layers_present": true,
@@ -2605,7 +2605,7 @@
       "name": "mux4",
       "passed": true,
       "status": "ok",
-      "seconds": 2.343,
+      "seconds": 2.328,
       "errors": [],
       "artifacts": {
         "word_level": {
@@ -2626,15 +2626,15 @@
         },
         "metrics": {
           "present": true,
-          "sha256": "659d291b4778eac3946fa25ac9d6fcdc2ccacd8d41eb6f569c38953346fcc838"
-        },
-        "manifest": {
-          "present": false,
-          "sha256": null
+          "sha256": "dd3b32a9be8eb82a8461ad10d29454eeb615410b949386ff47de565c95c8b3ee"
         },
         "summary": {
           "present": true,
-          "sha256": "c442d3d1f5278e66f764053ba9c3efd1c7b87b1b2960e74b56057677260bdf7f"
+          "sha256": "8ca4526922979211e890138fb9449e6f501fc6eb139f50b3379a616b86347aff"
+        },
+        "manifest": {
+          "present": true,
+          "sha256": null
         }
       },
       "layers_present": true,
@@ -2682,7 +2682,7 @@
       "name": "or2",
       "passed": true,
       "status": "ok",
-      "seconds": 2.241,
+      "seconds": 2.253,
       "errors": [],
       "artifacts": {
         "word_level": {
@@ -2703,15 +2703,15 @@
         },
         "metrics": {
           "present": true,
-          "sha256": "a2cf5c9480e04957e732f3ab8712d6cda14b466b15005ab0d70dc40920e58ab2"
-        },
-        "manifest": {
-          "present": false,
-          "sha256": null
+          "sha256": "ac08b4dc70eea8ee716ccd2dd78f5f95cab421455bc1b8634a4624bf33829512"
         },
         "summary": {
           "present": true,
-          "sha256": "eb213ab3e5d4ab3564bb8c0fa080335afe3ef805eae62fc246577746815707ec"
+          "sha256": "bc3ba4b4c5a42b43c8438d26cdf81e02c57914a4f618c1b721c99e24db95f1f2"
+        },
+        "manifest": {
+          "present": true,
+          "sha256": null
         }
       },
       "layers_present": true,
@@ -2759,7 +2759,7 @@
       "name": "parity8",
       "passed": true,
       "status": "ok",
-      "seconds": 2.446,
+      "seconds": 2.279,
       "errors": [],
       "artifacts": {
         "word_level": {
@@ -2780,15 +2780,15 @@
         },
         "metrics": {
           "present": true,
-          "sha256": "66c0e27a7f4bd8c2af13df58c607a4d24a8985e1971c422ffc64b605a8497f2b"
-        },
-        "manifest": {
-          "present": false,
-          "sha256": null
+          "sha256": "c38e1469c97f7f378fba1854ec1fda65692b214b21ef3ef9d721bf85d111063e"
         },
         "summary": {
           "present": true,
-          "sha256": "b01ddc25d0a1fe3cd8c72cd458c8d135149eb50add9310a54f856167d5069cda"
+          "sha256": "a546d796c2e65308be7c3116849bcfa18d81dbe1eb0cebfb9fea024a61179331"
+        },
+        "manifest": {
+          "present": true,
+          "sha256": null
         }
       },
       "layers_present": true,
@@ -2836,7 +2836,7 @@
       "name": "priority_enc8",
       "passed": true,
       "status": "ok",
-      "seconds": 2.655,
+      "seconds": 2.411,
       "errors": [],
       "artifacts": {
         "word_level": {
@@ -2857,15 +2857,15 @@
         },
         "metrics": {
           "present": true,
-          "sha256": "cf4eb7d2bf3589659987f982d2ec6f5cc11f0ecbf43363c5f2c1cef8b2d1f046"
-        },
-        "manifest": {
-          "present": false,
-          "sha256": null
+          "sha256": "b6b6c565049c3ea815813c3c19e00b2d844d5afcb1114f0dbf5449353c207313"
         },
         "summary": {
           "present": true,
-          "sha256": "0af8357458dcbf28fab0a879e26420a1a125985ac9c82c01261fdb1dcc191df9"
+          "sha256": "0d82b0d98902b513dd300143db39d7290888b38283b893fe69de1f52fbbf7aaf"
+        },
+        "manifest": {
+          "present": true,
+          "sha256": null
         }
       },
       "layers_present": true,
@@ -2913,7 +2913,7 @@
       "name": "reg8_en",
       "passed": true,
       "status": "ok",
-      "seconds": 2.637,
+      "seconds": 2.434,
       "errors": [],
       "artifacts": {
         "word_level": {
@@ -2934,15 +2934,15 @@
         },
         "metrics": {
           "present": true,
-          "sha256": "894124bd8b804eb9e2dcf8f11046241b2e0ece17006d6ddd436a68299afbd786"
-        },
-        "manifest": {
-          "present": false,
-          "sha256": null
+          "sha256": "deadea8cb1ff919be2e6688382e52bbad2ebe6a7b86a96f45d3449eb7a15c9ba"
         },
         "summary": {
           "present": true,
-          "sha256": "05fd3549e45ba5c932394f4dda4954cbac54d6f594a0c497f239bac224911af7"
+          "sha256": "8b140c6fd150c6c3405255a2cb18cc71389b371890360a812fb74215188abdb1"
+        },
+        "manifest": {
+          "present": true,
+          "sha256": null
         }
       },
       "layers_present": true,
@@ -2990,7 +2990,7 @@
       "name": "shift_reg8",
       "passed": true,
       "status": "ok",
-      "seconds": 2.442,
+      "seconds": 2.288,
       "errors": [],
       "artifacts": {
         "word_level": {
@@ -3011,15 +3011,15 @@
         },
         "metrics": {
           "present": true,
-          "sha256": "e5a5907d065821fca61919025a2d56b6db178fe7914394d7f995b2846baca2cf"
-        },
-        "manifest": {
-          "present": false,
-          "sha256": null
+          "sha256": "5443c34af331a276a0cb70fdecffcb590abcbd268830809b4c7989b56218d7cc"
         },
         "summary": {
           "present": true,
-          "sha256": "a74a8dffce536214e84fdaf992d52ce9a7dc9dc4d5202541b7bc4d568a603731"
+          "sha256": "5554982a80ac5a44d8bcc11ac014f6623950862ffe8a43e071b308ab96c3a6cf"
+        },
+        "manifest": {
+          "present": true,
+          "sha256": null
         }
       },
       "layers_present": true,
@@ -3067,7 +3067,7 @@
       "name": "skid_buffer",
       "passed": true,
       "status": "ok",
-      "seconds": 2.707,
+      "seconds": 2.633,
       "errors": [],
       "artifacts": {
         "word_level": {
@@ -3088,15 +3088,15 @@
         },
         "metrics": {
           "present": true,
-          "sha256": "b092474ffd5779d55c60a64c7a727b3795dfce0c6367ce56cbe679077ba1b5bc"
-        },
-        "manifest": {
-          "present": false,
-          "sha256": null
+          "sha256": "9fabee5d9e18f28ee42a8f624ab99118f366c5499298ba9043074a42a9529ed4"
         },
         "summary": {
           "present": true,
-          "sha256": "ca884b0417a75c51d891f8f3202dc184e6151e53856fc9d6b9434e10830ecf92"
+          "sha256": "69320170c216a3dbb2b1e1c6ed913b9baeb2c5b23a0d59dd0c50b3fa29822288"
+        },
+        "manifest": {
+          "present": true,
+          "sha256": null
         }
       },
       "layers_present": true,
@@ -3144,7 +3144,7 @@
       "name": "sync_fifo_d16_w32",
       "passed": true,
       "status": "ok",
-      "seconds": 11.73,
+      "seconds": 11.132,
       "errors": [],
       "artifacts": {
         "word_level": {
@@ -3165,15 +3165,15 @@
         },
         "metrics": {
           "present": true,
-          "sha256": "430b2cc0e528cb3102645acfb3c0e2cb98cc9e119bdc5cd8ec03b1254d1d0662"
-        },
-        "manifest": {
-          "present": false,
-          "sha256": null
+          "sha256": "88eb7d1ceb4bbba559102df1384c08baa0aa260e51521f6333f315557bc77dad"
         },
         "summary": {
           "present": true,
-          "sha256": "d735594f757c14311ec33d9922ddc0b081920548b65e7726b6c6d27cbb117f67"
+          "sha256": "f5ef037fabeb40b5855204c92a45d5b8e0dc5ba155ae22944782c5437d0829d0"
+        },
+        "manifest": {
+          "present": true,
+          "sha256": null
         }
       },
       "layers_present": true,
@@ -3221,7 +3221,7 @@
       "name": "sync_fifo_d16_w8",
       "passed": true,
       "status": "ok",
-      "seconds": 5.075,
+      "seconds": 5.025,
       "errors": [],
       "artifacts": {
         "word_level": {
@@ -3242,15 +3242,15 @@
         },
         "metrics": {
           "present": true,
-          "sha256": "1077bd7bbcaf970268be0d2c12f0ce9275615a7c17eb846cde4339742ac22ebe"
-        },
-        "manifest": {
-          "present": false,
-          "sha256": null
+          "sha256": "b2015db921d8cc1edd451663fb27799d5ac62543378e08d40a147fb7ad77bd0c"
         },
         "summary": {
           "present": true,
-          "sha256": "6ba544b5227faf07e26ce15bd4955b8e17ffee9c1bc28e6475488dfe3cb9b8a5"
+          "sha256": "73fa01684107e0a8d45a6a118762636932057b73a083c4c230968b526a39221d"
+        },
+        "manifest": {
+          "present": true,
+          "sha256": null
         }
       },
       "layers_present": true,
@@ -3298,7 +3298,7 @@
       "name": "sync_fifo_d4_w8",
       "passed": true,
       "status": "ok",
-      "seconds": 3.447,
+      "seconds": 3.145,
       "errors": [],
       "artifacts": {
         "word_level": {
@@ -3319,15 +3319,15 @@
         },
         "metrics": {
           "present": true,
-          "sha256": "d277049cf551d72136e2282d7b6eae830f98338ef66fc0cbca76b70ba2156c10"
-        },
-        "manifest": {
-          "present": false,
-          "sha256": null
+          "sha256": "bddca7d2466aaa18d66a6d151553a3a57ad68facff7098ee3cfea9f752133af1"
         },
         "summary": {
           "present": true,
-          "sha256": "b6260423be77d4730970a5fb21d3999be7d51d1a14532062fbf84519dc029b1d"
+          "sha256": "0d9dc1b656ebeb9f8a4f33362cdea935b539a9b30710701296ae08834b4cc7e7"
+        },
+        "manifest": {
+          "present": true,
+          "sha256": null
         }
       },
       "layers_present": true,
@@ -3375,7 +3375,7 @@
       "name": "sync_fifo_d8_w8",
       "passed": true,
       "status": "ok",
-      "seconds": 3.914,
+      "seconds": 3.658,
       "errors": [],
       "artifacts": {
         "word_level": {
@@ -3396,15 +3396,15 @@
         },
         "metrics": {
           "present": true,
-          "sha256": "f6b73da6ad0d01fa2c4a49845d81d3ca162434ddb81c88b92b82763e90c86eb8"
-        },
-        "manifest": {
-          "present": false,
-          "sha256": null
+          "sha256": "cd2591153050a8fe53b115ec444aa5f12885b7a87e81f3f760ea4bf5c1a3597d"
         },
         "summary": {
           "present": true,
-          "sha256": "3c560d8985f3835c6cd78a3572680c53e1964a46a8223ba39737a5c731af6a1a"
+          "sha256": "6cf37b58cd849d55454ae7faaedd191acca2e2bc47113c8e77ff983b5cd7650e"
+        },
+        "manifest": {
+          "present": true,
+          "sha256": null
         }
       },
       "layers_present": true,
@@ -3452,7 +3452,7 @@
       "name": "xor2",
       "passed": true,
       "status": "ok",
-      "seconds": 2.499,
+      "seconds": 2.397,
       "errors": [],
       "artifacts": {
         "word_level": {
@@ -3473,15 +3473,15 @@
         },
         "metrics": {
           "present": true,
-          "sha256": "ed79d8489c71e5603530c18411861df27acca26dde6cc3105b37d75e47055d17"
-        },
-        "manifest": {
-          "present": false,
-          "sha256": null
+          "sha256": "24f0e3ee5a4857f9466449369c3e55b33906e5fec6e28f285f2d1e7de4db9489"
         },
         "summary": {
           "present": true,
-          "sha256": "fa59355031987daea5301002b2f651b439df750f22b64c98c7eb0723aa06b074"
+          "sha256": "676d5e16b7f351ef8e75c055496228a0de8175c2f6dbef9c6a8769628db4a06d"
+        },
+        "manifest": {
+          "present": true,
+          "sha256": null
         }
       },
       "layers_present": true,
@@ -3529,7 +3529,7 @@
       "name": "sync_fifo",
       "passed": true,
       "status": "ok",
-      "seconds": 11.772,
+      "seconds": 11.137,
       "errors": [],
       "artifacts": {
         "word_level": {
@@ -3550,15 +3550,15 @@
         },
         "metrics": {
           "present": true,
-          "sha256": "0a96dad08d2066782ce35f0c6849a39d81669d31297a4fd9010e64ca1ea5758d"
-        },
-        "manifest": {
-          "present": false,
-          "sha256": null
+          "sha256": "e03fa5d70a05aa8958ef31caed830f8632c2abb648b31e83efa4d352fbf635d4"
         },
         "summary": {
           "present": true,
-          "sha256": "47ad055c35b926e5ac370b776c53e094367d1035777c0f30c0f5d5c9297f1262"
+          "sha256": "7e9e68404fd4dd865fe00c036445849b76c792d45d8e847de57f1c5f5d82c3d0"
+        },
+        "manifest": {
+          "present": true,
+          "sha256": null
         }
       },
       "layers_present": true,
@@ -3606,7 +3606,7 @@
       "name": "async_fifo",
       "passed": true,
       "status": "ok",
-      "seconds": 3.61,
+      "seconds": 3.497,
       "errors": [],
       "artifacts": {
         "word_level": {
@@ -3627,15 +3627,15 @@
         },
         "metrics": {
           "present": true,
-          "sha256": "de749dac9b92e9e79f73b8383b65718e3d9f64253f8622c93b3dfef4af2ba62b"
-        },
-        "manifest": {
-          "present": false,
-          "sha256": null
+          "sha256": "24db0e66e8c959d4dd44e14f0407156508e7a6fda3c388493c816210f5ec03fa"
         },
         "summary": {
           "present": true,
-          "sha256": "eeb08ea6769598b260a6e25f24668f4ff6015799771fa96115b1b67a1e344870"
+          "sha256": "641a1134df910eecb259a58c89a0e5ea43bdd64e660c46d98991a03c2bbeadd5"
+        },
+        "manifest": {
+          "present": true,
+          "sha256": null
         }
       },
       "layers_present": true,
@@ -3683,7 +3683,7 @@
       "name": "struct_fifo",
       "passed": true,
       "status": "ok",
-      "seconds": 5.072,
+      "seconds": 4.927,
       "errors": [],
       "artifacts": {
         "word_level": {
@@ -3704,15 +3704,15 @@
         },
         "metrics": {
           "present": true,
-          "sha256": "be91df040d2fc160660c177011a785bb0c9e09005932a09c7b6079dbf21c9a68"
-        },
-        "manifest": {
-          "present": false,
-          "sha256": null
+          "sha256": "5f72b0f3c4e59fc40cc1a2f35647168ea525fa3a854aaca2f725d1f6cf76519a"
         },
         "summary": {
           "present": true,
-          "sha256": "0e7639ec97308868d37e37029e90a92aa8b57587df2b124a306723df2560c059"
+          "sha256": "72980af9dbe1be02b8cf3e0644a0eb99991dcc7a6f93cce349d3200d5ea30b6e"
+        },
+        "manifest": {
+          "present": true,
+          "sha256": null
         }
       },
       "layers_present": true,
@@ -3760,7 +3760,7 @@
       "name": "if_fifo",
       "passed": true,
       "status": "ok",
-      "seconds": 3.264,
+      "seconds": 3.194,
       "errors": [],
       "artifacts": {
         "word_level": {
@@ -3781,15 +3781,15 @@
         },
         "metrics": {
           "present": true,
-          "sha256": "d3265c44ddbf88c2a3f1c56e9556b2ba58ba30fa7ac92cacdafdcce108cef129"
-        },
-        "manifest": {
-          "present": false,
-          "sha256": null
+          "sha256": "10c92a45a03399b5897ab6ecbacf9a80c1be65e39c1af9da216d690a862252b2"
         },
         "summary": {
           "present": true,
-          "sha256": "aefacc58b5624401e34f6b688e5cd9eb51c1b58959d1121c54c4e81f3aeaeecf"
+          "sha256": "e99ae43297f72286f5ee6869420ee6f03bbabc58573039f37c2de1314d55bc14"
+        },
+        "manifest": {
+          "present": true,
+          "sha256": null
         }
       },
       "layers_present": true,

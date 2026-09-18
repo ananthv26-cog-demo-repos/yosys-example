@@ -22,7 +22,8 @@ suite exit nonzero. `suite_summary.json`, a Markdown table, and the reviewer rol
 the output directory so the numbers can be pasted into a report.
 
 Blocks are independent processes, so `-j` runs them concurrently (`-j0` = one per core);
-output files stay in manifest order regardless.
+the output files stay in manifest order regardless, though the console lines appear in
+completion order. A `--baseline` mismatch fails the run.
 """
 
 from __future__ import annotations
@@ -165,6 +166,11 @@ def main(argv: list[str] | None = None) -> int:
         ap.error(f"--only names not in the manifest: {', '.join(unknown)}")
     if args.jobs < 0:
         ap.error("--jobs must be 0 (one per core) or a positive number of blocks")
+    # a name is also an output directory, so duplicates would have two concurrent blocks purging
+    # and rewriting the same artifacts
+    dupes = sorted({e["name"] for e in entries if [x["name"] for x in entries].count(e["name"]) > 1})
+    if dupes:
+        ap.error(f"duplicate block names in the manifest: {', '.join(dupes)}")
     jobs = max(1, min(args.jobs or (os.cpu_count() or 1), len(entries) or 1))
 
     def run_and_report(e: dict) -> dict:
@@ -191,7 +197,10 @@ def main(argv: list[str] | None = None) -> int:
             print(f"[suite] criterion {'UNKNOWN' if c['ok'] is None else 'FAILED'}: {c['id']} — {c['measured']}")
     print(f"[suite] {passed}/{len(results)} blocks passed in {summary['wall_seconds']}s (-j{jobs}), "
           f"{evidence['criteria_passed']}/{evidence['criteria_total']} criteria -> {out_dir / 'EVIDENCE.md'}")
-    return 0 if passed == len(results) else 1
+    # corpus-wide criteria can legitimately fail for an --only selection, but a baseline was asked
+    # for explicitly: layer files that changed make the run fail
+    deterministic = next(c["ok"] for c in evidence["criteria"] if c["id"] == "determinism")
+    return 0 if passed == len(results) and (not args.baseline or deterministic is True) else 1
 
 
 if __name__ == "__main__":

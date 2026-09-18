@@ -10,7 +10,7 @@
 | PASS | ASAP7 mapping reports cell counts and summed area | 49/49 blocks, 11658 cells, 1558.19376 um2 total |
 | PASS | no unsupported cell silently dropped (an unmodelled cell aborts the run; each run reconciles its layer counts against yosys `stat`) | 0 aborted runs, 0 errors |
 | PASS | the Boolean graph and the ASAP7 netlist are proven to match the RTL | 46 proven, 3 bounded, 0 failed, 0 unproven pairs |
-| PASS | random RTL vs netlist simulation finds no mismatch | 49 blocks simulated, 66012 bits compared, 0 mismatches |
+| PASS | random RTL vs netlist simulation finds no mismatch | 49/49 blocks simulated, 66012 bits compared, 0 mismatches |
 | PASS | report nodes link back to RTL source locations where Yosys has them | `src` on 730/792 (92%) word_level, 95/95 (100%) sequential_overlay, 286/11658 (2%) mapped_cells |
 | PASS | the same sources and profile reproduce byte-identical layer files | 49 blocks x 4 layer files byte-identical to the baseline |
 
