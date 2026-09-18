@@ -1,0 +1,3837 @@
+{
+  "schema_version": 1,
+  "criteria_passed": 9,
+  "criteria_total": 9,
+  "criteria_unknown": 0,
+  "criteria": [
+    {
+      "id": "blocks_pass",
+      "requirement": "every corpus block runs end to end and meets its hand counts",
+      "measured": "49/49 blocks",
+      "ok": true
+    },
+    {
+      "id": "fifo_variants",
+      "requirement": "at least 20 small FIFO variants",
+      "measured": "24 FIFO blocks",
+      "ok": true
+    },
+    {
+      "id": "all_layers",
+      "requirement": "word-level, sequential, Boolean and mapped report for every design",
+      "measured": "49/49 blocks with all four layer files",
+      "ok": true
+    },
+    {
+      "id": "asap7_area",
+      "requirement": "ASAP7 mapping reports cell counts and summed area",
+      "measured": "49/49 blocks, 11658 cells, 1558.19376 um2 total",
+      "ok": true
+    },
+    {
+      "id": "nothing_omitted",
+      "requirement": "no unsupported cell silently dropped (an unmodelled cell aborts the run; each run reconciles its layer counts against yosys `stat`)",
+      "measured": "0 aborted runs, 0 errors",
+      "ok": true
+    },
+    {
+      "id": "equivalence",
+      "requirement": "the Boolean graph and the ASAP7 netlist are proven to match the RTL",
+      "measured": "46 proven, 3 bounded, 0 failed, 0 unproven pairs",
+      "ok": true
+    },
+    {
+      "id": "simulation",
+      "requirement": "random RTL vs netlist simulation finds no mismatch",
+      "measured": "49/49 blocks simulated, 66012 bits compared, 0 mismatches",
+      "ok": true
+    },
+    {
+      "id": "provenance",
+      "requirement": "report nodes link back to RTL source locations where Yosys has them",
+      "measured": "`src` on 730/792 (92%) word_level, 95/95 (100%) sequential_overlay, 286/11658 (2%) mapped_cells",
+      "ok": true
+    },
+    {
+      "id": "determinism",
+      "requirement": "the same sources and profile reproduce byte-identical layer files",
+      "measured": "49 blocks x 4 layer files byte-identical to the baseline",
+      "ok": true
+    }
+  ],
+  "blocks": [
+    {
+      "name": "adder8",
+      "passed": true,
+      "status": "ok",
+      "seconds": 2.269,
+      "errors": [],
+      "artifacts": {
+        "word_level": {
+          "present": true,
+          "sha256": "c8554e38ebcf61681411092ec40e8ed89a1b9ab8acf3466b0a5717899085f6b1"
+        },
+        "sequential_overlay": {
+          "present": true,
+          "sha256": "6e6bb57ae3d097f2cb446610818731e81e42fae13401cc8305311a3dc119f456"
+        },
+        "boolean_graph": {
+          "present": true,
+          "sha256": "e9d548d9c9570facf0e2d1ba831d856ff4591de84b66f6799ac734735f14aff0"
+        },
+        "mapped_cells": {
+          "present": true,
+          "sha256": "62b8bad9ed3eeee83399b4bebfc17749a09fb66008d8bdb6189618c6cce8567b"
+        },
+        "metrics": {
+          "present": true,
+          "sha256": "c0c656e493655cc24be9b006446464b70e90018028f161780766d1b1b13cf579"
+        },
+        "summary": {
+          "present": true,
+          "sha256": "564371ba78d12e21b15570b234eb3eefc80b141ef4c5fca657768b37ead9c3b3"
+        },
+        "manifest": {
+          "present": true,
+          "sha256": null
+        }
+      },
+      "layers_present": true,
+      "mapped": {
+        "cells": 32,
+        "area": 3.22218
+      },
+      "equivalence": {
+        "status": "proven",
+        "checks": {
+          "rtl_vs_graph": {
+            "status": "proven",
+            "proven": 9,
+            "unproven": 0
+          },
+          "graph_vs_mapped": {
+            "status": "proven",
+            "proven": 9,
+            "unproven": 0
+          }
+        }
+      },
+      "simulation": {
+        "status": "match",
+        "cycles": 200,
+        "compared_bits": 1764,
+        "mismatches": 0,
+        "x_bits": null
+      },
+      "warnings": 2,
+      "src_coverage": {
+        "with_src": {
+          "word_level": 1,
+          "sequential_overlay": 0,
+          "mapped_cells": 0
+        },
+        "items": {
+          "word_level": 1,
+          "sequential_overlay": 0,
+          "mapped_cells": 32
+        }
+      }
+    },
+    {
+      "name": "alu4",
+      "passed": true,
+      "status": "ok",
+      "seconds": 2.364,
+      "errors": [],
+      "artifacts": {
+        "word_level": {
+          "present": true,
+          "sha256": "9df7151a2fa0020d8a5a97137ec6ff54e63f3383afde54e27e243a84834500ef"
+        },
+        "sequential_overlay": {
+          "present": true,
+          "sha256": "664939bdade8e3936f89fac6937592954cdb141c9a469b3691a964dc51daec5e"
+        },
+        "boolean_graph": {
+          "present": true,
+          "sha256": "9e9330befbf48703eda9dc14eeae3c3f22b720471c1bcadb1465e12ce1ab1feb"
+        },
+        "mapped_cells": {
+          "present": true,
+          "sha256": "d09196151ed0d262839f4bfe828f2fc8828fb4c160cf8cb04b5dceb1798c9089"
+        },
+        "metrics": {
+          "present": true,
+          "sha256": "d58e8225eb6bb70b9b3310fe8513095bc6f923972769ec276cb798ac62cb8b3d"
+        },
+        "summary": {
+          "present": true,
+          "sha256": "cb17e2968c130f39097972cbf99ee38153b6dc1cbbadf20f6b2d5745ef03cf08"
+        },
+        "manifest": {
+          "present": true,
+          "sha256": null
+        }
+      },
+      "layers_present": true,
+      "mapped": {
+        "cells": 60,
+        "area": 5.0301
+      },
+      "equivalence": {
+        "status": "proven",
+        "checks": {
+          "rtl_vs_graph": {
+            "status": "proven",
+            "proven": 5,
+            "unproven": 0
+          },
+          "graph_vs_mapped": {
+            "status": "proven",
+            "proven": 5,
+            "unproven": 0
+          }
+        }
+      },
+      "simulation": {
+        "status": "match",
+        "cycles": 200,
+        "compared_bits": 980,
+        "mismatches": 0,
+        "x_bits": null
+      },
+      "warnings": 2,
+      "src_coverage": {
+        "with_src": {
+          "word_level": 15,
+          "sequential_overlay": 0,
+          "mapped_cells": 0
+        },
+        "items": {
+          "word_level": 15,
+          "sequential_overlay": 0,
+          "mapped_cells": 60
+        }
+      }
+    },
+    {
+      "name": "and2",
+      "passed": true,
+      "status": "ok",
+      "seconds": 2.181,
+      "errors": [],
+      "artifacts": {
+        "word_level": {
+          "present": true,
+          "sha256": "9914e39a195c2243e59f079741ac6c34a0e290261943ac06def57a00f41aac30"
+        },
+        "sequential_overlay": {
+          "present": true,
+          "sha256": "5d824a25a8a89dd7b591492d01ab8cca4325c6eeed19001245fe5bf64b8b669b"
+        },
+        "boolean_graph": {
+          "present": true,
+          "sha256": "cb0cd1b5ad419da32068e0908c8b52973738453c88fcb3da1057a9c0e9560bfc"
+        },
+        "mapped_cells": {
+          "present": true,
+          "sha256": "050ab6bf2911cb0debf4ecbf555fece0598689bec6c6270e894560788af82cc7"
+        },
+        "metrics": {
+          "present": true,
+          "sha256": "cee21a6bf09eeaf05524df90fbdf11cc9a2ce461ef0729a7879a113d6b2e6246"
+        },
+        "summary": {
+          "present": true,
+          "sha256": "d502fe9dd6c24ad946b9012796e5e1587cb37eb081240e3f9aa962cf55d5d761"
+        },
+        "manifest": {
+          "present": true,
+          "sha256": null
+        }
+      },
+      "layers_present": true,
+      "mapped": {
+        "cells": 1,
+        "area": 0.08748
+      },
+      "equivalence": {
+        "status": "proven",
+        "checks": {
+          "rtl_vs_graph": {
+            "status": "proven",
+            "proven": 1,
+            "unproven": 0
+          },
+          "graph_vs_mapped": {
+            "status": "proven",
+            "proven": 1,
+            "unproven": 0
+          }
+        }
+      },
+      "simulation": {
+        "status": "match",
+        "cycles": 200,
+        "compared_bits": 196,
+        "mismatches": 0,
+        "x_bits": null
+      },
+      "warnings": 2,
+      "src_coverage": {
+        "with_src": {
+          "word_level": 1,
+          "sequential_overlay": 0,
+          "mapped_cells": 0
+        },
+        "items": {
+          "word_level": 1,
+          "sequential_overlay": 0,
+          "mapped_cells": 1
+        }
+      }
+    },
+    {
+      "name": "comparator8",
+      "passed": true,
+      "status": "ok",
+      "seconds": 2.26,
+      "errors": [],
+      "artifacts": {
+        "word_level": {
+          "present": true,
+          "sha256": "8acd78af4bf3cbd572e4dae96e4febedecd7969916fc58659c7725c3c80ae097"
+        },
+        "sequential_overlay": {
+          "present": true,
+          "sha256": "d031a7c01350ff4f1870dfcc773d4ef642975ddf1dc26a70663517a1a3b14890"
+        },
+        "boolean_graph": {
+          "present": true,
+          "sha256": "77e1adcf812c8f82563608ef158700dd8e214d9ce4b86004b4167eb4f6d34f43"
+        },
+        "mapped_cells": {
+          "present": true,
+          "sha256": "7b952f7cfd0442ba072483379b02228f602fef20a5256d58aa3437541c549904"
+        },
+        "metrics": {
+          "present": true,
+          "sha256": "ea579cafe3733be761d56738468c1ab3a09fef1d340d0d37297ea9958d66fb32"
+        },
+        "summary": {
+          "present": true,
+          "sha256": "131bae68292561634aff1becaaf850222442f4c68f09ad2b90e29b6844d93670"
+        },
+        "manifest": {
+          "present": true,
+          "sha256": null
+        }
+      },
+      "layers_present": true,
+      "mapped": {
+        "cells": 26,
+        "area": 1.86624
+      },
+      "equivalence": {
+        "status": "proven",
+        "checks": {
+          "rtl_vs_graph": {
+            "status": "proven",
+            "proven": 3,
+            "unproven": 0
+          },
+          "graph_vs_mapped": {
+            "status": "proven",
+            "proven": 3,
+            "unproven": 0
+          }
+        }
+      },
+      "simulation": {
+        "status": "match",
+        "cycles": 200,
+        "compared_bits": 588,
+        "mismatches": 0,
+        "x_bits": null
+      },
+      "warnings": 2,
+      "src_coverage": {
+        "with_src": {
+          "word_level": 3,
+          "sequential_overlay": 0,
+          "mapped_cells": 0
+        },
+        "items": {
+          "word_level": 3,
+          "sequential_overlay": 0,
+          "mapped_cells": 26
+        }
+      }
+    },
+    {
+      "name": "counter4",
+      "passed": true,
+      "status": "ok",
+      "seconds": 2.231,
+      "errors": [],
+      "artifacts": {
+        "word_level": {
+          "present": true,
+          "sha256": "63010152a7ab53b14a7691a82239d4f728f5b0edca6cd496f9e9e9311d703e54"
+        },
+        "sequential_overlay": {
+          "present": true,
+          "sha256": "e07c32fc4c67cc798617b841596b4a06d46e884b966a6425f0676e631c2d2009"
+        },
+        "boolean_graph": {
+          "present": true,
+          "sha256": "5788b3be5faf7949f332ce7cb42c77659bc93c5911297f485ea51fc42331c384"
+        },
+        "mapped_cells": {
+          "present": true,
+          "sha256": "6eaa96c7faaa2ef649171ed6ea0f7ce46d8b79574c5afa6c7905005a22fe23ee"
+        },
+        "metrics": {
+          "present": true,
+          "sha256": "2e5f4549c760271c2b45ad8f77b36b8c7659853aba9db41da61d004bc97a5900"
+        },
+        "summary": {
+          "present": true,
+          "sha256": "2387af226d17ccd0c45343e2eb197c61ee635f806c97271c1a59f3725da7a4b5"
+        },
+        "manifest": {
+          "present": true,
+          "sha256": null
+        }
+      },
+      "layers_present": true,
+      "mapped": {
+        "cells": 13,
+        "area": 2.187
+      },
+      "equivalence": {
+        "status": "proven",
+        "checks": {
+          "rtl_vs_graph": {
+            "status": "proven",
+            "proven": 4,
+            "unproven": 0
+          },
+          "graph_vs_mapped": {
+            "status": "proven",
+            "proven": 4,
+            "unproven": 0
+          }
+        }
+      },
+      "simulation": {
+        "status": "match",
+        "cycles": 200,
+        "compared_bits": 784,
+        "mismatches": 0,
+        "x_bits": null
+      },
+      "warnings": 2,
+      "src_coverage": {
+        "with_src": {
+          "word_level": 2,
+          "sequential_overlay": 1,
+          "mapped_cells": 4
+        },
+        "items": {
+          "word_level": 2,
+          "sequential_overlay": 1,
+          "mapped_cells": 13
+        }
+      }
+    },
+    {
+      "name": "counter8_en",
+      "passed": true,
+      "status": "ok",
+      "seconds": 2.287,
+      "errors": [],
+      "artifacts": {
+        "word_level": {
+          "present": true,
+          "sha256": "93d4fa3753c4d64bcab65bb78f428e8e80659a3b0925f462f76c89bc6202cd79"
+        },
+        "sequential_overlay": {
+          "present": true,
+          "sha256": "86be56d951f410a2eceed36de9c2faa12d9ec159be5c6d33db10a2b185df115a"
+        },
+        "boolean_graph": {
+          "present": true,
+          "sha256": "61e5b8e69958d9fb47fb06e9d7bb60c6e3b6827b6dd3d6cd7bcd8899d50b1235"
+        },
+        "mapped_cells": {
+          "present": true,
+          "sha256": "4061f2440deeedf3a9d1b8b2bde4d2f4dd84594942a9f529bc04c525a2e8cf68"
+        },
+        "metrics": {
+          "present": true,
+          "sha256": "78ac4143d2384b25c6d1f695f66cbe72965dad81cdf3e0234c2eda735d28de86"
+        },
+        "summary": {
+          "present": true,
+          "sha256": "d11696e9a1f288addad4e08cf9a604805064ec419a6c30c3ddc36ecf7d01923e"
+        },
+        "manifest": {
+          "present": true,
+          "sha256": null
+        }
+      },
+      "layers_present": true,
+      "mapped": {
+        "cells": 29,
+        "area": 4.53438
+      },
+      "equivalence": {
+        "status": "proven",
+        "checks": {
+          "rtl_vs_graph": {
+            "status": "proven",
+            "proven": 8,
+            "unproven": 0
+          },
+          "graph_vs_mapped": {
+            "status": "proven",
+            "proven": 8,
+            "unproven": 0
+          }
+        }
+      },
+      "simulation": {
+        "status": "match",
+        "cycles": 200,
+        "compared_bits": 1568,
+        "mismatches": 0,
+        "x_bits": null
+      },
+      "warnings": 2,
+      "src_coverage": {
+        "with_src": {
+          "word_level": 4,
+          "sequential_overlay": 1,
+          "mapped_cells": 8
+        },
+        "items": {
+          "word_level": 5,
+          "sequential_overlay": 1,
+          "mapped_cells": 29
+        }
+      }
+    },
+    {
+      "name": "dec2to4",
+      "passed": true,
+      "status": "ok",
+      "seconds": 2.322,
+      "errors": [],
+      "artifacts": {
+        "word_level": {
+          "present": true,
+          "sha256": "1069e150ff683b22e6cddfbbabfbfdb46da6559d07aae2e420a07d2af6d18bf1"
+        },
+        "sequential_overlay": {
+          "present": true,
+          "sha256": "f4aadf99b3d20331559fddd7c91c679414e7a966993002a6a684bc50def5e969"
+        },
+        "boolean_graph": {
+          "present": true,
+          "sha256": "deefab6bb3d0b83968e41fbfc8d4c467f90dc8a4f774d24334a61657cde6d355"
+        },
+        "mapped_cells": {
+          "present": true,
+          "sha256": "eb6d1ae3b3d3c2bd985ade17bc9769872252bbc1edeae4af3e60b8a29650b66b"
+        },
+        "metrics": {
+          "present": true,
+          "sha256": "6ec1dd1df3b6290acfdce83c9301b23fd6ca47cc13f14a0f61760c9f4cda0124"
+        },
+        "summary": {
+          "present": true,
+          "sha256": "bee524fcd907ad03a246758d8acfcd4a69f34f2fa9d841cddc48103bbe552a73"
+        },
+        "manifest": {
+          "present": true,
+          "sha256": null
+        }
+      },
+      "layers_present": true,
+      "mapped": {
+        "cells": 5,
+        "area": 0.33534
+      },
+      "equivalence": {
+        "status": "proven",
+        "checks": {
+          "rtl_vs_graph": {
+            "status": "proven",
+            "proven": 4,
+            "unproven": 0
+          },
+          "graph_vs_mapped": {
+            "status": "proven",
+            "proven": 4,
+            "unproven": 0
+          }
+        }
+      },
+      "simulation": {
+        "status": "match",
+        "cycles": 200,
+        "compared_bits": 784,
+        "mismatches": 0,
+        "x_bits": null
+      },
+      "warnings": 2,
+      "src_coverage": {
+        "with_src": {
+          "word_level": 1,
+          "sequential_overlay": 0,
+          "mapped_cells": 0
+        },
+        "items": {
+          "word_level": 1,
+          "sequential_overlay": 0,
+          "mapped_cells": 5
+        }
+      }
+    },
+    {
+      "name": "dff",
+      "passed": true,
+      "status": "ok",
+      "seconds": 2.074,
+      "errors": [],
+      "artifacts": {
+        "word_level": {
+          "present": true,
+          "sha256": "80f5fe4636d52a906b3352b81b21513b6b2f66071d62e95b7da04ad6a0bf191e"
+        },
+        "sequential_overlay": {
+          "present": true,
+          "sha256": "7ef3e0db5293e1bf7a5b710b4aa3dc632e1b904d5f4d0c50ded3d7bf6b275253"
+        },
+        "boolean_graph": {
+          "present": true,
+          "sha256": "99b20ea7334de25ae1a049e7fca5ebc99a03e2e3c5cb5eea0bd294df52116ac3"
+        },
+        "mapped_cells": {
+          "present": true,
+          "sha256": "6f3e112e5df205c57917e33b82506e817f143f568887cc0f1051f788025d5fb0"
+        },
+        "metrics": {
+          "present": true,
+          "sha256": "8da5894eba13e3cb36fbc71231f83974e51f9862692b12014db4c8797beb3bfd"
+        },
+        "summary": {
+          "present": true,
+          "sha256": "e4150067de89cc4ce3b388ca108345221b9b0e0cd03ed3cbcabf1359008d89c8"
+        },
+        "manifest": {
+          "present": true,
+          "sha256": null
+        }
+      },
+      "layers_present": true,
+      "mapped": {
+        "cells": 1,
+        "area": 0.3645
+      },
+      "equivalence": {
+        "status": "proven",
+        "checks": {
+          "rtl_vs_graph": {
+            "status": "proven",
+            "proven": 1,
+            "unproven": 0
+          },
+          "graph_vs_mapped": {
+            "status": "proven",
+            "proven": 1,
+            "unproven": 0
+          }
+        }
+      },
+      "simulation": {
+        "status": "match",
+        "cycles": 200,
+        "compared_bits": 196,
+        "mismatches": 0,
+        "x_bits": null
+      },
+      "warnings": 0,
+      "src_coverage": {
+        "with_src": {
+          "word_level": 1,
+          "sequential_overlay": 1,
+          "mapped_cells": 1
+        },
+        "items": {
+          "word_level": 1,
+          "sequential_overlay": 1,
+          "mapped_cells": 1
+        }
+      }
+    },
+    {
+      "name": "dff_async_rst",
+      "passed": true,
+      "status": "ok",
+      "seconds": 2.374,
+      "errors": [],
+      "artifacts": {
+        "word_level": {
+          "present": true,
+          "sha256": "01c0634564af2978968f1e926d96515e1706445c15441f0a4d24c023cc597e9f"
+        },
+        "sequential_overlay": {
+          "present": true,
+          "sha256": "639ef6bcc9378e615373aca089606da91a4953b71cab2c1709748ffec7d6c380"
+        },
+        "boolean_graph": {
+          "present": true,
+          "sha256": "6989f09258b287e9ad20ff12bccd073d80ed6b06d87758fdcb3196856a8c2595"
+        },
+        "mapped_cells": {
+          "present": true,
+          "sha256": "bc425ddd64d5c984cc5d0c0fab3cab1ae58778d25b65e7530048a35163a42a2e"
+        },
+        "metrics": {
+          "present": true,
+          "sha256": "2300461ec1c2c2cfb92912ca7618210caea43223c5968b727becfbafde9e3b47"
+        },
+        "summary": {
+          "present": true,
+          "sha256": "d2361d598ac500ca3570552ebd8bcbb6c50cf5ea363a9e2a86567924c3cf0156"
+        },
+        "manifest": {
+          "present": true,
+          "sha256": null
+        }
+      },
+      "layers_present": true,
+      "mapped": {
+        "cells": 2,
+        "area": 0.42282
+      },
+      "equivalence": {
+        "status": "proven",
+        "checks": {
+          "rtl_vs_graph": {
+            "status": "proven",
+            "proven": 1,
+            "unproven": 0
+          },
+          "graph_vs_mapped": {
+            "status": "proven",
+            "proven": 1,
+            "unproven": 0
+          }
+        }
+      },
+      "simulation": {
+        "status": "match",
+        "cycles": 200,
+        "compared_bits": 196,
+        "mismatches": 0,
+        "x_bits": null
+      },
+      "warnings": 2,
+      "src_coverage": {
+        "with_src": {
+          "word_level": 1,
+          "sequential_overlay": 1,
+          "mapped_cells": 1
+        },
+        "items": {
+          "word_level": 1,
+          "sequential_overlay": 1,
+          "mapped_cells": 2
+        }
+      }
+    },
+    {
+      "name": "dff_sync_rst",
+      "passed": true,
+      "status": "ok",
+      "seconds": 2.428,
+      "errors": [],
+      "artifacts": {
+        "word_level": {
+          "present": true,
+          "sha256": "c689ae52fd5af068e51f3aa3873f71fba30f8b8d0999410c934bc192aed71c44"
+        },
+        "sequential_overlay": {
+          "present": true,
+          "sha256": "d7b839f82f0c697ab3ed4880e51e58a03261dda4b7b048eaae2536908977a7b4"
+        },
+        "boolean_graph": {
+          "present": true,
+          "sha256": "4a10daa4b84b93a55802456ca2d7b18825d63c8c2a3f8f6d938e0bc95b60c832"
+        },
+        "mapped_cells": {
+          "present": true,
+          "sha256": "4dd7fd9a74800be66a9ae6120f2ae296ebb61023df480a1ea9a822aa8bcb9abb"
+        },
+        "metrics": {
+          "present": true,
+          "sha256": "a87cf8b781d7e09c0a54dfbfe818a3a015279137020d9fc6f97843dfb3e2b253"
+        },
+        "summary": {
+          "present": true,
+          "sha256": "fd1492e678b63ee02425260aeed8fb57dcba62ca8aa75ee4ab638c92f7dd8830"
+        },
+        "manifest": {
+          "present": true,
+          "sha256": null
+        }
+      },
+      "layers_present": true,
+      "mapped": {
+        "cells": 3,
+        "area": 0.46656
+      },
+      "equivalence": {
+        "status": "proven",
+        "checks": {
+          "rtl_vs_graph": {
+            "status": "proven",
+            "proven": 1,
+            "unproven": 0
+          },
+          "graph_vs_mapped": {
+            "status": "proven",
+            "proven": 1,
+            "unproven": 0
+          }
+        }
+      },
+      "simulation": {
+        "status": "match",
+        "cycles": 200,
+        "compared_bits": 196,
+        "mismatches": 0,
+        "x_bits": null
+      },
+      "warnings": 2,
+      "src_coverage": {
+        "with_src": {
+          "word_level": 1,
+          "sequential_overlay": 1,
+          "mapped_cells": 1
+        },
+        "items": {
+          "word_level": 1,
+          "sequential_overlay": 1,
+          "mapped_cells": 3
+        }
+      }
+    },
+    {
+      "name": "fifo_d2_w4",
+      "passed": true,
+      "status": "ok",
+      "seconds": 2.58,
+      "errors": [],
+      "artifacts": {
+        "word_level": {
+          "present": true,
+          "sha256": "1a6bc6e183be223c59dc19a3cfed63b4f98665a29ac9d9265937fb97d8a92261"
+        },
+        "sequential_overlay": {
+          "present": true,
+          "sha256": "0dd2b8dc231085ca335b85a8a120256af4212fa3971cfd800027f68ee2532f73"
+        },
+        "boolean_graph": {
+          "present": true,
+          "sha256": "6d6567fcf09a103adb7c838ce687c5348c491866d2a7f456846ae1dc63240e9f"
+        },
+        "mapped_cells": {
+          "present": true,
+          "sha256": "8e36c92391a54bcfe15e7c7591f81c529c0c35c6fc60a0150a9f5fb5a7dbd9ff"
+        },
+        "metrics": {
+          "present": true,
+          "sha256": "f2b0d58124a2e083d4996663312501a4a1db0109d438d16de6221b7043c252f8"
+        },
+        "summary": {
+          "present": true,
+          "sha256": "f8079d13944ec56f77e5d1d00b8381a3c405b8643bd847c7f2b9255ceb24b6bf"
+        },
+        "manifest": {
+          "present": true,
+          "sha256": null
+        }
+      },
+      "layers_present": true,
+      "mapped": {
+        "cells": 64,
+        "area": 8.019
+      },
+      "equivalence": {
+        "status": "proven",
+        "checks": {
+          "rtl_vs_graph": {
+            "status": "proven",
+            "proven": 18,
+            "unproven": 0
+          },
+          "graph_vs_mapped": {
+            "status": "proven",
+            "proven": 18,
+            "unproven": 0
+          }
+        }
+      },
+      "simulation": {
+        "status": "match",
+        "cycles": 200,
+        "compared_bits": 1168,
+        "mismatches": 0,
+        "x_bits": null
+      },
+      "warnings": 2,
+      "src_coverage": {
+        "with_src": {
+          "word_level": 24,
+          "sequential_overlay": 3,
+          "mapped_cells": 4
+        },
+        "items": {
+          "word_level": 26,
+          "sequential_overlay": 3,
+          "mapped_cells": 64
+        }
+      }
+    },
+    {
+      "name": "fifo_fwft_d4_w8",
+      "passed": true,
+      "status": "ok",
+      "seconds": 3.116,
+      "errors": [],
+      "artifacts": {
+        "word_level": {
+          "present": true,
+          "sha256": "3c9e5d79b0793f6cae4e4f5fc10d3296b2d6a8b23655799d33d50ea86fe2eb5a"
+        },
+        "sequential_overlay": {
+          "present": true,
+          "sha256": "fdd45c611e7706e74827b15a5cc3002d36057172be559dd71a944c73a819c3e9"
+        },
+        "boolean_graph": {
+          "present": true,
+          "sha256": "2f6a6e1d12341315d96b023700ccb3b7d04be47e5b737e1fe48354f7dd974862"
+        },
+        "mapped_cells": {
+          "present": true,
+          "sha256": "db2698795f1bd648b6b01edb55201e793de1d46b9f46d7e29ee87e5e51eaf316"
+        },
+        "metrics": {
+          "present": true,
+          "sha256": "84b87e879b124a60a8b1f8e97ae16161663515d44e719b47a13f33b87d7609cc"
+        },
+        "summary": {
+          "present": true,
+          "sha256": "514c6813b3147027d97029a94d9ecfa951463b9de8270b59b94043bdc39f695d"
+        },
+        "manifest": {
+          "present": true,
+          "sha256": null
+        }
+      },
+      "layers_present": true,
+      "mapped": {
+        "cells": 184,
+        "area": 24.5673
+      },
+      "equivalence": {
+        "status": "proven",
+        "checks": {
+          "rtl_vs_graph": {
+            "status": "proven",
+            "proven": 49,
+            "unproven": 0
+          },
+          "graph_vs_mapped": {
+            "status": "proven",
+            "proven": 49,
+            "unproven": 0
+          }
+        }
+      },
+      "simulation": {
+        "status": "match",
+        "cycles": 200,
+        "compared_bits": 1944,
+        "mismatches": 0,
+        "x_bits": null
+      },
+      "warnings": 2,
+      "src_coverage": {
+        "with_src": {
+          "word_level": 17,
+          "sequential_overlay": 3,
+          "mapped_cells": 7
+        },
+        "items": {
+          "word_level": 18,
+          "sequential_overlay": 3,
+          "mapped_cells": 184
+        }
+      }
+    },
+    {
+      "name": "fifo_shift_d4_w8",
+      "passed": true,
+      "status": "ok",
+      "seconds": 4.767,
+      "errors": [],
+      "artifacts": {
+        "word_level": {
+          "present": true,
+          "sha256": "340e79066a7194e70aefd0fde8907f9772e84fd0a1be50ea5cd9b855599772db"
+        },
+        "sequential_overlay": {
+          "present": true,
+          "sha256": "ecefeff2c5b68d0f51d4f1bbc73ac04b7f8e620edeac1d591458481e4aa33c87"
+        },
+        "boolean_graph": {
+          "present": true,
+          "sha256": "34ad59205614695ce87af534d912650a8be6b5386adeb0b684d22ecb160d5100"
+        },
+        "mapped_cells": {
+          "present": true,
+          "sha256": "3502a1bd929fa369329826cbf6b4fd783225837a23eb841ba57b851107401f7d"
+        },
+        "metrics": {
+          "present": true,
+          "sha256": "2b911cd3690568d879a4c97f8b7454d4ec7badfb72cebb8282d01726b8a3c139"
+        },
+        "summary": {
+          "present": true,
+          "sha256": "acde186f72cfdb8e2829ef5b5870fe6e5ca2ec76239adb03fe2afde3c310045a"
+        },
+        "manifest": {
+          "present": true,
+          "sha256": null
+        }
+      },
+      "layers_present": true,
+      "mapped": {
+        "cells": 185,
+        "area": 23.02182
+      },
+      "equivalence": {
+        "status": "bounded",
+        "checks": {
+          "rtl_vs_graph": {
+            "status": "bounded",
+            "proven": 14,
+            "unproven": 24
+          },
+          "graph_vs_mapped": {
+            "status": "proven",
+            "proven": 37,
+            "unproven": 0
+          }
+        }
+      },
+      "simulation": {
+        "status": "match",
+        "cycles": 200,
+        "compared_bits": 1944,
+        "mismatches": 0,
+        "x_bits": null
+      },
+      "warnings": 3,
+      "src_coverage": {
+        "with_src": {
+          "word_level": 31,
+          "sequential_overlay": 1,
+          "mapped_cells": 3
+        },
+        "items": {
+          "word_level": 36,
+          "sequential_overlay": 1,
+          "mapped_cells": 185
+        }
+      }
+    },
+    {
+      "name": "fifo_almost_flags_d8_w8",
+      "passed": true,
+      "status": "ok",
+      "seconds": 3.772,
+      "errors": [],
+      "artifacts": {
+        "word_level": {
+          "present": true,
+          "sha256": "daa925ff64c42444b6ed6f674dce1dca14807c7df36ec850988bbb08b421ff1c"
+        },
+        "sequential_overlay": {
+          "present": true,
+          "sha256": "b5dcba043d9335f81456d61e680f102a54c9428a92f8a5794e6fa9ffc833c92c"
+        },
+        "boolean_graph": {
+          "present": true,
+          "sha256": "6dedec302ef7ff07cf05cc580da029e84fe4470c8c20cbfd5fe79aa666e4d402"
+        },
+        "mapped_cells": {
+          "present": true,
+          "sha256": "5e6f811c51db4c4fc92c4755a2c1324a7a811718d90ab712790b61a9b06a0ed2"
+        },
+        "metrics": {
+          "present": true,
+          "sha256": "04b878fa0a2f80274af76bd5bb8babe544f2d7476d2f115868d04767f304a213"
+        },
+        "summary": {
+          "present": true,
+          "sha256": "820139abd3e407635f7c9f1ec3c3f0fb24ff1cf62087ed7fe42a83cf483ee37d"
+        },
+        "manifest": {
+          "present": true,
+          "sha256": null
+        }
+      },
+      "layers_present": true,
+      "mapped": {
+        "cells": 357,
+        "area": 47.2392
+      },
+      "equivalence": {
+        "status": "proven",
+        "checks": {
+          "rtl_vs_graph": {
+            "status": "proven",
+            "proven": 87,
+            "unproven": 0
+          },
+          "graph_vs_mapped": {
+            "status": "proven",
+            "proven": 86,
+            "unproven": 0
+          }
+        }
+      },
+      "simulation": {
+        "status": "match",
+        "cycles": 200,
+        "compared_bits": 3120,
+        "mismatches": 0,
+        "x_bits": null
+      },
+      "warnings": 2,
+      "src_coverage": {
+        "with_src": {
+          "word_level": 19,
+          "sequential_overlay": 3,
+          "mapped_cells": 10
+        },
+        "items": {
+          "word_level": 20,
+          "sequential_overlay": 3,
+          "mapped_cells": 357
+        }
+      }
+    },
+    {
+      "name": "fifo_bypass_d4_w8",
+      "passed": true,
+      "status": "ok",
+      "seconds": 3.315,
+      "errors": [],
+      "artifacts": {
+        "word_level": {
+          "present": true,
+          "sha256": "e1e3d4ec8752019224112931655706019c6b2f31ebb03c80013b58724f55bd0f"
+        },
+        "sequential_overlay": {
+          "present": true,
+          "sha256": "c1b6e5a9ea9c89a3b1c5bf907ab7153ef4bd23602031531095de56106137b9a5"
+        },
+        "boolean_graph": {
+          "present": true,
+          "sha256": "ee57bd8776d53eabe64e64439695d2ffe4191dbbbecbd83dd399cde9eeac5277"
+        },
+        "mapped_cells": {
+          "present": true,
+          "sha256": "c79c131d4a7e1bbad8c1d45866bb710ab359e23e2def55b74bafafceb6ceaf8c"
+        },
+        "metrics": {
+          "present": true,
+          "sha256": "1bdcf556dc9edd35b5f8b044b6a46952f84cd4872683aacf29908bb9d0a35a3a"
+        },
+        "summary": {
+          "present": true,
+          "sha256": "dca10bad2a25792a0c6e7bf055757ad4f3a93740792050f03b915e340bf0c187"
+        },
+        "manifest": {
+          "present": true,
+          "sha256": null
+        }
+      },
+      "layers_present": true,
+      "mapped": {
+        "cells": 223,
+        "area": 27.702
+      },
+      "equivalence": {
+        "status": "proven",
+        "checks": {
+          "rtl_vs_graph": {
+            "status": "proven",
+            "proven": 50,
+            "unproven": 0
+          },
+          "graph_vs_mapped": {
+            "status": "proven",
+            "proven": 49,
+            "unproven": 0
+          }
+        }
+      },
+      "simulation": {
+        "status": "match",
+        "cycles": 200,
+        "compared_bits": 1960,
+        "mismatches": 0,
+        "x_bits": null
+      },
+      "warnings": 2,
+      "src_coverage": {
+        "with_src": {
+          "word_level": 23,
+          "sequential_overlay": 3,
+          "mapped_cells": 7
+        },
+        "items": {
+          "word_level": 24,
+          "sequential_overlay": 3,
+          "mapped_cells": 223
+        }
+      }
+    },
+    {
+      "name": "fifo_clr_d4_w8",
+      "passed": true,
+      "status": "ok",
+      "seconds": 3.213,
+      "errors": [],
+      "artifacts": {
+        "word_level": {
+          "present": true,
+          "sha256": "7ec283fb8805bdd5b0d803d29571cb64696383d7e10bcf0a0a84b5bca6112825"
+        },
+        "sequential_overlay": {
+          "present": true,
+          "sha256": "56aec86a5c38d448730f0f3f6a327fb323e3c2439160e1b52726a0b2532d4aaf"
+        },
+        "boolean_graph": {
+          "present": true,
+          "sha256": "e6b8a9036580c585cd5a01c2eff48b7ad9164fd3c5a1e239de52aacd2e9101c4"
+        },
+        "mapped_cells": {
+          "present": true,
+          "sha256": "00519d859117f259299635d0cf60499bc9184bda3240b22ffedcd38fe02dedab"
+        },
+        "metrics": {
+          "present": true,
+          "sha256": "8833941116525d2c6c8cfbe4bea02632f7a2f1e2e69f15f53c8b11460c6b5c11"
+        },
+        "summary": {
+          "present": true,
+          "sha256": "8d75fdb0c92cb83726f0ad51ac3c15308716080b8e813c9cfbb265aa040337c0"
+        },
+        "manifest": {
+          "present": true,
+          "sha256": null
+        }
+      },
+      "layers_present": true,
+      "mapped": {
+        "cells": 210,
+        "area": 25.52958
+      },
+      "equivalence": {
+        "status": "proven",
+        "checks": {
+          "rtl_vs_graph": {
+            "status": "proven",
+            "proven": 50,
+            "unproven": 0
+          },
+          "graph_vs_mapped": {
+            "status": "proven",
+            "proven": 49,
+            "unproven": 0
+          }
+        }
+      },
+      "simulation": {
+        "status": "match",
+        "cycles": 200,
+        "compared_bits": 1832,
+        "mismatches": 0,
+        "x_bits": null
+      },
+      "warnings": 2,
+      "src_coverage": {
+        "with_src": {
+          "word_level": 29,
+          "sequential_overlay": 3,
+          "mapped_cells": 7
+        },
+        "items": {
+          "word_level": 32,
+          "sequential_overlay": 3,
+          "mapped_cells": 210
+        }
+      }
+    },
+    {
+      "name": "fifo_enum_state_d4_w8",
+      "passed": true,
+      "status": "ok",
+      "seconds": 4.516,
+      "errors": [],
+      "artifacts": {
+        "word_level": {
+          "present": true,
+          "sha256": "cc219c7207c0691560e3e9eb26e58c8a869412e37b109b0af2ece56a7dafef20"
+        },
+        "sequential_overlay": {
+          "present": true,
+          "sha256": "11388a4d9216f90f94300dcfdb3687408d4f72aafae350a2304cbb3e971744ba"
+        },
+        "boolean_graph": {
+          "present": true,
+          "sha256": "b4063ea6d3f75107929c264dd256d6e9933827742eb25769a03236174ac40858"
+        },
+        "mapped_cells": {
+          "present": true,
+          "sha256": "c6b694f332992a07cbc1d3ce11829b844ec35e3ab451e7727474455e20718aa3"
+        },
+        "metrics": {
+          "present": true,
+          "sha256": "28d723725511bfca1e24b5c47b10c1960bb231f07ed774608488c7ee309fd38d"
+        },
+        "summary": {
+          "present": true,
+          "sha256": "f09404a2852c7b7c9b057844fd7696a7f2f57494a759e945d3debf71348a96c8"
+        },
+        "manifest": {
+          "present": true,
+          "sha256": null
+        }
+      },
+      "layers_present": true,
+      "mapped": {
+        "cells": 193,
+        "area": 24.72768
+      },
+      "equivalence": {
+        "status": "bounded",
+        "checks": {
+          "rtl_vs_graph": {
+            "status": "bounded",
+            "proven": 49,
+            "unproven": 2
+          },
+          "graph_vs_mapped": {
+            "status": "proven",
+            "proven": 53,
+            "unproven": 0
+          }
+        }
+      },
+      "simulation": {
+        "status": "match",
+        "cycles": 200,
+        "compared_bits": 1944,
+        "mismatches": 0,
+        "x_bits": null
+      },
+      "warnings": 3,
+      "src_coverage": {
+        "with_src": {
+          "word_level": 40,
+          "sequential_overlay": 3,
+          "mapped_cells": 4
+        },
+        "items": {
+          "word_level": 45,
+          "sequential_overlay": 3,
+          "mapped_cells": 193
+        }
+      }
+    },
+    {
+      "name": "fifo_err_flags_d4_w8",
+      "passed": true,
+      "status": "ok",
+      "seconds": 3.138,
+      "errors": [],
+      "artifacts": {
+        "word_level": {
+          "present": true,
+          "sha256": "9d0de6cab81eca4763a7408e933b1b197dccbeb1db69776ececd3b00c38ddf84"
+        },
+        "sequential_overlay": {
+          "present": true,
+          "sha256": "64dac527ffc73c66736e457ae27ed2e9f091a5c5dcabd08b7f23064f69213375"
+        },
+        "boolean_graph": {
+          "present": true,
+          "sha256": "ac7938a493846a936d50941db4ab5b33a381f9488fea4e0f20f4b993b61a8257"
+        },
+        "mapped_cells": {
+          "present": true,
+          "sha256": "4bb381d2c5c64f1d52afe6878dd56e4e64e7394c7b644faea802b88cef5206d1"
+        },
+        "metrics": {
+          "present": true,
+          "sha256": "f1c0afe3facc7757ed68ae46176d24b798087ef4604cb127ac6ef230d8c2fc83"
+        },
+        "summary": {
+          "present": true,
+          "sha256": "32e0571eeb4ffb15f312497c562845538008dea97f10b5b3d8139c1d92ad767f"
+        },
+        "manifest": {
+          "present": true,
+          "sha256": null
+        }
+      },
+      "layers_present": true,
+      "mapped": {
+        "cells": 194,
+        "area": 25.77744
+      },
+      "equivalence": {
+        "status": "proven",
+        "checks": {
+          "rtl_vs_graph": {
+            "status": "proven",
+            "proven": 52,
+            "unproven": 0
+          },
+          "graph_vs_mapped": {
+            "status": "proven",
+            "proven": 51,
+            "unproven": 0
+          }
+        }
+      },
+      "simulation": {
+        "status": "match",
+        "cycles": 200,
+        "compared_bits": 2352,
+        "mismatches": 0,
+        "x_bits": null
+      },
+      "warnings": 2,
+      "src_coverage": {
+        "with_src": {
+          "word_level": 27,
+          "sequential_overlay": 5,
+          "mapped_cells": 9
+        },
+        "items": {
+          "word_level": 28,
+          "sequential_overlay": 5,
+          "mapped_cells": 194
+        }
+      }
+    },
+    {
+      "name": "fifo_generate_d4_w8",
+      "passed": true,
+      "status": "ok",
+      "seconds": 3.183,
+      "errors": [],
+      "artifacts": {
+        "word_level": {
+          "present": true,
+          "sha256": "f67af89eb503fcbe803824be3089dd666c098fb6809e69f0927f3fea876e7a7d"
+        },
+        "sequential_overlay": {
+          "present": true,
+          "sha256": "602523bfc2281a21e287514923cd56de1989397d83939339fd9e330415795dfe"
+        },
+        "boolean_graph": {
+          "present": true,
+          "sha256": "add64a56fe419971a5e0529f4b9255bc8304744c7db003ca06fdfcb046e46dd6"
+        },
+        "mapped_cells": {
+          "present": true,
+          "sha256": "08c6729a9c3e3269bd0962c9dafc3953d399b47ca386252651bc9dcb5517fc74"
+        },
+        "metrics": {
+          "present": true,
+          "sha256": "9d11a4000efca3c02677578049f880ea37ae0cef31ec9689edc3eeacc11b431b"
+        },
+        "summary": {
+          "present": true,
+          "sha256": "84c23ab21b7600337f9c1ee2ff6b45fbb2b5bd66995fa577ca726019c6770146"
+        },
+        "manifest": {
+          "present": true,
+          "sha256": null
+        }
+      },
+      "layers_present": true,
+      "mapped": {
+        "cells": 171,
+        "area": 23.88204
+      },
+      "equivalence": {
+        "status": "proven",
+        "checks": {
+          "rtl_vs_graph": {
+            "status": "proven",
+            "proven": 50,
+            "unproven": 0
+          },
+          "graph_vs_mapped": {
+            "status": "proven",
+            "proven": 49,
+            "unproven": 0
+          }
+        }
+      },
+      "simulation": {
+        "status": "match",
+        "cycles": 200,
+        "compared_bits": 1960,
+        "mismatches": 0,
+        "x_bits": null
+      },
+      "warnings": 2,
+      "src_coverage": {
+        "with_src": {
+          "word_level": 38,
+          "sequential_overlay": 3,
+          "mapped_cells": 7
+        },
+        "items": {
+          "word_level": 42,
+          "sequential_overlay": 3,
+          "mapped_cells": 171
+        }
+      }
+    },
+    {
+      "name": "fifo_gray_ptr_d8_w8",
+      "passed": true,
+      "status": "ok",
+      "seconds": 3.815,
+      "errors": [],
+      "artifacts": {
+        "word_level": {
+          "present": true,
+          "sha256": "b48fd4253c75d06b5a8b45105c71d60a0c77a841f3d782e25bf1ed9fc6a672ea"
+        },
+        "sequential_overlay": {
+          "present": true,
+          "sha256": "8ff5c7310ee6131ef485155b03dbe0bffacface8201c7e1142325eff489e8f53"
+        },
+        "boolean_graph": {
+          "present": true,
+          "sha256": "a94856f83c256f6136f6ef303fa4bf4b31efa1505360022a8ae7c99289debf64"
+        },
+        "mapped_cells": {
+          "present": true,
+          "sha256": "aadf8f8a2a62c4be7e91f0f8d16ba6aa1bb131b69d49530d081e7f34b5a679d3"
+        },
+        "metrics": {
+          "present": true,
+          "sha256": "cdd0d4210988d89df1c05cf6243e447273cd6d7e1d01c206773d66972b382a3a"
+        },
+        "summary": {
+          "present": true,
+          "sha256": "eefd471ff812a104c70a58a5c8c104a414adeec9e9f90c92942dc98a13dacf1a"
+        },
+        "manifest": {
+          "present": true,
+          "sha256": null
+        }
+      },
+      "layers_present": true,
+      "mapped": {
+        "cells": 354,
+        "area": 49.01796
+      },
+      "equivalence": {
+        "status": "proven",
+        "checks": {
+          "rtl_vs_graph": {
+            "status": "proven",
+            "proven": 98,
+            "unproven": 0
+          },
+          "graph_vs_mapped": {
+            "status": "proven",
+            "proven": 98,
+            "unproven": 0
+          }
+        }
+      },
+      "simulation": {
+        "status": "match",
+        "cycles": 200,
+        "compared_bits": 1944,
+        "mismatches": 0,
+        "x_bits": null
+      },
+      "warnings": 2,
+      "src_coverage": {
+        "with_src": {
+          "word_level": 21,
+          "sequential_overlay": 4,
+          "mapped_cells": 14
+        },
+        "items": {
+          "word_level": 22,
+          "sequential_overlay": 4,
+          "mapped_cells": 354
+        }
+      }
+    },
+    {
+      "name": "fifo_last_d4_w8",
+      "passed": true,
+      "status": "ok",
+      "seconds": 3.212,
+      "errors": [],
+      "artifacts": {
+        "word_level": {
+          "present": true,
+          "sha256": "9b2e797f838aa489b48d7fc98598f7fa9b34dfe84813f6cfab9dae75559b16ec"
+        },
+        "sequential_overlay": {
+          "present": true,
+          "sha256": "b35382e625bdeed86634792ef1b36ae95e38c8f499adbfd1eb8c2e02f9de4ce0"
+        },
+        "boolean_graph": {
+          "present": true,
+          "sha256": "d7d60a6c69c5119cfa1841c7401ab36318821f6c2aee062b85e24f2ee5f7a58b"
+        },
+        "mapped_cells": {
+          "present": true,
+          "sha256": "04cad23a8bb649840afe62cf0719eccfdbd221c12b4a2470d911ba22cfa5ffe4"
+        },
+        "metrics": {
+          "present": true,
+          "sha256": "6e2c1b25f2d123977ffb0c9cd355df3188dd9d1a96eba007737b904fbadc512e"
+        },
+        "summary": {
+          "present": true,
+          "sha256": "bde5fb038d973648079f3b3602014ada17ecf18fe92441f0d3e797a8e892a9be"
+        },
+        "manifest": {
+          "present": true,
+          "sha256": null
+        }
+      },
+      "layers_present": true,
+      "mapped": {
+        "cells": 224,
+        "area": 29.72862
+      },
+      "equivalence": {
+        "status": "proven",
+        "checks": {
+          "rtl_vs_graph": {
+            "status": "proven",
+            "proven": 58,
+            "unproven": 0
+          },
+          "graph_vs_mapped": {
+            "status": "proven",
+            "proven": 57,
+            "unproven": 0
+          }
+        }
+      },
+      "simulation": {
+        "status": "match",
+        "cycles": 200,
+        "compared_bits": 2735,
+        "mismatches": 0,
+        "x_bits": null
+      },
+      "warnings": 2,
+      "src_coverage": {
+        "with_src": {
+          "word_level": 22,
+          "sequential_overlay": 4,
+          "mapped_cells": 10
+        },
+        "items": {
+          "word_level": 23,
+          "sequential_overlay": 4,
+          "mapped_cells": 224
+        }
+      }
+    },
+    {
+      "name": "fifo_onehot_d4_w8",
+      "passed": true,
+      "status": "ok",
+      "seconds": 2.872,
+      "errors": [],
+      "artifacts": {
+        "word_level": {
+          "present": true,
+          "sha256": "adb586fd4cad2756784fbb662eb6377de7371ed027055388b692d9308d8d5ba1"
+        },
+        "sequential_overlay": {
+          "present": true,
+          "sha256": "7f7597ac2e2b4ab73a7d4bf7eb18876908c9247626d2532a8d0f1e0914f630e5"
+        },
+        "boolean_graph": {
+          "present": true,
+          "sha256": "1e3e4f7a82144463b34438be8567f73771dc293e5f449c48013dcf76579985e6"
+        },
+        "mapped_cells": {
+          "present": true,
+          "sha256": "58c8bee8a4f2d943de72c0fe21bf1eef2c3ba4079bec16a6a3ac81b3dbd5a544"
+        },
+        "metrics": {
+          "present": true,
+          "sha256": "86a4c19ddff3e91929316d5172a7b03cb3cc2a296a89b4d72f41f2c70cf65dc8"
+        },
+        "summary": {
+          "present": true,
+          "sha256": "e2ddd9da863b3ee93d115021341b7a08d375d3f320a00be52bd38a45a913b2e0"
+        },
+        "manifest": {
+          "present": true,
+          "sha256": null
+        }
+      },
+      "layers_present": true,
+      "mapped": {
+        "cells": 183,
+        "area": 25.13592
+      },
+      "equivalence": {
+        "status": "proven",
+        "checks": {
+          "rtl_vs_graph": {
+            "status": "proven",
+            "proven": 53,
+            "unproven": 0
+          },
+          "graph_vs_mapped": {
+            "status": "proven",
+            "proven": 53,
+            "unproven": 0
+          }
+        }
+      },
+      "simulation": {
+        "status": "match",
+        "cycles": 200,
+        "compared_bits": 1960,
+        "mismatches": 0,
+        "x_bits": null
+      },
+      "warnings": 2,
+      "src_coverage": {
+        "with_src": {
+          "word_level": 34,
+          "sequential_overlay": 3,
+          "mapped_cells": 11
+        },
+        "items": {
+          "word_level": 38,
+          "sequential_overlay": 3,
+          "mapped_cells": 183
+        }
+      }
+    },
+    {
+      "name": "fifo_pipe_d3_w8",
+      "passed": true,
+      "status": "ok",
+      "seconds": 3.079,
+      "errors": [],
+      "artifacts": {
+        "word_level": {
+          "present": true,
+          "sha256": "26c6780e27fb6b9af08c1d1af26db70dd24aed6d8d1ffedc46cdf6b373b04928"
+        },
+        "sequential_overlay": {
+          "present": true,
+          "sha256": "a3a2ff74879b353e671d4a298fb72df02459414389fa793db4ee6a9063cdf532"
+        },
+        "boolean_graph": {
+          "present": true,
+          "sha256": "de465df05446c24d9d724b2b937ae90e02eee07173d62c1d5269f68abf0d4b29"
+        },
+        "mapped_cells": {
+          "present": true,
+          "sha256": "37bfec1ab0973092373659aebf823033eb0e913f88dac18b8d3654ef827027ce"
+        },
+        "metrics": {
+          "present": true,
+          "sha256": "91b6f17eef187aaa736ca51ed38ebe4bcc988b534c292667dcf2e5f8f06be0e3"
+        },
+        "summary": {
+          "present": true,
+          "sha256": "c6ffb0e3c1cf338d1cb7d35239740c7293047417bb6b0cf9c18fecac8409f8b6"
+        },
+        "manifest": {
+          "present": true,
+          "sha256": null
+        }
+      },
+      "layers_present": true,
+      "mapped": {
+        "cells": 105,
+        "area": 15.07572
+      },
+      "equivalence": {
+        "status": "bounded",
+        "checks": {
+          "rtl_vs_graph": {
+            "status": "bounded",
+            "proven": 5,
+            "unproven": 8
+          },
+          "graph_vs_mapped": {
+            "status": "proven",
+            "proven": 45,
+            "unproven": 0
+          }
+        }
+      },
+      "simulation": {
+        "status": "match",
+        "cycles": 200,
+        "compared_bits": 1928,
+        "mismatches": 0,
+        "x_bits": null
+      },
+      "warnings": 3,
+      "src_coverage": {
+        "with_src": {
+          "word_level": 24,
+          "sequential_overlay": 3,
+          "mapped_cells": 3
+        },
+        "items": {
+          "word_level": 27,
+          "sequential_overlay": 3,
+          "mapped_cells": 105
+        }
+      }
+    },
+    {
+      "name": "fifo_ptr_wrap_d8_w8",
+      "passed": true,
+      "status": "ok",
+      "seconds": 3.518,
+      "errors": [],
+      "artifacts": {
+        "word_level": {
+          "present": true,
+          "sha256": "8329e4f2097802aeeb9da49dcfec8ab51a1e7d96e71dfd2008b7dfeef613134b"
+        },
+        "sequential_overlay": {
+          "present": true,
+          "sha256": "1ca93434f3ae52d82bf7fc08ff0f099615a3c0aa9a6c580a3c8ba48ee3ca8e52"
+        },
+        "boolean_graph": {
+          "present": true,
+          "sha256": "08ae2f215db63b21c329215940dabc841493c0bbd49a1908a885f26441de0566"
+        },
+        "mapped_cells": {
+          "present": true,
+          "sha256": "45d2634104441d10cf6e980f5fd6061290a7200b9ca9830ebef73a338aedaccc"
+        },
+        "metrics": {
+          "present": true,
+          "sha256": "35e324b6c734ad98a8e26ddd581fcf099417b9559655d49fbf5dd0aca5da550b"
+        },
+        "summary": {
+          "present": true,
+          "sha256": "beb66e52163bc1b313c6fd4277afbff60eeed89e4878ce932807d94569c716e8"
+        },
+        "manifest": {
+          "present": true,
+          "sha256": null
+        }
+      },
+      "layers_present": true,
+      "mapped": {
+        "cells": 317,
+        "area": 44.27946
+      },
+      "equivalence": {
+        "status": "proven",
+        "checks": {
+          "rtl_vs_graph": {
+            "status": "proven",
+            "proven": 82,
+            "unproven": 0
+          },
+          "graph_vs_mapped": {
+            "status": "proven",
+            "proven": 82,
+            "unproven": 0
+          }
+        }
+      },
+      "simulation": {
+        "status": "match",
+        "cycles": 200,
+        "compared_bits": 1944,
+        "mismatches": 0,
+        "x_bits": null
+      },
+      "warnings": 2,
+      "src_coverage": {
+        "with_src": {
+          "word_level": 16,
+          "sequential_overlay": 2,
+          "mapped_cells": 8
+        },
+        "items": {
+          "word_level": 17,
+          "sequential_overlay": 2,
+          "mapped_cells": 317
+        }
+      }
+    },
+    {
+      "name": "fifo_regout_d4_w8",
+      "passed": true,
+      "status": "ok",
+      "seconds": 3.005,
+      "errors": [],
+      "artifacts": {
+        "word_level": {
+          "present": true,
+          "sha256": "ca1b9e59e41213d212c74db82384077f569d1bb50b364e0416cdf99f9f124339"
+        },
+        "sequential_overlay": {
+          "present": true,
+          "sha256": "08c6c762b2fd6b6a1ec9f47e3ce275784266eeff57fbf46f9d347de8b57d023f"
+        },
+        "boolean_graph": {
+          "present": true,
+          "sha256": "9e17ad89aa552fa4d416ac6de6bfcb2c569c2755a853446de97610943f9f052c"
+        },
+        "mapped_cells": {
+          "present": true,
+          "sha256": "5a50e44ae14d6d5965300ec7039aae2dd953303186ae032fbfa58083fc1865e1"
+        },
+        "metrics": {
+          "present": true,
+          "sha256": "417df0ca47031a26b0f7b3c9695e3fbf4c498dec86c0f6f435f2879de912af54"
+        },
+        "summary": {
+          "present": true,
+          "sha256": "b743b9f21b9291d5d5b9dd02db1e940d12fc916811997aff868f3db580beca4c"
+        },
+        "manifest": {
+          "present": true,
+          "sha256": null
+        }
+      },
+      "layers_present": true,
+      "mapped": {
+        "cells": 204,
+        "area": 28.73718
+      },
+      "equivalence": {
+        "status": "proven",
+        "checks": {
+          "rtl_vs_graph": {
+            "status": "proven",
+            "proven": 52,
+            "unproven": 0
+          },
+          "graph_vs_mapped": {
+            "status": "proven",
+            "proven": 51,
+            "unproven": 0
+          }
+        }
+      },
+      "simulation": {
+        "status": "match",
+        "cycles": 200,
+        "compared_bits": 2116,
+        "mismatches": 0,
+        "x_bits": null
+      },
+      "warnings": 3,
+      "src_coverage": {
+        "with_src": {
+          "word_level": 19,
+          "sequential_overlay": 5,
+          "mapped_cells": 8
+        },
+        "items": {
+          "word_level": 21,
+          "sequential_overlay": 5,
+          "mapped_cells": 204
+        }
+      }
+    },
+    {
+      "name": "fifo_sync_rst_d4_w8",
+      "passed": true,
+      "status": "ok",
+      "seconds": 2.575,
+      "errors": [],
+      "artifacts": {
+        "word_level": {
+          "present": true,
+          "sha256": "91359ac27676caf20774ba95dbf81fa6faeebb0efd722d4afb9d78f69e5fa2c2"
+        },
+        "sequential_overlay": {
+          "present": true,
+          "sha256": "32e06cb5be0a4a3bc0aa3a5e8ac3d919ce3b3b214e1fe47718217edb69aab532"
+        },
+        "boolean_graph": {
+          "present": true,
+          "sha256": "9e526d43eb9dc8f59dd78c1b0595eeecd5c38483307dfff24f019239d820eb66"
+        },
+        "mapped_cells": {
+          "present": true,
+          "sha256": "6f07c37389b63c1236418811a8a0939b8834d1a1aa836579709717c16c89eb3b"
+        },
+        "metrics": {
+          "present": true,
+          "sha256": "d093857e003889c2dfd98030ad65eae889d6cea3fdaf523979795a01ad85c7e8"
+        },
+        "summary": {
+          "present": true,
+          "sha256": "25dd8e012a6dbefd484050f75e09006ca3e8b7a12443553ec83349d0c34aba0b"
+        },
+        "manifest": {
+          "present": true,
+          "sha256": null
+        }
+      },
+      "layers_present": true,
+      "mapped": {
+        "cells": 195,
+        "area": 25.90866
+      },
+      "equivalence": {
+        "status": "proven",
+        "checks": {
+          "rtl_vs_graph": {
+            "status": "proven",
+            "proven": 49,
+            "unproven": 0
+          },
+          "graph_vs_mapped": {
+            "status": "proven",
+            "proven": 49,
+            "unproven": 0
+          }
+        }
+      },
+      "simulation": {
+        "status": "match",
+        "cycles": 200,
+        "compared_bits": 1944,
+        "mismatches": 0,
+        "x_bits": null
+      },
+      "warnings": 2,
+      "src_coverage": {
+        "with_src": {
+          "word_level": 21,
+          "sequential_overlay": 3,
+          "mapped_cells": 7
+        },
+        "items": {
+          "word_level": 24,
+          "sequential_overlay": 3,
+          "mapped_cells": 195
+        }
+      }
+    },
+    {
+      "name": "fsm_traffic",
+      "passed": true,
+      "status": "ok",
+      "seconds": 2.41,
+      "errors": [],
+      "artifacts": {
+        "word_level": {
+          "present": true,
+          "sha256": "4de3e1044a352eedbbc4330b6c38ba92438622566432b45c49210ee8e95771cc"
+        },
+        "sequential_overlay": {
+          "present": true,
+          "sha256": "24c658ddbf74a98c1a58654dbb905c5d7e058f9f3ee58813f19de961bb4bd451"
+        },
+        "boolean_graph": {
+          "present": true,
+          "sha256": "6ff7a94f0878c8d18c976bc380eb5c6c22dce1f2e86a867567fdac35d0a5330b"
+        },
+        "mapped_cells": {
+          "present": true,
+          "sha256": "2111829d0c4f931a9e88eff4d36b4c805ca269ef24b9173333fe2f7fed76b818"
+        },
+        "metrics": {
+          "present": true,
+          "sha256": "f7dcc5de0a2ce2efd2ae8636fc6656d3b1ce04c10375eac52cdb2fc2c02c463c"
+        },
+        "summary": {
+          "present": true,
+          "sha256": "903eba2815e2566f876b3181c57848b592de221b8e0682296d80ce9e3aed9187"
+        },
+        "manifest": {
+          "present": true,
+          "sha256": null
+        }
+      },
+      "layers_present": true,
+      "mapped": {
+        "cells": 21,
+        "area": 3.00348
+      },
+      "equivalence": {
+        "status": "proven",
+        "checks": {
+          "rtl_vs_graph": {
+            "status": "proven",
+            "proven": 5,
+            "unproven": 0
+          },
+          "graph_vs_mapped": {
+            "status": "proven",
+            "proven": 5,
+            "unproven": 0
+          }
+        }
+      },
+      "simulation": {
+        "status": "match",
+        "cycles": 200,
+        "compared_bits": 588,
+        "mismatches": 0,
+        "x_bits": null
+      },
+      "warnings": 2,
+      "src_coverage": {
+        "with_src": {
+          "word_level": 36,
+          "sequential_overlay": 2,
+          "mapped_cells": 2
+        },
+        "items": {
+          "word_level": 40,
+          "sequential_overlay": 2,
+          "mapped_cells": 21
+        }
+      }
+    },
+    {
+      "name": "full_adder",
+      "passed": true,
+      "status": "ok",
+      "seconds": 2.165,
+      "errors": [],
+      "artifacts": {
+        "word_level": {
+          "present": true,
+          "sha256": "6292d3947158c6f19b98b3db95e7c78afba5baa6981f353a24ef4629a1bcebc6"
+        },
+        "sequential_overlay": {
+          "present": true,
+          "sha256": "baae7716a1b7ad3f95d5d80f58998c8c2f9b78e375f1cae321d7e92d574ac51b"
+        },
+        "boolean_graph": {
+          "present": true,
+          "sha256": "2f6cf4150295bc9c7e79eddcb63ea1fbdeb4ce8a98891038539c9694bf1aa1b3"
+        },
+        "mapped_cells": {
+          "present": true,
+          "sha256": "7e3792c9f4380c8009f53c17358e949feb98971e9cf441be9131541c550ef49a"
+        },
+        "metrics": {
+          "present": true,
+          "sha256": "cb54decb12555205cc206e03f19018bcb2e37fc5596e2da30b9cfd56aac752c3"
+        },
+        "summary": {
+          "present": true,
+          "sha256": "3da066f1377d26a808fd285a989574878d03e0f3c942f8472b6f07ad907e6c23"
+        },
+        "manifest": {
+          "present": true,
+          "sha256": null
+        }
+      },
+      "layers_present": true,
+      "mapped": {
+        "cells": 3,
+        "area": 0.39366
+      },
+      "equivalence": {
+        "status": "proven",
+        "checks": {
+          "rtl_vs_graph": {
+            "status": "proven",
+            "proven": 2,
+            "unproven": 0
+          },
+          "graph_vs_mapped": {
+            "status": "proven",
+            "proven": 2,
+            "unproven": 0
+          }
+        }
+      },
+      "simulation": {
+        "status": "match",
+        "cycles": 200,
+        "compared_bits": 392,
+        "mismatches": 0,
+        "x_bits": null
+      },
+      "warnings": 2,
+      "src_coverage": {
+        "with_src": {
+          "word_level": 6,
+          "sequential_overlay": 0,
+          "mapped_cells": 0
+        },
+        "items": {
+          "word_level": 6,
+          "sequential_overlay": 0,
+          "mapped_cells": 3
+        }
+      }
+    },
+    {
+      "name": "gray_counter4",
+      "passed": true,
+      "status": "ok",
+      "seconds": 2.239,
+      "errors": [],
+      "artifacts": {
+        "word_level": {
+          "present": true,
+          "sha256": "12edd34a3de9bc10792fe7156f90d5c6040ab0eb811adcdcd4e74ab7767bfde0"
+        },
+        "sequential_overlay": {
+          "present": true,
+          "sha256": "8c4baec6f4498fc82bc79672cb1659653e5518afb5dcc51162279fbcc0a46767"
+        },
+        "boolean_graph": {
+          "present": true,
+          "sha256": "4bceefc1b73bd8a42615017a0bd70dffe0a9fb265233803a1da4634f79f111bd"
+        },
+        "mapped_cells": {
+          "present": true,
+          "sha256": "be6e271dab5b20acd59fe88bd20869f1af5ce79cefa56e67007f40772134d67a"
+        },
+        "metrics": {
+          "present": true,
+          "sha256": "0df5b00550a7b1db24ef07e115d5ea8156ba643b7bb3894d66cc0e4e884e959e"
+        },
+        "summary": {
+          "present": true,
+          "sha256": "16afe8a633d37c17d89f937f4df90263ab8bb8c6ab15415ff76ecae9469d6eac"
+        },
+        "manifest": {
+          "present": true,
+          "sha256": null
+        }
+      },
+      "layers_present": true,
+      "mapped": {
+        "cells": 16,
+        "area": 2.53692
+      },
+      "equivalence": {
+        "status": "proven",
+        "checks": {
+          "rtl_vs_graph": {
+            "status": "proven",
+            "proven": 8,
+            "unproven": 0
+          },
+          "graph_vs_mapped": {
+            "status": "proven",
+            "proven": 8,
+            "unproven": 0
+          }
+        }
+      },
+      "simulation": {
+        "status": "match",
+        "cycles": 200,
+        "compared_bits": 784,
+        "mismatches": 0,
+        "x_bits": null
+      },
+      "warnings": 2,
+      "src_coverage": {
+        "with_src": {
+          "word_level": 3,
+          "sequential_overlay": 1,
+          "mapped_cells": 4
+        },
+        "items": {
+          "word_level": 3,
+          "sequential_overlay": 1,
+          "mapped_cells": 16
+        }
+      }
+    },
+    {
+      "name": "half_adder",
+      "passed": true,
+      "status": "ok",
+      "seconds": 2.182,
+      "errors": [],
+      "artifacts": {
+        "word_level": {
+          "present": true,
+          "sha256": "64dbc95efb8988c7be22cf7973d4636876e6b16bfd685c3dddda7cf2f356d5ee"
+        },
+        "sequential_overlay": {
+          "present": true,
+          "sha256": "fd02b3bbed12f1e1b1a83a6a275899f60c1909f721c467d3788c7431e603c687"
+        },
+        "boolean_graph": {
+          "present": true,
+          "sha256": "834abbaaf378f90f51d3cff8b16d15e23e7a6034a6317d6c93d7285745903aea"
+        },
+        "mapped_cells": {
+          "present": true,
+          "sha256": "801b5294d8373f7e815ae24b84448a90699dab752ca69579b96f0cc7dd57e20d"
+        },
+        "metrics": {
+          "present": true,
+          "sha256": "d957559a36701d0c72f7fc7c0425e63a04ed2a44b510b33a64c6784a5f4ad4bb"
+        },
+        "summary": {
+          "present": true,
+          "sha256": "fcadc3ac40bff2c1e2951cddc0735555b02289bc885f061cd9afd517501a4546"
+        },
+        "manifest": {
+          "present": true,
+          "sha256": null
+        }
+      },
+      "layers_present": true,
+      "mapped": {
+        "cells": 2,
+        "area": 0.2187
+      },
+      "equivalence": {
+        "status": "proven",
+        "checks": {
+          "rtl_vs_graph": {
+            "status": "proven",
+            "proven": 2,
+            "unproven": 0
+          },
+          "graph_vs_mapped": {
+            "status": "proven",
+            "proven": 2,
+            "unproven": 0
+          }
+        }
+      },
+      "simulation": {
+        "status": "match",
+        "cycles": 200,
+        "compared_bits": 392,
+        "mismatches": 0,
+        "x_bits": null
+      },
+      "warnings": 2,
+      "src_coverage": {
+        "with_src": {
+          "word_level": 2,
+          "sequential_overlay": 0,
+          "mapped_cells": 0
+        },
+        "items": {
+          "word_level": 2,
+          "sequential_overlay": 0,
+          "mapped_cells": 2
+        }
+      }
+    },
+    {
+      "name": "inv",
+      "passed": true,
+      "status": "ok",
+      "seconds": 2.179,
+      "errors": [],
+      "artifacts": {
+        "word_level": {
+          "present": true,
+          "sha256": "6a1ce7558ac293281514d712898ec8d0a5ea47f6ad65fac1598c2436f3c2f477"
+        },
+        "sequential_overlay": {
+          "present": true,
+          "sha256": "2752ee3147f6384be86235da0787157b7057c21a3a6e9698b0a79156fc4f33de"
+        },
+        "boolean_graph": {
+          "present": true,
+          "sha256": "998d8103dd30ce89aace9c3c97334ab2d161acac777b0e386ec5fa802f663105"
+        },
+        "mapped_cells": {
+          "present": true,
+          "sha256": "4d75dad105240f0dff8af266cdc6c36aba9e9dbe94dd6651b5a1e375e81f6e64"
+        },
+        "metrics": {
+          "present": true,
+          "sha256": "641f0396e34011b646c2d75d11ed206f8b4360c2d3a661d249e16b467c39ddee"
+        },
+        "summary": {
+          "present": true,
+          "sha256": "afc0d265003db85bcc73d2e18d817b5b3d79638b9892b1833eab60409b8be9c9"
+        },
+        "manifest": {
+          "present": true,
+          "sha256": null
+        }
+      },
+      "layers_present": true,
+      "mapped": {
+        "cells": 1,
+        "area": 0.04374
+      },
+      "equivalence": {
+        "status": "proven",
+        "checks": {
+          "rtl_vs_graph": {
+            "status": "proven",
+            "proven": 1,
+            "unproven": 0
+          },
+          "graph_vs_mapped": {
+            "status": "proven",
+            "proven": 1,
+            "unproven": 0
+          }
+        }
+      },
+      "simulation": {
+        "status": "match",
+        "cycles": 200,
+        "compared_bits": 196,
+        "mismatches": 0,
+        "x_bits": null
+      },
+      "warnings": 2,
+      "src_coverage": {
+        "with_src": {
+          "word_level": 1,
+          "sequential_overlay": 0,
+          "mapped_cells": 0
+        },
+        "items": {
+          "word_level": 1,
+          "sequential_overlay": 0,
+          "mapped_cells": 1
+        }
+      }
+    },
+    {
+      "name": "lfsr8",
+      "passed": true,
+      "status": "ok",
+      "seconds": 2.273,
+      "errors": [],
+      "artifacts": {
+        "word_level": {
+          "present": true,
+          "sha256": "e1c300e8efb8c237643117450c4bccb419257432712aac13cc542936fd1a3e30"
+        },
+        "sequential_overlay": {
+          "present": true,
+          "sha256": "11c015108433ac60256b82575f90dfa0c249a1bf9cad34f5a970b564226034f3"
+        },
+        "boolean_graph": {
+          "present": true,
+          "sha256": "258fc896de47ae05587d69df0cb3a995e9e3a14c6f862134802919cea8f6513b"
+        },
+        "mapped_cells": {
+          "present": true,
+          "sha256": "9d70473f4aefd62bff45df60040984277fe0e908bd245a2b111cbd12bbec3ef1"
+        },
+        "metrics": {
+          "present": true,
+          "sha256": "31b9f42592984aa1f45635f206721e4ec6a002e20684b1332f328dfd28d1ad55"
+        },
+        "summary": {
+          "present": true,
+          "sha256": "236a78a0a0d3ed0fccb67df5c24f929c936fd07d0b52ce4dcf2481ba0c10f8ce"
+        },
+        "manifest": {
+          "present": true,
+          "sha256": null
+        }
+      },
+      "layers_present": true,
+      "mapped": {
+        "cells": 26,
+        "area": 4.03866
+      },
+      "equivalence": {
+        "status": "proven",
+        "checks": {
+          "rtl_vs_graph": {
+            "status": "proven",
+            "proven": 8,
+            "unproven": 0
+          },
+          "graph_vs_mapped": {
+            "status": "proven",
+            "proven": 8,
+            "unproven": 0
+          }
+        }
+      },
+      "simulation": {
+        "status": "match",
+        "cycles": 200,
+        "compared_bits": 1568,
+        "mismatches": 0,
+        "x_bits": null
+      },
+      "warnings": 2,
+      "src_coverage": {
+        "with_src": {
+          "word_level": 4,
+          "sequential_overlay": 1,
+          "mapped_cells": 8
+        },
+        "items": {
+          "word_level": 4,
+          "sequential_overlay": 1,
+          "mapped_cells": 26
+        }
+      }
+    },
+    {
+      "name": "mux2",
+      "passed": true,
+      "status": "ok",
+      "seconds": 2.263,
+      "errors": [],
+      "artifacts": {
+        "word_level": {
+          "present": true,
+          "sha256": "c7fb2242e40268c9c42a838ed24a99ccd75306ca6ccd004f678ca5a92ba8dae3"
+        },
+        "sequential_overlay": {
+          "present": true,
+          "sha256": "cdbd88035112e358d4b2d56e46c8fbfa06f6c17302db1ae9483221218fc54b4d"
+        },
+        "boolean_graph": {
+          "present": true,
+          "sha256": "ab060be7c9cb15641a4ed2391f08717332351f90dcfb5d78fef635633e38e075"
+        },
+        "mapped_cells": {
+          "present": true,
+          "sha256": "13a4dfd83fc31a99d3b1ac79c330d2ba61a424e364e89c139e698898e14baf7b"
+        },
+        "metrics": {
+          "present": true,
+          "sha256": "5fe85dfb0afbeb424ac9c7e87db14b94b8581db0fd9a6403c35303a33a0dbad3"
+        },
+        "summary": {
+          "present": true,
+          "sha256": "87cf3ea4bfa259ef5356db0d38a3771221ea2c09bc4881fee0ec857a302339e3"
+        },
+        "manifest": {
+          "present": true,
+          "sha256": null
+        }
+      },
+      "layers_present": true,
+      "mapped": {
+        "cells": 3,
+        "area": 0.17496
+      },
+      "equivalence": {
+        "status": "proven",
+        "checks": {
+          "rtl_vs_graph": {
+            "status": "proven",
+            "proven": 1,
+            "unproven": 0
+          },
+          "graph_vs_mapped": {
+            "status": "proven",
+            "proven": 1,
+            "unproven": 0
+          }
+        }
+      },
+      "simulation": {
+        "status": "match",
+        "cycles": 200,
+        "compared_bits": 196,
+        "mismatches": 0,
+        "x_bits": null
+      },
+      "warnings": 2,
+      "src_coverage": {
+        "with_src": {
+          "word_level": 1,
+          "sequential_overlay": 0,
+          "mapped_cells": 0
+        },
+        "items": {
+          "word_level": 1,
+          "sequential_overlay": 0,
+          "mapped_cells": 3
+        }
+      }
+    },
+    {
+      "name": "mux4",
+      "passed": true,
+      "status": "ok",
+      "seconds": 2.328,
+      "errors": [],
+      "artifacts": {
+        "word_level": {
+          "present": true,
+          "sha256": "6d0b5aa7ca2bb85aec2e498c0e545a5633ef3e0852e7cae640ea78343d9c0d42"
+        },
+        "sequential_overlay": {
+          "present": true,
+          "sha256": "1cd13c408c91a387cc2c7a0fdc1055a931965db70ccc3168bb35670c4293ab74"
+        },
+        "boolean_graph": {
+          "present": true,
+          "sha256": "7eeb35c5efe6021fda2a10ff7bebd1160bbbcd0361713b6fdd729742a7760023"
+        },
+        "mapped_cells": {
+          "present": true,
+          "sha256": "281765a0f8ad65dc57072d507808cefab19e6b46ab9f7d7a1fdbc8670b14a37a"
+        },
+        "metrics": {
+          "present": true,
+          "sha256": "dd3b32a9be8eb82a8461ad10d29454eeb615410b949386ff47de565c95c8b3ee"
+        },
+        "summary": {
+          "present": true,
+          "sha256": "8ca4526922979211e890138fb9449e6f501fc6eb139f50b3379a616b86347aff"
+        },
+        "manifest": {
+          "present": true,
+          "sha256": null
+        }
+      },
+      "layers_present": true,
+      "mapped": {
+        "cells": 6,
+        "area": 0.42282
+      },
+      "equivalence": {
+        "status": "proven",
+        "checks": {
+          "rtl_vs_graph": {
+            "status": "proven",
+            "proven": 1,
+            "unproven": 0
+          },
+          "graph_vs_mapped": {
+            "status": "proven",
+            "proven": 1,
+            "unproven": 0
+          }
+        }
+      },
+      "simulation": {
+        "status": "match",
+        "cycles": 200,
+        "compared_bits": 196,
+        "mismatches": 0,
+        "x_bits": null
+      },
+      "warnings": 2,
+      "src_coverage": {
+        "with_src": {
+          "word_level": 1,
+          "sequential_overlay": 0,
+          "mapped_cells": 0
+        },
+        "items": {
+          "word_level": 1,
+          "sequential_overlay": 0,
+          "mapped_cells": 6
+        }
+      }
+    },
+    {
+      "name": "or2",
+      "passed": true,
+      "status": "ok",
+      "seconds": 2.253,
+      "errors": [],
+      "artifacts": {
+        "word_level": {
+          "present": true,
+          "sha256": "a7005ef36689ac4388f3a44b7260887d557b415786147a60cdaff68003e2ad75"
+        },
+        "sequential_overlay": {
+          "present": true,
+          "sha256": "abe189b9c03fd55e8b8492e36d7ecefc0a25e41252ca79583f40cee9f30fec6c"
+        },
+        "boolean_graph": {
+          "present": true,
+          "sha256": "c955ac930205a5e01e0fa7caed0ae7dc244eaeb8a9b61c901c836f5d167318f9"
+        },
+        "mapped_cells": {
+          "present": true,
+          "sha256": "3585a9c07a11e6c08e00cf55a284d23be3151db3d05d323d254bdbf6bf1ff4e9"
+        },
+        "metrics": {
+          "present": true,
+          "sha256": "ac08b4dc70eea8ee716ccd2dd78f5f95cab421455bc1b8634a4624bf33829512"
+        },
+        "summary": {
+          "present": true,
+          "sha256": "bc3ba4b4c5a42b43c8438d26cdf81e02c57914a4f618c1b721c99e24db95f1f2"
+        },
+        "manifest": {
+          "present": true,
+          "sha256": null
+        }
+      },
+      "layers_present": true,
+      "mapped": {
+        "cells": 1,
+        "area": 0.08748
+      },
+      "equivalence": {
+        "status": "proven",
+        "checks": {
+          "rtl_vs_graph": {
+            "status": "proven",
+            "proven": 1,
+            "unproven": 0
+          },
+          "graph_vs_mapped": {
+            "status": "proven",
+            "proven": 1,
+            "unproven": 0
+          }
+        }
+      },
+      "simulation": {
+        "status": "match",
+        "cycles": 200,
+        "compared_bits": 196,
+        "mismatches": 0,
+        "x_bits": null
+      },
+      "warnings": 2,
+      "src_coverage": {
+        "with_src": {
+          "word_level": 1,
+          "sequential_overlay": 0,
+          "mapped_cells": 0
+        },
+        "items": {
+          "word_level": 1,
+          "sequential_overlay": 0,
+          "mapped_cells": 1
+        }
+      }
+    },
+    {
+      "name": "parity8",
+      "passed": true,
+      "status": "ok",
+      "seconds": 2.279,
+      "errors": [],
+      "artifacts": {
+        "word_level": {
+          "present": true,
+          "sha256": "fda994bd985455da881cb9e2f306d5a048440102e829b8cb08e3091a4e7a0ce1"
+        },
+        "sequential_overlay": {
+          "present": true,
+          "sha256": "2da46eccd3cfb1c88e3e47cd1f5f5797d2488b788b5bda05f7b72d4b42c2ab64"
+        },
+        "boolean_graph": {
+          "present": true,
+          "sha256": "81a8bbe8a96cd370b962dcc1f3d9e1c83d179d0ba80199a07cfe94ed6b96fe8c"
+        },
+        "mapped_cells": {
+          "present": true,
+          "sha256": "7805be87263e27b8c11caebab28d0dffcc35a93323739d7910df68402adc7aef"
+        },
+        "metrics": {
+          "present": true,
+          "sha256": "c38e1469c97f7f378fba1854ec1fda65692b214b21ef3ef9d721bf85d111063e"
+        },
+        "summary": {
+          "present": true,
+          "sha256": "a546d796c2e65308be7c3116849bcfa18d81dbe1eb0cebfb9fea024a61179331"
+        },
+        "manifest": {
+          "present": true,
+          "sha256": null
+        }
+      },
+      "layers_present": true,
+      "mapped": {
+        "cells": 7,
+        "area": 0.91854
+      },
+      "equivalence": {
+        "status": "proven",
+        "checks": {
+          "rtl_vs_graph": {
+            "status": "proven",
+            "proven": 1,
+            "unproven": 0
+          },
+          "graph_vs_mapped": {
+            "status": "proven",
+            "proven": 1,
+            "unproven": 0
+          }
+        }
+      },
+      "simulation": {
+        "status": "match",
+        "cycles": 200,
+        "compared_bits": 196,
+        "mismatches": 0,
+        "x_bits": null
+      },
+      "warnings": 2,
+      "src_coverage": {
+        "with_src": {
+          "word_level": 1,
+          "sequential_overlay": 0,
+          "mapped_cells": 0
+        },
+        "items": {
+          "word_level": 1,
+          "sequential_overlay": 0,
+          "mapped_cells": 7
+        }
+      }
+    },
+    {
+      "name": "priority_enc8",
+      "passed": true,
+      "status": "ok",
+      "seconds": 2.411,
+      "errors": [],
+      "artifacts": {
+        "word_level": {
+          "present": true,
+          "sha256": "5d162e869d23bc56565ea76dab3d7623cb7a8ebd5215d60e6d445c828989fbe5"
+        },
+        "sequential_overlay": {
+          "present": true,
+          "sha256": "08d61d2aee4bb5ac0e28c45fdca74420ccb1cb124a033e37caa195ec26d152eb"
+        },
+        "boolean_graph": {
+          "present": true,
+          "sha256": "fcc1ab94baeb7b8f151170bab77aefc9f1459e3ac4600ce72f7695e6fe728962"
+        },
+        "mapped_cells": {
+          "present": true,
+          "sha256": "570f58e4af8781d3f95719a5f53af1b1ffb5436320bb1d958f43abca116fe39e"
+        },
+        "metrics": {
+          "present": true,
+          "sha256": "b6b6c565049c3ea815813c3c19e00b2d844d5afcb1114f0dbf5449353c207313"
+        },
+        "summary": {
+          "present": true,
+          "sha256": "0d82b0d98902b513dd300143db39d7290888b38283b893fe69de1f52fbbf7aaf"
+        },
+        "manifest": {
+          "present": true,
+          "sha256": null
+        }
+      },
+      "layers_present": true,
+      "mapped": {
+        "cells": 11,
+        "area": 0.78732
+      },
+      "equivalence": {
+        "status": "proven",
+        "checks": {
+          "rtl_vs_graph": {
+            "status": "proven",
+            "proven": 4,
+            "unproven": 0
+          },
+          "graph_vs_mapped": {
+            "status": "proven",
+            "proven": 4,
+            "unproven": 0
+          }
+        }
+      },
+      "simulation": {
+        "status": "match",
+        "cycles": 200,
+        "compared_bits": 784,
+        "mismatches": 0,
+        "x_bits": null
+      },
+      "warnings": 2,
+      "src_coverage": {
+        "with_src": {
+          "word_level": 15,
+          "sequential_overlay": 0,
+          "mapped_cells": 0
+        },
+        "items": {
+          "word_level": 15,
+          "sequential_overlay": 0,
+          "mapped_cells": 11
+        }
+      }
+    },
+    {
+      "name": "reg8_en",
+      "passed": true,
+      "status": "ok",
+      "seconds": 2.434,
+      "errors": [],
+      "artifacts": {
+        "word_level": {
+          "present": true,
+          "sha256": "d169b2f4fadc0c80d3b3f3d6ee7cae6165435ecec496f7512e91f67790adfbee"
+        },
+        "sequential_overlay": {
+          "present": true,
+          "sha256": "08083fea7f7b0b0913a35e5b44018e15b26e93874c94a8b8d2df432ef4807a84"
+        },
+        "boolean_graph": {
+          "present": true,
+          "sha256": "14380515602179611bd1848975908c9fb02baddfef6c0ea0708bc3c4ed0ca66a"
+        },
+        "mapped_cells": {
+          "present": true,
+          "sha256": "eb76849646dcdb0812f1c6a108951e9136666ccd4c497fdf95dca92709a66765"
+        },
+        "metrics": {
+          "present": true,
+          "sha256": "deadea8cb1ff919be2e6688382e52bbad2ebe6a7b86a96f45d3449eb7a15c9ba"
+        },
+        "summary": {
+          "present": true,
+          "sha256": "8b140c6fd150c6c3405255a2cb18cc71389b371890360a812fb74215188abdb1"
+        },
+        "manifest": {
+          "present": true,
+          "sha256": null
+        }
+      },
+      "layers_present": true,
+      "mapped": {
+        "cells": 32,
+        "area": 4.31568
+      },
+      "equivalence": {
+        "status": "proven",
+        "checks": {
+          "rtl_vs_graph": {
+            "status": "proven",
+            "proven": 8,
+            "unproven": 0
+          },
+          "graph_vs_mapped": {
+            "status": "proven",
+            "proven": 8,
+            "unproven": 0
+          }
+        }
+      },
+      "simulation": {
+        "status": "match",
+        "cycles": 200,
+        "compared_bits": 1560,
+        "mismatches": 0,
+        "x_bits": null
+      },
+      "warnings": 2,
+      "src_coverage": {
+        "with_src": {
+          "word_level": 1,
+          "sequential_overlay": 1,
+          "mapped_cells": 8
+        },
+        "items": {
+          "word_level": 1,
+          "sequential_overlay": 1,
+          "mapped_cells": 32
+        }
+      }
+    },
+    {
+      "name": "shift_reg8",
+      "passed": true,
+      "status": "ok",
+      "seconds": 2.288,
+      "errors": [],
+      "artifacts": {
+        "word_level": {
+          "present": true,
+          "sha256": "72d70546967ee3720acaf22e22a09453d5cc3cf364fd18e7e392669931e9edd0"
+        },
+        "sequential_overlay": {
+          "present": true,
+          "sha256": "890171df64d368e51d067459aa84ad783ccab28ef088925f71c6161583f4f7dc"
+        },
+        "boolean_graph": {
+          "present": true,
+          "sha256": "4a306b7c88a44a2a23014d4fe653ca0c04f4d8d0215b2d3eb90f1858c1cc5d6a"
+        },
+        "mapped_cells": {
+          "present": true,
+          "sha256": "df659e498a31146904d3ce6329f33c1c7b22a6b551029cbbfa58c4e0b6674262"
+        },
+        "metrics": {
+          "present": true,
+          "sha256": "5443c34af331a276a0cb70fdecffcb590abcbd268830809b4c7989b56218d7cc"
+        },
+        "summary": {
+          "present": true,
+          "sha256": "5554982a80ac5a44d8bcc11ac014f6623950862ffe8a43e071b308ab96c3a6cf"
+        },
+        "manifest": {
+          "present": true,
+          "sha256": null
+        }
+      },
+      "layers_present": true,
+      "mapped": {
+        "cells": 8,
+        "area": 2.916
+      },
+      "equivalence": {
+        "status": "proven",
+        "checks": {
+          "rtl_vs_graph": {
+            "status": "proven",
+            "proven": 9,
+            "unproven": 0
+          },
+          "graph_vs_mapped": {
+            "status": "proven",
+            "proven": 9,
+            "unproven": 0
+          }
+        }
+      },
+      "simulation": {
+        "status": "match",
+        "cycles": 200,
+        "compared_bits": 193,
+        "mismatches": 0,
+        "x_bits": null
+      },
+      "warnings": 0,
+      "src_coverage": {
+        "with_src": {
+          "word_level": 1,
+          "sequential_overlay": 1,
+          "mapped_cells": 8
+        },
+        "items": {
+          "word_level": 1,
+          "sequential_overlay": 1,
+          "mapped_cells": 8
+        }
+      }
+    },
+    {
+      "name": "skid_buffer",
+      "passed": true,
+      "status": "ok",
+      "seconds": 2.633,
+      "errors": [],
+      "artifacts": {
+        "word_level": {
+          "present": true,
+          "sha256": "46ef0d222968922099df49b3752cc6ececfad627a11ca991fc35bb1ec877eefb"
+        },
+        "sequential_overlay": {
+          "present": true,
+          "sha256": "b97cf3f2d2f93bbde111de7b856848e91a0b91c4f9c3d57276711623c9cc9425"
+        },
+        "boolean_graph": {
+          "present": true,
+          "sha256": "c9d0e6647d2ce00af0244f9fe58d39f308f776d897988431688820011a57d42d"
+        },
+        "mapped_cells": {
+          "present": true,
+          "sha256": "af57bad0be7dc0b32957f88b9069809eac4c7826c246eebbba9c88dd92a1fe9d"
+        },
+        "metrics": {
+          "present": true,
+          "sha256": "9fabee5d9e18f28ee42a8f624ab99118f366c5499298ba9043074a42a9529ed4"
+        },
+        "summary": {
+          "present": true,
+          "sha256": "69320170c216a3dbb2b1e1c6ed913b9baeb2c5b23a0d59dd0c50b3fa29822288"
+        },
+        "manifest": {
+          "present": true,
+          "sha256": null
+        }
+      },
+      "layers_present": true,
+      "mapped": {
+        "cells": 38,
+        "area": 5.01552
+      },
+      "equivalence": {
+        "status": "proven",
+        "checks": {
+          "rtl_vs_graph": {
+            "status": "proven",
+            "proven": 10,
+            "unproven": 0
+          },
+          "graph_vs_mapped": {
+            "status": "proven",
+            "proven": 10,
+            "unproven": 0
+          }
+        }
+      },
+      "simulation": {
+        "status": "match",
+        "cycles": 200,
+        "compared_bits": 1944,
+        "mismatches": 0,
+        "x_bits": null
+      },
+      "warnings": 3,
+      "src_coverage": {
+        "with_src": {
+          "word_level": 6,
+          "sequential_overlay": 2,
+          "mapped_cells": 9
+        },
+        "items": {
+          "word_level": 8,
+          "sequential_overlay": 2,
+          "mapped_cells": 38
+        }
+      }
+    },
+    {
+      "name": "sync_fifo_d16_w32",
+      "passed": true,
+      "status": "ok",
+      "seconds": 11.132,
+      "errors": [],
+      "artifacts": {
+        "word_level": {
+          "present": true,
+          "sha256": "46888f12765422c7ebb579b5e2183c0be7b5a3580f873057370eb41ddd26b48b"
+        },
+        "sequential_overlay": {
+          "present": true,
+          "sha256": "29c5f41ef089368fdee6cb194a6dc3d3a0d82c38e5c95b73d516c7a3473baa96"
+        },
+        "boolean_graph": {
+          "present": true,
+          "sha256": "e01e58f833218d6e2b3391e70341e0338a6f9e3dd7b45e6e52936ccdb4d6bef7"
+        },
+        "mapped_cells": {
+          "present": true,
+          "sha256": "008a3d80e6d74e94ce9c4319cacbbd93511689622fa6573d1d51dcedceee25d4"
+        },
+        "metrics": {
+          "present": true,
+          "sha256": "88eb7d1ceb4bbba559102df1384c08baa0aa260e51521f6333f315557bc77dad"
+        },
+        "summary": {
+          "present": true,
+          "sha256": "f5ef037fabeb40b5855204c92a45d5b8e0dc5ba155ae22944782c5437d0829d0"
+        },
+        "manifest": {
+          "present": true,
+          "sha256": null
+        }
+      },
+      "layers_present": true,
+      "mapped": {
+        "cells": 2400,
+        "area": 322.45128
+      },
+      "equivalence": {
+        "status": "proven",
+        "checks": {
+          "rtl_vs_graph": {
+            "status": "proven",
+            "proven": 560,
+            "unproven": 0
+          },
+          "graph_vs_mapped": {
+            "status": "proven",
+            "proven": 559,
+            "unproven": 0
+          }
+        }
+      },
+      "simulation": {
+        "status": "match",
+        "cycles": 200,
+        "compared_bits": 1372,
+        "mismatches": 0,
+        "x_bits": null
+      },
+      "warnings": 2,
+      "src_coverage": {
+        "with_src": {
+          "word_level": 24,
+          "sequential_overlay": 3,
+          "mapped_cells": 13
+        },
+        "items": {
+          "word_level": 26,
+          "sequential_overlay": 3,
+          "mapped_cells": 2400
+        }
+      }
+    },
+    {
+      "name": "sync_fifo_d16_w8",
+      "passed": true,
+      "status": "ok",
+      "seconds": 5.025,
+      "errors": [],
+      "artifacts": {
+        "word_level": {
+          "present": true,
+          "sha256": "8e2515ffb4c72f3e5eaec1354498fbdcbddda2f6c80e444154bf49ab40d862c0"
+        },
+        "sequential_overlay": {
+          "present": true,
+          "sha256": "54bbfa64875df479ca5c78dbcc353488bd8b83c9e4f167ab902b4e6107866485"
+        },
+        "boolean_graph": {
+          "present": true,
+          "sha256": "428a1f9b983437249269bc2f558b79b6ea8e6227b4dbe105584d08566076fbc0"
+        },
+        "mapped_cells": {
+          "present": true,
+          "sha256": "75298b9e93115b6253803bf3cbe374489d73f8cbb216fb586fcea3f11f6f133e"
+        },
+        "metrics": {
+          "present": true,
+          "sha256": "b2015db921d8cc1edd451663fb27799d5ac62543378e08d40a147fb7ad77bd0c"
+        },
+        "summary": {
+          "present": true,
+          "sha256": "73fa01684107e0a8d45a6a118762636932057b73a083c4c230968b526a39221d"
+        },
+        "manifest": {
+          "present": true,
+          "sha256": null
+        }
+      },
+      "layers_present": true,
+      "mapped": {
+        "cells": 660,
+        "area": 88.3548
+      },
+      "equivalence": {
+        "status": "proven",
+        "checks": {
+          "rtl_vs_graph": {
+            "status": "proven",
+            "proven": 152,
+            "unproven": 0
+          },
+          "graph_vs_mapped": {
+            "status": "proven",
+            "proven": 151,
+            "unproven": 0
+          }
+        }
+      },
+      "simulation": {
+        "status": "match",
+        "cycles": 200,
+        "compared_bits": 1372,
+        "mismatches": 0,
+        "x_bits": null
+      },
+      "warnings": 2,
+      "src_coverage": {
+        "with_src": {
+          "word_level": 24,
+          "sequential_overlay": 3,
+          "mapped_cells": 13
+        },
+        "items": {
+          "word_level": 26,
+          "sequential_overlay": 3,
+          "mapped_cells": 660
+        }
+      }
+    },
+    {
+      "name": "sync_fifo_d4_w8",
+      "passed": true,
+      "status": "ok",
+      "seconds": 3.145,
+      "errors": [],
+      "artifacts": {
+        "word_level": {
+          "present": true,
+          "sha256": "4ff9849384047cb4d7483be83ee65b07bec996663be9f1b1e0fff7c5630d7e49"
+        },
+        "sequential_overlay": {
+          "present": true,
+          "sha256": "8f59662c944bf14fd7bbbed522b1d6083a93a8118e7f34fe9ca986a28fb90e64"
+        },
+        "boolean_graph": {
+          "present": true,
+          "sha256": "f99fb53a86026357fb345bbff760bcca955b9391e50388a6b011df5d65e5fa9e"
+        },
+        "mapped_cells": {
+          "present": true,
+          "sha256": "2929345577aa4336692994a6aeee3be0cc74a393e05c27023a9ed9e0100cd8b3"
+        },
+        "metrics": {
+          "present": true,
+          "sha256": "bddca7d2466aaa18d66a6d151553a3a57ad68facff7098ee3cfea9f752133af1"
+        },
+        "summary": {
+          "present": true,
+          "sha256": "0d9dc1b656ebeb9f8a4f33362cdea935b539a9b30710701296ae08834b4cc7e7"
+        },
+        "manifest": {
+          "present": true,
+          "sha256": null
+        }
+      },
+      "layers_present": true,
+      "mapped": {
+        "cells": 192,
+        "area": 24.5673
+      },
+      "equivalence": {
+        "status": "proven",
+        "checks": {
+          "rtl_vs_graph": {
+            "status": "proven",
+            "proven": 50,
+            "unproven": 0
+          },
+          "graph_vs_mapped": {
+            "status": "proven",
+            "proven": 49,
+            "unproven": 0
+          }
+        }
+      },
+      "simulation": {
+        "status": "match",
+        "cycles": 200,
+        "compared_bits": 980,
+        "mismatches": 0,
+        "x_bits": null
+      },
+      "warnings": 2,
+      "src_coverage": {
+        "with_src": {
+          "word_level": 24,
+          "sequential_overlay": 3,
+          "mapped_cells": 7
+        },
+        "items": {
+          "word_level": 26,
+          "sequential_overlay": 3,
+          "mapped_cells": 192
+        }
+      }
+    },
+    {
+      "name": "sync_fifo_d8_w8",
+      "passed": true,
+      "status": "ok",
+      "seconds": 3.658,
+      "errors": [],
+      "artifacts": {
+        "word_level": {
+          "present": true,
+          "sha256": "6eefd125f53d02ac4651e8c1f434096da5335540332dd05cd9d6ca321b727ec8"
+        },
+        "sequential_overlay": {
+          "present": true,
+          "sha256": "a57ec87925f8bb8e72c1606835e4ffec516e1641f930676bdc0f19357fb6cc25"
+        },
+        "boolean_graph": {
+          "present": true,
+          "sha256": "918f9bad4790000ca90c5b4f3e129199cb8bd9a5530ff02ecc6699f47a032a59"
+        },
+        "mapped_cells": {
+          "present": true,
+          "sha256": "4cf15d73fa65368328d28b165994585994e390dff186d6350dd3925fed193960"
+        },
+        "metrics": {
+          "present": true,
+          "sha256": "cd2591153050a8fe53b115ec444aa5f12885b7a87e81f3f760ea4bf5c1a3597d"
+        },
+        "summary": {
+          "present": true,
+          "sha256": "6cf37b58cd849d55454ae7faaedd191acca2e2bc47113c8e77ff983b5cd7650e"
+        },
+        "manifest": {
+          "present": true,
+          "sha256": null
+        }
+      },
+      "layers_present": true,
+      "mapped": {
+        "cells": 350,
+        "area": 46.90386
+      },
+      "equivalence": {
+        "status": "proven",
+        "checks": {
+          "rtl_vs_graph": {
+            "status": "proven",
+            "proven": 85,
+            "unproven": 0
+          },
+          "graph_vs_mapped": {
+            "status": "proven",
+            "proven": 84,
+            "unproven": 0
+          }
+        }
+      },
+      "simulation": {
+        "status": "match",
+        "cycles": 200,
+        "compared_bits": 1176,
+        "mismatches": 0,
+        "x_bits": null
+      },
+      "warnings": 2,
+      "src_coverage": {
+        "with_src": {
+          "word_level": 24,
+          "sequential_overlay": 3,
+          "mapped_cells": 10
+        },
+        "items": {
+          "word_level": 26,
+          "sequential_overlay": 3,
+          "mapped_cells": 350
+        }
+      }
+    },
+    {
+      "name": "xor2",
+      "passed": true,
+      "status": "ok",
+      "seconds": 2.397,
+      "errors": [],
+      "artifacts": {
+        "word_level": {
+          "present": true,
+          "sha256": "afcae05bfc0d8b9d2baa4fa3734d767595c4e692a4f98da3ccf1239c8b08283e"
+        },
+        "sequential_overlay": {
+          "present": true,
+          "sha256": "538885bd520163601fef18b0a6a72635a7e8e0a56dfeaf611164b2a7a432dd53"
+        },
+        "boolean_graph": {
+          "present": true,
+          "sha256": "b8b6444b21733c12ac116485cfff04285ab92d0b08a8bebbb63b4c4452f79400"
+        },
+        "mapped_cells": {
+          "present": true,
+          "sha256": "d06bd107560488f92551440b9362e8a51802c3813a4580a649525cf623a39585"
+        },
+        "metrics": {
+          "present": true,
+          "sha256": "24f0e3ee5a4857f9466449369c3e55b33906e5fec6e28f285f2d1e7de4db9489"
+        },
+        "summary": {
+          "present": true,
+          "sha256": "676d5e16b7f351ef8e75c055496228a0de8175c2f6dbef9c6a8769628db4a06d"
+        },
+        "manifest": {
+          "present": true,
+          "sha256": null
+        }
+      },
+      "layers_present": true,
+      "mapped": {
+        "cells": 1,
+        "area": 0.13122
+      },
+      "equivalence": {
+        "status": "proven",
+        "checks": {
+          "rtl_vs_graph": {
+            "status": "proven",
+            "proven": 1,
+            "unproven": 0
+          },
+          "graph_vs_mapped": {
+            "status": "proven",
+            "proven": 1,
+            "unproven": 0
+          }
+        }
+      },
+      "simulation": {
+        "status": "match",
+        "cycles": 200,
+        "compared_bits": 196,
+        "mismatches": 0,
+        "x_bits": null
+      },
+      "warnings": 2,
+      "src_coverage": {
+        "with_src": {
+          "word_level": 1,
+          "sequential_overlay": 0,
+          "mapped_cells": 0
+        },
+        "items": {
+          "word_level": 1,
+          "sequential_overlay": 0,
+          "mapped_cells": 1
+        }
+      }
+    },
+    {
+      "name": "sync_fifo",
+      "passed": true,
+      "status": "ok",
+      "seconds": 11.137,
+      "errors": [],
+      "artifacts": {
+        "word_level": {
+          "present": true,
+          "sha256": "2a4d7a37251756d014e5fecd8f4637e1696c98c49332b941e1eaa28b2ae86ce3"
+        },
+        "sequential_overlay": {
+          "present": true,
+          "sha256": "ea9384d0e87c2e59c33ae3ce2f1fbb27279f526d6e8d6fc77a204ac848bcca5c"
+        },
+        "boolean_graph": {
+          "present": true,
+          "sha256": "3e0e320f5ad89fbcbd22eb70ccc19182f8f067b5b0d511e3d7137e16fc5c794b"
+        },
+        "mapped_cells": {
+          "present": true,
+          "sha256": "ad95065968e4623a3bcabdc3c06e890ccb164770be502c2cfc814690fcfa8cb2"
+        },
+        "metrics": {
+          "present": true,
+          "sha256": "e03fa5d70a05aa8958ef31caed830f8632c2abb648b31e83efa4d352fbf635d4"
+        },
+        "summary": {
+          "present": true,
+          "sha256": "7e9e68404fd4dd865fe00c036445849b76c792d45d8e847de57f1c5f5d82c3d0"
+        },
+        "manifest": {
+          "present": true,
+          "sha256": null
+        }
+      },
+      "layers_present": true,
+      "mapped": {
+        "cells": 2383,
+        "area": 323.07822
+      },
+      "equivalence": {
+        "status": "proven",
+        "checks": {
+          "rtl_vs_graph": {
+            "status": "proven",
+            "proven": 560,
+            "unproven": 0
+          },
+          "graph_vs_mapped": {
+            "status": "proven",
+            "proven": 559,
+            "unproven": 0
+          }
+        }
+      },
+      "simulation": {
+        "status": "match",
+        "cycles": 200,
+        "compared_bits": 1372,
+        "mismatches": 0,
+        "x_bits": null
+      },
+      "warnings": 2,
+      "src_coverage": {
+        "with_src": {
+          "word_level": 24,
+          "sequential_overlay": 3,
+          "mapped_cells": 13
+        },
+        "items": {
+          "word_level": 26,
+          "sequential_overlay": 3,
+          "mapped_cells": 2383
+        }
+      }
+    },
+    {
+      "name": "async_fifo",
+      "passed": true,
+      "status": "ok",
+      "seconds": 3.497,
+      "errors": [],
+      "artifacts": {
+        "word_level": {
+          "present": true,
+          "sha256": "21c13bbb1b6af764ec2b70892bc04c378a0bd86b2af8eddc6efa8a591ba9c8ea"
+        },
+        "sequential_overlay": {
+          "present": true,
+          "sha256": "56afb73de9d7fd983fe3a6956f3bb2e33e91ff2cfcba2a45046a1ce07af72b93"
+        },
+        "boolean_graph": {
+          "present": true,
+          "sha256": "d2240576a98d4633cc1e812e14af867e229e81bfbf3d9b59e04459500b65a6e9"
+        },
+        "mapped_cells": {
+          "present": true,
+          "sha256": "ac1e021590118a1a6496d9b79fe825d9bfbc646b8e7371ec200a7912f5eae2da"
+        },
+        "metrics": {
+          "present": true,
+          "sha256": "24db0e66e8c959d4dd44e14f0407156508e7a6fda3c388493c816210f5ec03fa"
+        },
+        "summary": {
+          "present": true,
+          "sha256": "641a1134df910eecb259a58c89a0e5ea43bdd64e660c46d98991a03c2bbeadd5"
+        },
+        "manifest": {
+          "present": true,
+          "sha256": null
+        }
+      },
+      "layers_present": true,
+      "mapped": {
+        "cells": 757,
+        "area": 101.85588
+      },
+      "equivalence": {
+        "status": "proven",
+        "checks": {
+          "rtl_vs_graph": {
+            "status": "proven",
+            "proven": 198,
+            "unproven": 0
+          },
+          "graph_vs_mapped": {
+            "status": "proven",
+            "proven": 198,
+            "unproven": 0
+          }
+        }
+      },
+      "simulation": {
+        "status": "match",
+        "cycles": 200,
+        "compared_bits": 1960,
+        "mismatches": 0,
+        "x_bits": null
+      },
+      "warnings": 2,
+      "src_coverage": {
+        "with_src": {
+          "word_level": 26,
+          "sequential_overlay": 10,
+          "mapped_cells": 40
+        },
+        "items": {
+          "word_level": 27,
+          "sequential_overlay": 10,
+          "mapped_cells": 757
+        }
+      }
+    },
+    {
+      "name": "struct_fifo",
+      "passed": true,
+      "status": "ok",
+      "seconds": 4.927,
+      "errors": [],
+      "artifacts": {
+        "word_level": {
+          "present": true,
+          "sha256": "27faafad88005a15e8dd68772b0d51dc57e5aa71287a0b503132a9b324000822"
+        },
+        "sequential_overlay": {
+          "present": true,
+          "sha256": "d012fd93b9eee98e2d0af697107d81e26a206e50c233c231e7e7760bcbaca9fe"
+        },
+        "boolean_graph": {
+          "present": true,
+          "sha256": "a94b31c46dd9ac7fc93f527dc60fd5952009db278353da08e637fdcfed064237"
+        },
+        "mapped_cells": {
+          "present": true,
+          "sha256": "f7f43c1ee81306b352fb03951043a4f2b58c3eddb8715088af8b667597a80a2f"
+        },
+        "metrics": {
+          "present": true,
+          "sha256": "5f72b0f3c4e59fc40cc1a2f35647168ea525fa3a854aaca2f725d1f6cf76519a"
+        },
+        "summary": {
+          "present": true,
+          "sha256": "72980af9dbe1be02b8cf3e0644a0eb99991dcc7a6f93cce349d3200d5ea30b6e"
+        },
+        "manifest": {
+          "present": true,
+          "sha256": null
+        }
+      },
+      "layers_present": true,
+      "mapped": {
+        "cells": 876,
+        "area": 115.24032
+      },
+      "equivalence": {
+        "status": "proven",
+        "checks": {
+          "rtl_vs_graph": {
+            "status": "proven",
+            "proven": 211,
+            "unproven": 0
+          },
+          "graph_vs_mapped": {
+            "status": "proven",
+            "proven": 211,
+            "unproven": 0
+          }
+        }
+      },
+      "simulation": {
+        "status": "match",
+        "cycles": 200,
+        "compared_bits": 4856,
+        "mismatches": 0,
+        "x_bits": null
+      },
+      "warnings": 2,
+      "src_coverage": {
+        "with_src": {
+          "word_level": 44,
+          "sequential_overlay": 3,
+          "mapped_cells": 10
+        },
+        "items": {
+          "word_level": 49,
+          "sequential_overlay": 3,
+          "mapped_cells": 876
+        }
+      }
+    },
+    {
+      "name": "if_fifo",
+      "passed": true,
+      "status": "ok",
+      "seconds": 3.194,
+      "errors": [],
+      "artifacts": {
+        "word_level": {
+          "present": true,
+          "sha256": "281746b35ee9d3a8acd20f1b915eaa2c9337c2fdec03cc06b840992e1f7ef11c"
+        },
+        "sequential_overlay": {
+          "present": true,
+          "sha256": "2d4f11f182f6cef9ea3713a51aee8a1504feb371f777d0f96d56adb53cf5cff0"
+        },
+        "boolean_graph": {
+          "present": true,
+          "sha256": "cf05c663ea28652a7a8134bd1231654850dc934cd2979b9e1a59c403ccd0242c"
+        },
+        "mapped_cells": {
+          "present": true,
+          "sha256": "15d2fe3f7aa45f120bf1c78fb3ff908dcf12b499589db36f3bfa265d234d8c81"
+        },
+        "metrics": {
+          "present": true,
+          "sha256": "10c92a45a03399b5897ab6ecbacf9a80c1be65e39c1af9da216d690a862252b2"
+        },
+        "summary": {
+          "present": true,
+          "sha256": "e99ae43297f72286f5ee6869420ee6f03bbabc58573039f37c2de1314d55bc14"
+        },
+        "manifest": {
+          "present": true,
+          "sha256": null
+        }
+      },
+      "layers_present": true,
+      "mapped": {
+        "cells": 329,
+        "area": 43.87122
+      },
+      "equivalence": {
+        "status": "proven",
+        "checks": {
+          "rtl_vs_graph": {
+            "status": "proven",
+            "proven": 89,
+            "unproven": 0
+          },
+          "graph_vs_mapped": {
+            "status": "proven",
+            "proven": 89,
+            "unproven": 0
+          }
+        }
+      },
+      "simulation": {
+        "status": "match",
+        "cycles": 200,
+        "compared_bits": 3496,
+        "mismatches": 0,
+        "x_bits": null
+      },
+      "warnings": 2,
+      "src_coverage": {
+        "with_src": {
+          "word_level": 25,
+          "sequential_overlay": 3,
+          "mapped_cells": 7
+        },
+        "items": {
+          "word_level": 26,
+          "sequential_overlay": 3,
+          "mapped_cells": 329
+        }
+      }
+    }
+  ]
+}

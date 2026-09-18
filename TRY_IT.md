@@ -22,11 +22,12 @@ A completed run is committed under [`tools/synth_area/examples/output/`](tools/s
 |---|---|
 | `counter8_en/` | Every artifact of one run on an 8-bit counter (5 word-level ops, 1 register × 8 bits, 30 gates, 29 ASAP7 cells) — small enough to read end to end: the four layer files, `summary.md`, `run_manifest.json`, `metrics.json`, generic and ASAP7 netlists, the exact Yosys scripts, proof logs, the simulation testbench. |
 | `sync_fifo/` | The headline block (16×32 FIFO, 1275 gates, 525 flops, 2383 ASAP7 cells, 323.08 µm²): `summary.md`, `run_manifest.json`, `metrics.json`, `word_level.json`, `sequential_overlay.json`, ASAP7 netlist, scripts, simulation log. The ~1 MB graph / mapped-cell JSONs and the multi-MB logs are omitted; regenerate with the command in §2. |
-| `suite/` | `suite_table.md` / `suite_summary.json`: all 49 corpus blocks (24 of them FIFO variants), 49/49 pass. |
+| `suite/` | The whole corpus: [`EVIDENCE.md`](tools/synth_area/examples/output/suite/EVIDENCE.md) (one page: each goal of the tool against what the run measured), `suite_evidence.json` (the same machine-readable, with every block's layer sha256s), `suite_table.md` / `suite_summary.json` (per-block metrics). All 49 blocks (24 of them FIFO variants), 49/49 pass, 9/9 criteria. |
+| `stress/` (RTL only) | Two oversized FIFO wrappers, `sync_fifo_d64_w32.sv` and `sync_fifo_d1024_w8.sv`, kept out of the corpus because of their proof time — see the scaling table in §2. |
 
 Paths in the committed copies (absolute, and the work-dir-relative `src` attributes in the JSON) were replaced by `<repo>` / `<out>` and the pre-commit hook trimmed trailing whitespace in the logs; nothing else was edited. That edit is why the sha256s in the committed `run_manifest.json` do not match the committed files next to it — they are the hashes of the unedited originals.
 
-Start with [`counter8_en/summary.md`](tools/synth_area/examples/output/counter8_en/summary.md), then [`metrics.json`](tools/synth_area/examples/output/counter8_en/metrics.json): `summary` is the one-screen answer, `word_level` / `sequential` / `boolean` / `mapped` the per-layer totals, `equivalence` and `simulation` the correctness evidence, `profile`/`tools`/`sources` the provenance (sha256 of the RTL, the profile and every Liberty file).
+Start with [`suite/EVIDENCE.md`](tools/synth_area/examples/output/suite/EVIDENCE.md) for the corpus-wide answer, then [`counter8_en/summary.md`](tools/synth_area/examples/output/counter8_en/summary.md), then [`metrics.json`](tools/synth_area/examples/output/counter8_en/metrics.json): `summary` is the one-screen answer, `word_level` / `sequential` / `boolean` / `mapped` the per-layer totals, `equivalence` and `simulation` the correctness evidence, `profile`/`tools`/`sources` the provenance (sha256 of the RTL, the profile and every Liberty file).
 
 ## 1. Build (Ubuntu 22.04, ~15 min, ~10 of them compiling Yosys)
 
@@ -44,7 +45,7 @@ Optional: `sv2v` on `PATH` (https://github.com/zachjs/sv2v/releases, v0.0.13) gi
 
 ```sh
 python3 tools/synth_area/bool_area.py --top sync_fifo tools/synth_area/examples/sync_fifo.sv -o out/sync_fifo
-python3 tools/synth_area/run_suite.py -o out/suite
+python3 tools/synth_area/run_suite.py -o out/suite -j0      # -j0 = one block per core
 ```
 
 Expected (one core, this machine):
@@ -55,10 +56,24 @@ Expected (one core, this machine):
 [suite] ok   parity8                gates=7 dffs=0 depth=3 cells=7 area=0.91854 (1.4s)
 [suite] ok   fifo_gray_ptr_d8_w8    gates=179 dffs=78 depth=8 cells=354 area=49.01796 (3.8s)
 [suite] ok   sync_fifo_d16_w32      gates=1261 dffs=525 depth=14 cells=2400 area=322.45128 (11.0s)
-[suite] 49/49 blocks passed -> out/suite/suite_summary.json
+[suite] 49/49 blocks passed in 26.899s (-j8), 9/9 criteria -> out/suite/EVIDENCE.md
 ```
 
-The suite is a sequential loop; on a multi-core box fan it out per block (`--only NAME`, one output dir each) with `xargs -P $(nproc)` — 49 blocks in well under a minute on 8 cores.
+`-j N` runs N blocks at a time, each in its own process (`-j0` = one per core): 27 s on 8 cores against 78 s sequential, same results in the same order. Besides the per-block directories the suite writes `suite_table.md`, `suite_summary.json` and the two rollups `EVIDENCE.md` / `suite_evidence.json` — what the run proves about the corpus as a whole, and the sha256 of all 196 layer files. Pass an earlier run's `suite_evidence.json` to `--baseline` and the determinism criterion turns from `n/a` into a byte-for-byte comparison against it:
+
+```sh
+python3 tools/synth_area/run_suite.py -o out/suite2 -j0 --baseline out/suite/suite_evidence.json
+```
+
+**Scaling.** The same `sync_fifo` at three sizes (`examples/stress/`, not in the corpus), whole flow wall time:
+
+| block | flops | gates | ASAP7 cells | area µm² | synth+map | graph-vs-mapped proof | total |
+|---|---|---|---|---|---|---|---|
+| `sync_fifo` 16×32 | 525 | 1275 | 2383 | 323.08 | 3 s | 7 s | 11 s |
+| `sync_fifo_d64_w32` | 2067 | 5903 | 8795 | 1228.39 | 6 s | 63 s | 71 s |
+| `sync_fifo_d1024_w8` | 8223 | 25873 | 35798 | 4949.71 | 14 s | 1085 s | 19 min |
+
+All three `equiv=proven`, 0 simulation mismatches. The SAT proof is what scales badly, not the reporting: for area-only sweeps `--no-equiv --sim-cycles 0` keeps even the 1024-deep block at ~15 s.
 
 With the Yosys built from this repo your numbers should match the committed ones: on one Yosys build, same RTL + same profile ⇒ byte-identical `boolean_graph.json` and netlists (`tests/test_bool_area.py::test_determinism` checks two runs against each other). A different Yosys/ABC version can legitimately produce a different, equally correct netlist; `metrics.json → tools.yosys_version` and `profile.sha256` record what each run used, so compare like with like.
 
@@ -111,7 +126,8 @@ Same Boolean gate count, 4× less silicon — the graph metric and the mapped ar
 | `mapped_cells.py` | Layer 4: Liberty parser + `mapped_cells.json` (per-cell area, function, pin-to-net). |
 | `diff_sim.py` | Random differential simulation RTL vs netlist. |
 | `bool_area.py` | The flow: word-level checkpoint → lower → graph → map → prove → simulate → `metrics.json`, `summary.md`, `run_manifest.json`. |
-| `corpus/`, `run_suite.py`, `BOOLEAN_LAYER.md` | 49 blocks (32 with hand-counted expected metrics, 24 FIFO variants), the runner, and the design/results write-up. |
+| `corpus/`, `run_suite.py`, `BOOLEAN_LAYER.md` | 49 blocks (32 with hand-counted expected metrics, 24 FIFO variants), the runner (`-j`, `--only`, `--baseline`), and the design/results write-up. |
+| `suite_evidence.py` | Suite run → `EVIDENCE.md` / `suite_evidence.json`: each goal of the tool scored against the artifacts. Also runnable on an existing `suite_summary.json`. |
 | `slurm_synth_area.sh`, `slurm_sweep.sh` | `sbatch` wrappers for running many blocks in parallel (fall back to local execution without `sbatch`). |
 | `tests/` | `python3 tools/synth_area/tests/test_<name>.py` — all need `build/yosys`; ~2 min total. |
 
@@ -124,4 +140,5 @@ Same Boolean gate count, 4× less silicon — the graph metric and the mapped ar
 - **Multi-clock blocks** (`async_fifo`) are proven under Yosys' single-clock `async2sync` abstraction: logic preserved, CDC timing not modelled.
 - **Simulation is a sample**, 200 cycles with one seed; the SAT proof is the correctness gate.
 - **Slurm wrappers** have not been run on a real cluster.
-- Timings above are one core, one machine; no parallel-throughput measurement yet.
+- Timings above are one machine (8 cores); per-block times are single-core, the suite total is `-j8`.
+- **The proof does not scale to real blocks yet.** 8 k flops already costs 18 min of SAT; a block-level design needs hierarchical or partitioned equivalence, which is not implemented.

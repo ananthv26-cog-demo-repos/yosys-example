@@ -30,10 +30,10 @@ knowledge:
   - name: test
     contents: |
       for t in tools/synth_area/tests/test_*.py; do python3 "$t"; done   # ~1 min, needs build/yosys
-      python3 tools/synth_area/run_suite.py -o /tmp/suite   # 36-block corpus, sequential, ~80s
-      # same 36 blocks across all cores, ~19s; each block writes its own summary under /tmp/psuite/<name>
-      python3 -c "import json;print('\n'.join(b['name'] for b in json.load(open('tools/synth_area/corpus/suite.json'))['blocks']))" \
-        | xargs -P "$(nproc)" -I{} python3 tools/synth_area/run_suite.py --only {} -o /tmp/psuite/{}
+      # 49-block corpus one block per core (~27s on 8 cores, ~80s with -j1); reviewer rollup in EVIDENCE.md
+      python3 tools/synth_area/run_suite.py -o /tmp/suite -j0
+      # determinism: rerun and compare every layer file against the first run
+      python3 tools/synth_area/run_suite.py -o /tmp/suite2 -j0 --baseline /tmp/suite/suite_evidence.json
   - name: lint
     contents: |
       ruff check tools/synth_area --line-length 120

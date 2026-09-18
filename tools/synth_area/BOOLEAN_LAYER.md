@@ -20,7 +20,7 @@ versioned profile so two runs are comparable only when their `profile.sha256` ma
 ```sh
 python3 tools/synth_area/bool_area.py block.sv --top block -o out/block
 # [bool_area] OK top=sync_fifo gates=1275 dffs=525 depth=14 cells=2383 area=323.07822 equiv=proven (10.5s)
-python3 tools/synth_area/run_suite.py -o out/suite        # the 49-block corpus, hand-count checks, Markdown table
+python3 tools/synth_area/run_suite.py -o out/suite -j0     # the 49-block corpus, hand-count checks, evidence rollup
 ```
 
 ## The four layers
@@ -118,7 +118,7 @@ which the formal check does not. `--sim-cycles 0` disables it.
 
 ## Corpus results (`run_suite.py`, profile `asap7_rvt_tt_v1` v2, one core)
 
-49/49 blocks pass, 47 `proven` and 2 `bounded`, all 49 `match` in simulation. Median
+49/49 blocks pass, 46 `proven` and 3 `bounded`, all 49 `match` in simulation. Median
 2.4 s per block including the four layer reports, both proofs and 200 simulated cycles;
 the largest block (16×32 FIFO, 525 flops) takes 10.4 s, most of it the graph-vs-ASAP7 proof.
 
@@ -157,6 +157,14 @@ the largest block (16×32 FIFO, 525 flops) takes 10.4 s, most of it the graph-vs
 \* single-clock abstraction, see above. Full table with edge counts and per-block times:
 `run_suite.py` writes `suite_table.md` / `suite_summary.json`; the committed copy is
 `examples/output/suite/suite_table.md`.
+
+`suite_evidence.py` turns the same run into `EVIDENCE.md` / `suite_evidence.json`
+(`examples/output/suite/`): every claim this tool makes — all four layers present, ASAP7
+area summed, nothing silently dropped, both proofs clean, simulation clean, `src` coverage
+per layer, and layer files byte-identical to a `--baseline` run — scored against the
+artifacts the run actually wrote, with the sha256 of all 196 layer files. Blocks run one
+per process, `-j N` of them at a time (`-j0` = one per core): 27 s on 8 cores vs 78 s
+sequential, with results still reported in manifest order.
 
 The two new `bounded` blocks fail k-induction for the same reason as `fifo_shift_d4_w8`:
 state the RTL never reaches. `fifo_pipe_d3_w8` has un-reset data registers that only matter
@@ -204,6 +212,7 @@ extras so a run-wide `--sim-cycles 0` still wins).
 | `mapped_cells.py` | Liberty parser + mapped netlist → `mapped_cells.json`; also a standalone CLI |
 | `diff_sim.py` | random differential simulation RTL vs mapped netlist |
 | `run_suite.py`, `corpus/suite.json`, `corpus/*.sv` | corpus and its runner |
+| `suite_evidence.py` | suite run → `EVIDENCE.md` / `suite_evidence.json` (criteria, layer hashes, determinism vs a baseline) |
 | `profiles/asap7_rvt_tt_v1.json` | pinned frontend, gate set, DFF policy, pass order, Liberty set + hashes |
 | `lib/asap7/` | the 5 ASAP7 RVT/TT NLDM Liberty files (gzip), `PROVENANCE.md`, `LICENSE` |
 | `tests/` | `test_word_level.py`, `test_sequential_overlay.py`, `test_boolean_graph.py`, `test_mapped_cells.py` (one per layer, hand-built netlists + real runs); `test_bool_area.py` (flow, determinism, broken-netlist detection, BMC fallback); `test_suite.py`, `test_diff_sim.py`, `test_synth_area.py` |
