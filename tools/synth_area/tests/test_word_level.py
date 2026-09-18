@@ -138,6 +138,15 @@ class ReportTests(unittest.TestCase):
         self.assertEqual(r["summary"], {"operations": 1, "by_kind": {"ADD": 1}, "by_category": {"arithmetic": 1},
                                         "register_bits": 0, "memory_bits": 0, "input_bits": 6, "output_bits": 5})
 
+    def test_inout_port_counts_toward_both_totals(self) -> None:
+        r = word_level.build_report(fake_module({}, ports={
+            "a": {"direction": "input", "bits": [2, 3]},
+            "io": {"direction": "inout", "bits": [4, 5, 6]},
+            "y": {"direction": "output", "bits": [13]},
+        }), "top")
+        self.assertEqual((r["summary"]["input_bits"], r["summary"]["output_bits"]), (5, 4),
+                         "same convention as boolean_graph: an inout bit is one INPUT and one OUTPUT node")
+
     def test_registers_and_memory_ports(self) -> None:
         data = fake_module({
             "$r": cell("$adffe", {"CLK": [2], "ARST": [3], "EN": [4], "D": [6, 7], "Q": [8, 9]},

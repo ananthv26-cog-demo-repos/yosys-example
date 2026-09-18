@@ -243,8 +243,8 @@ def build_report(data: dict, top: str | None, src_base: Path | None = None) -> d
             "by_category": dict(sorted(Counter(op["category"] for op in ops).items())),
             "register_bits": sum(op["width"] for op in ops if op["kind"] == "REG"),
             "memory_bits": sum(m["bits"] for m in memories),
-            "input_bits": sum(p["width"] for p in ports.values() if p["direction"] == "input"),
-            "output_bits": sum(p["width"] for p in ports.values() if p["direction"] == "output"),
+            "input_bits": sum(p["width"] for p in ports.values() if p["direction"] in ("input", "inout")),
+            "output_bits": sum(p["width"] for p in ports.values() if p["direction"] in ("output", "inout")),
         },
     }
 
