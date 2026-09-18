@@ -59,6 +59,7 @@ def build_manifest(metrics: dict, out: dict[str, Path], argv: list[str], schema_
             "python_executable": sys.executable,
             "yosys": tools.get("yosys"),
             "yosys_version": tools.get("yosys_version"),
+            "abc": tools.get("abc"),
             "sv2v": tools.get("sv2v"),
             "sv2v_version": tools.get("sv2v_version"),
             "iverilog": tools.get("iverilog"),

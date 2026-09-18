@@ -7,8 +7,9 @@ produced:
 
     argv            the exact bool_area.py command line (sources, top, defines, includes, extra args)
     inputs          every source file, include-directory file, the profile and its Liberty files
-    tools           the python interpreter, yosys (slang is linked in), yosys-abc, and the sv2v, iverilog
-                    and vvp binaries the run actually resolved (from its run_manifest.json)
+    tools           the python interpreter, yosys (slang is linked in), the abc binary yosys runs ($ABC or
+                    its sibling yosys-abc), and the sv2v, iverilog and vvp binaries the run actually
+                    resolved (all from its run_manifest.json)
     code            every tools/synth_area/*.py module
     artifacts       every path the flow owns (bool_area.owned_files): the fixed artifacts, sv2v output,
                     equiv_* scripts/logs and the whole sim/ directory; absent ones are recorded as absent
@@ -23,10 +24,11 @@ from __future__ import annotations
 
 import functools
 import json
+import os
 import shutil
 from pathlib import Path
 
-from bool_area import ARTIFACTS, FlowError, liberty_paths, load_profile, owned_files
+from bool_area import ARTIFACTS, FlowError, abc_executable, liberty_paths, load_profile, owned_files
 from run_report import sha256_file
 from synth_area import find_sv2v
 
@@ -38,7 +40,7 @@ HERE = Path(__file__).resolve().parent
 def try_sha256(path: Path) -> str | None:
     try:
         return sha256_file(path) if path.is_file() else None
-    except OSError:
+    except (OSError, ValueError):
         return None
 
 
@@ -49,10 +51,23 @@ def tool_sha256(path: str) -> str | None:
 
 
 def dir_hashes(root: Path) -> dict[str, str | None]:
-    """{relative path: sha256} for every regular file under `root` (an include directory)."""
+    """{relative path: sha256} for every file under `root` (an include directory), keyed by the path the
+    frontend would use. Directory symlinks are followed (the frontend does), each target once."""
     if not root.is_dir():
         return {"": None}
-    return {str(p.relative_to(root)): try_sha256(p) for p in sorted(root.rglob("*")) if p.is_file()}
+    hashes: dict[str, str | None] = {}
+    seen: set[str] = set()
+    for dirpath, dirnames, filenames in os.walk(root, followlinks=True):
+        real = os.path.realpath(dirpath)
+        if real in seen:
+            dirnames[:] = []
+            continue
+        seen.add(real)
+        dirnames.sort()
+        for name in sorted(filenames):
+            p = Path(dirpath, name)
+            hashes[str(p.relative_to(root))] = try_sha256(p)
+    return hashes
 
 
 def code_hashes() -> dict[str, str | None]:
@@ -71,7 +86,7 @@ def tool_paths(generated_by: dict, python: str) -> dict[str, str | None]:
     return {
         "python": recorded("python_executable", shutil.which(python)),
         "yosys": yosys,
-        "yosys-abc": str(Path(yosys).with_name("yosys-abc")) if yosys else None,
+        "abc": recorded("abc", abc_executable(yosys) if yosys else None),
         "sv2v": recorded("sv2v", find_sv2v(None)),
         "iverilog": recorded("iverilog", shutil.which("iverilog")),
         "vvp": recorded("vvp", shutil.which("vvp")),
@@ -84,9 +99,9 @@ def profile_files(profile_path: object) -> list[str]:
         return [""]
     try:
         profile, _ = load_profile(profile_path)
+        return [profile_path, *(str(p) for p in liberty_paths(profile, verify=False))]
     except FlowError:
         return [""]
-    return [profile_path, *(str(p) for p in liberty_paths(profile, verify=False))]
 
 
 def section(container: dict, key: str) -> dict:
@@ -98,7 +113,9 @@ def fingerprint(argv: list[str], python: str, manifest: dict) -> dict:
     """Hashes of everything a bool_area.py run with `argv` depends on. The manifest of the run being
     recorded (or reused) says which files those were: sources, include dirs, profile, tool binaries."""
     profile = section(manifest, "profile").get("path")
-    sources = [str(s.get("path")) for s in manifest.get("sources", []) if isinstance(s, dict)] or [""]
+    entries = manifest.get("sources")
+    sources = [str(s.get("path")) for s in entries if isinstance(s, dict)] if isinstance(entries, list) else []
+    sources = sources or [""]
     includes = section(manifest, "frontend").get("include_dirs")
     includes = [str(d) for d in includes] if isinstance(includes, list) else []
     return {
@@ -139,13 +156,13 @@ def record(block_out: Path, argv: list[str], python: str) -> bool:
 
 
 def complete(data: dict) -> bool:
-    """A record can only ever match if every input, the python and yosys binaries, metrics.json and
+    """A record can only ever match if every input, the python, yosys and abc binaries, metrics.json and
     run_manifest.json hashed."""
     fp, artifacts = section(data, "fingerprint"), section(data, "artifacts")
     tools = section(fp, "tools")
     return (all(artifacts.get(ARTIFACTS[k]) is not None for k in ("metrics", "manifest"))
             and None not in section(fp, "inputs").values()
-            and tools.get("yosys") is not None and tools.get("python") is not None)
+            and all(tools.get(t) is not None for t in ("python", "yosys", "abc")))
 
 
 def forget(block_out: Path) -> None:

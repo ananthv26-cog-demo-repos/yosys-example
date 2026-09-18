@@ -36,6 +36,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import shlex
 import shutil
@@ -319,6 +320,12 @@ def equiv_bmc_script(setup: list[str], depth: int, resets: dict[str, bool]) -> s
     ])
 
 
+def abc_executable(yosys: str) -> str:
+    """The ABC binary this yosys will run: `$ABC` when set, else `yosys-abc` next to the resolved yosys
+    executable (yosys locates it from /proc/self/exe, i.e. after following symlinks)."""
+    return os.environ.get("ABC") or str(Path(yosys).resolve().with_name("yosys-abc"))
+
+
 def run_yosys(yosys: str, script: str, script_path: Path, log_path: Path, timeout: int) -> tuple[bool, str, float]:
     script_path.write_text(script)
     if log_path.exists():
@@ -526,7 +533,7 @@ def main(argv: list[str] | None = None) -> int:
     yosys = find_yosys(args.yosys)
     if not yosys or not shutil.which(yosys):
         return fail("tools", "yosys binary not found or not executable (build the repo, set $YOSYS, or pass --yosys)", 2)
-    metrics["tools"] = {"yosys": yosys, "yosys_version": tool_version(yosys, "-V")}
+    metrics["tools"] = {"yosys": yosys, "yosys_version": tool_version(yosys, "-V"), "abc": abc_executable(yosys)}
     frontend = args.frontend or profile["frontend"]["name"]
     sv2v = find_sv2v(args.sv2v)
     if sv2v and not shutil.which(sv2v):

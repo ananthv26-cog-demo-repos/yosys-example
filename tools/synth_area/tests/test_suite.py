@@ -13,6 +13,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+import unittest.mock
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
@@ -22,6 +23,7 @@ CORPUS = TOOL / "corpus"
 
 sys.path.insert(0, str(HERE))
 sys.path.insert(0, str(TOOL))
+import bool_area
 import suite_cache
 import suite_evidence
 import synth_area
@@ -287,7 +289,9 @@ class SuiteCacheTests(unittest.TestCase):
             data = json.loads((out / "inv" / suite_cache.RECORD).read_text())
             self.assertTrue(data["artifacts"]["sim/sim.log"] and data["artifacts"]["equiv_rtl_vs_graph.log"])
             self.assertIsNone(data["artifacts"]["sv2v_out.v"])
-            self.assertTrue(all(data["fingerprint"]["tools"][t] for t in ("python", "yosys", "iverilog", "vvp")))
+            self.assertTrue(all(data["fingerprint"]["tools"][t] for t in ("python", "yosys", "abc", "iverilog", "vvp")))
+            run_manifest = json.loads((out / "inv" / "run_manifest.json").read_text())
+            self.assertEqual(run_manifest["generated_by"]["abc"], str(Path(YOSYS).resolve().with_name("yosys-abc")))
             (out / "inv" / "sim" / "sim.log").unlink()
             code, s6c, _ = run(extra=())
             self.assertEqual((code, cached(s6c)), (0, {"inv": False, "and2": True}))
@@ -295,6 +299,11 @@ class SuiteCacheTests(unittest.TestCase):
             code, s6d, _ = run(extra=())
             self.assertEqual((code, cached(s6d)), (0, {"inv": True, "and2": False}))
             self.assertTrue((out / "and2" / "equiv_graph_vs_mapped.log").is_file())
+            # a run_manifest.json that parses but has the wrong shape is a miss, not a crash
+            (out / "inv" / "run_manifest.json").write_text('{"sources": 3, "profile": [], "frontend": {"include_dirs": 7}}')
+            code, s6e, _ = run(extra=())
+            self.assertEqual((code, cached(s6e)), (0, {"inv": False, "and2": True}))
+            self.assertIsInstance(json.loads((out / "inv" / "run_manifest.json").read_text())["sources"], list)
             # different flow options, --no-cache, and --baseline all rerun
             code, s7, _ = run(extra=("--sim-cycles", "0", "--equiv-seq", "3"))
             self.assertEqual((code, cached(s7)), (0, {"inv": False, "and2": False}))
@@ -316,7 +325,8 @@ class SuiteCacheTests(unittest.TestCase):
             # a record whose tool-code, tool-binary or interpreter hash differs is a miss
             data = json.loads((out / "inv" / suite_cache.RECORD).read_text())
             for path, value in (("code", {"bool_area.py": "0" * 64}), ("tools", {"yosys": "0" * 64}),
-                                ("tools", {"python": "0" * 64}), ("tools", {"sv2v": "0" * 64}), ("python", "/p")):
+                                ("tools", {"python": "0" * 64}), ("tools", {"sv2v": "0" * 64}),
+                                ("tools", {"abc": "0" * 64}), ("python", "/p")):
                 edited = json.loads(json.dumps(data))
                 if isinstance(value, dict):
                     edited["fingerprint"][path].update(value)
@@ -332,6 +342,57 @@ class SuiteCacheTests(unittest.TestCase):
                                    "--python", str(tmp / "true_python")], capture_output=True, text=True, check=False)
             self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
             self.assertFalse((out / "inv" / suite_cache.RECORD).exists())
+
+
+class CacheFingerprintTests(unittest.TestCase):
+    """Fingerprint pieces that need no yosys run."""
+
+    def test_malformed_manifest_shapes_never_raise(self) -> None:
+        for manifest in ({"sources": 3}, {"sources": [3, {"path": 4}]}, {"profile": {"path": 5}}, {"profile": 6},
+                         {"frontend": {"include_dirs": "x"}}, {"frontend": {"include_dirs": [{}, None]}},
+                         {"generated_by": []}, {"generated_by": {"yosys": 1, "abc": [], "sv2v": 2}},
+                         {"sources": [{"path": "a\0b"}]}):
+            fp = suite_cache.fingerprint(["x"], sys.executable, manifest)
+            self.assertFalse(suite_cache.complete({"fingerprint": fp, "artifacts": {}}), manifest)
+
+    def test_include_dir_hashes_follow_directory_symlinks_once(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="suite_inc_") as td:
+            inc, target = Path(td) / "inc", Path(td) / "target"
+            (inc / "sub").mkdir(parents=True)
+            target.mkdir()
+            (inc / "sub" / "a.svh").write_text("`define A 1\n")
+            (target / "b.svh").write_text("`define B 1\n")
+            (inc / "linked").symlink_to(target, target_is_directory=True)
+            (inc / "loop").symlink_to(inc, target_is_directory=True)  # cycle: must terminate
+            before = suite_cache.dir_hashes(inc)
+            self.assertEqual(sorted(before), ["linked/b.svh", "sub/a.svh"])
+            self.assertTrue(all(before.values()))
+            (target / "b.svh").write_text("`define B 2\n")
+            after = suite_cache.dir_hashes(inc)
+            self.assertNotEqual(before["linked/b.svh"], after["linked/b.svh"])
+            self.assertEqual(before["sub/a.svh"], after["sub/a.svh"])
+            (target / "c.svh").write_text("")
+            self.assertIn("linked/c.svh", suite_cache.dir_hashes(inc))
+            self.assertEqual(suite_cache.dir_hashes(Path(td) / "missing"), {"": None})
+
+    def test_abc_binary_is_the_one_yosys_runs(self) -> None:
+        recorded = {"yosys": "/opt/yosys/bin/yosys", "abc": "/opt/abc/abc"}
+        self.assertEqual(suite_cache.tool_paths(recorded, sys.executable)["abc"], "/opt/abc/abc")
+        with unittest.mock.patch.dict(os.environ, {"ABC": "/opt/external/abc"}):
+            self.assertEqual(bool_area.abc_executable("/opt/yosys/bin/yosys"), "/opt/external/abc")
+            self.assertEqual(suite_cache.tool_paths({"yosys": "/opt/yosys/bin/yosys"}, sys.executable)["abc"],
+                             "/opt/external/abc")
+        with unittest.mock.patch.dict(os.environ, {}, clear=True), tempfile.TemporaryDirectory() as td:
+            (Path(td) / "bin").mkdir()
+            (Path(td) / "bin" / "yosys").write_text("")
+            (Path(td) / "link").symlink_to(Path(td) / "bin" / "yosys")
+            self.assertEqual(bool_area.abc_executable(str(Path(td) / "link")), str(Path(td) / "bin" / "yosys-abc"))
+        # a record without an abc hash can never hit
+        fp = {"inputs": {"a": "0" * 64}, "tools": {"python": "1" * 64, "yosys": "2" * 64, "abc": None}}
+        artifacts = {"metrics.json": "3" * 64, "run_manifest.json": "4" * 64}
+        self.assertFalse(suite_cache.complete({"fingerprint": fp, "artifacts": artifacts}))
+        fp["tools"]["abc"] = "5" * 64
+        self.assertTrue(suite_cache.complete({"fingerprint": fp, "artifacts": artifacts}))
 
 
 class EvidenceAccountingTests(unittest.TestCase):
