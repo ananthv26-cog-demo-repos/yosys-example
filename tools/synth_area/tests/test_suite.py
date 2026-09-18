@@ -469,22 +469,26 @@ class CacheFingerprintTests(unittest.TestCase):
     def test_profile_script_files_are_inputs(self) -> None:
         """Files a profile's yosys commands name (`techmap -map x.v`) are hashed, a relative one from the
         block's output directory (yosys runs there), also in a `;`-joined command; one that cannot be found
-        keeps the profile's blocks out of the cache; placeholders, options and +/ share files are not files."""
+        keeps the profile's blocks out of the cache; placeholders, options and +/ share files are not files.
+        Commands are split as yosys splits them: `;` ends a command only as the last character of a word, a
+        quoted name keeps its `;` and spaces, `#` comments out the rest of the line."""
         base = json.loads((TOOL / "profiles" / "asap7_rvt_tt_v1.json").read_text())
         self.assertEqual(suite_cache.script_files(base, None), {})
         with tempfile.TemporaryDirectory(prefix="suite_prof_") as td:
             mapping, helper, block_out = Path(td) / "custom_map.v", Path(td) / "helper.v", Path(td) / "out" / "blk"
-            mapping.write_text("// v1\n")
-            helper.write_text("// h1\n")
+            quoted, legacy = Path(td) / "parts;legacy.v", Path(td) / "legacy.v"
+            for f in (mapping, helper, quoted, legacy):
+                f.write_text(f"// {f.name} v1\n")
             profile = json.loads(json.dumps(base))
             profile["script"]["lower"][1:1] = [f"techmap -map {mapping}", "techmap -map +/techmap.v",
                                                'read_verilog -lib "lib/asap7/cells.v"', "tee -o {stat_txt} stat",
-                                               f"read_verilog {helper};techmap;; opt_clean"]
+                                               f"read_verilog {helper}; techmap;; opt_clean # see notes.txt",
+                                               f'read_verilog "{quoted}"; opt']
             path = Path(td) / "custom.json"
             path.write_text(json.dumps(profile))
             found = suite_cache.script_files(profile, block_out)
-            self.assertEqual(sorted(found), sorted(["lib/asap7/cells.v", str(mapping), str(helper)]))
-            self.assertTrue(found[str(mapping)] and found[str(helper)])
+            self.assertEqual(sorted(found), sorted(["lib/asap7/cells.v", str(mapping), str(helper), str(quoted)]))
+            self.assertTrue(found[str(mapping)] and found[str(helper)] and found[str(quoted)])
             self.assertIsNone(found["lib/asap7/cells.v"])  # not under the block's output directory
             manifest = {"profile": {"path": str(path)}}
             argv = ["x", "-o", str(block_out)]
@@ -511,6 +515,29 @@ class CacheFingerprintTests(unittest.TestCase):
             helper.write_text("// h2\n")  # the `;`-terminated dependency is an input too
             fp3 = suite_cache.fingerprint(["x"], sys.executable, manifest)
             self.assertNotEqual(fp2["inputs"][str(helper)], fp3["inputs"][str(helper)])
+            legacy.write_text("// not the input\n")  # `"parts;legacy.v"` is one file, not `parts` + `legacy.v`
+            self.assertEqual(suite_cache.fingerprint(["x"], sys.executable, manifest)["inputs"], fp3["inputs"])
+            quoted.write_text("// q2\n")
+            fp4 = suite_cache.fingerprint(["x"], sys.executable, manifest)
+            self.assertNotEqual(fp3["inputs"][str(quoted)], fp4["inputs"][str(quoted)])
+
+    def test_command_args_split_like_yosys(self) -> None:
+        """Pass::call's tokenization (kernel/register.cc, next_token in kernel/io.cc): a word ending in `;`
+        ends a command, one containing `;` elsewhere is a plain argument, a `".."` word may hold spaces and
+        `;` and may be followed by `;`, `#` comments out the rest of the line, a newline ends a command,
+        a `!shell` command's inputs are unknowable so the profile is never cacheable."""
+        self.assertEqual(suite_cache.command_args("read_verilog a.v; techmap;; opt_clean"),
+                         [["read_verilog", "a.v"], ["techmap"], ["opt_clean"]])
+        self.assertEqual(suite_cache.command_args("read_verilog a.v;techmap"), [["read_verilog", "a.v;techmap"]])
+        self.assertEqual(suite_cache.command_args('read_verilog "my parts;legacy.v"; opt "x" ;'),
+                         [["read_verilog", '"my parts;legacy.v"'], ["opt", '"x"']])
+        self.assertEqual(suite_cache.command_args("opt # read_verilog c.v\n stat"), [["opt"], ["stat"]])
+        self.assertEqual(suite_cache.command_args("  ;; \t"), [])
+        self.assertEqual(suite_cache.script_files({"script": {s: [] for s in suite_cache.SCRIPT_STAGES}}, None), {})
+        profile = {"script": {s: [] for s in suite_cache.SCRIPT_STAGES}}
+        profile["script"][suite_cache.SCRIPT_STAGES[0]] = ["!cat extra.v >> gen.v; read_verilog gen.v"]
+        self.assertEqual(suite_cache.script_files(profile, Path("/nonexistent")),
+                         {"!cat extra.v >> gen.v": None, "gen.v": None})
 
     def test_malformed_manifest_shapes_never_raise(self) -> None:
         for manifest in ({"sources": 3}, {"sources": [3, {"path": 4}]}, {"profile": {"path": 5}}, {"profile": 6},

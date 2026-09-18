@@ -66,6 +66,7 @@ RECORD = "suite_cache.json"
 HERE = Path(__file__).resolve().parent
 INCLUDE_RE = re.compile(r'^[ \t]*`include[ \t]+(?:"([^"\n]*)"|<([^>\n]*)>|(\S+))', re.MULTILINE)
 FILE_TOKEN_RE = re.compile(r"/|\.(v|sv|vh|svh|lib|ys|json|il|blif|aig|lut|txt|tcl)$", re.IGNORECASE)
+COMMAND_SEP = " \t\r\n"  # what yosys's Pass::call splits a command line on
 SHARE_PROBE = "__suite_cache_share_probe__.v"
 SHARE_RE = re.compile(r"`(/[^`'\n]*)/" + re.escape(SHARE_PROBE) + "'")  # not the `+/...' command echo
 
@@ -241,25 +242,84 @@ def profile_inputs(profile_path: object, cwd: Path | None) -> dict[str, str | No
     return {**{p: try_sha256(Path(p)) for p in [profile_path, *map(str, libs)]}, **script_files(profile, cwd)}
 
 
+def next_token(text: str) -> tuple[str, str]:
+    """(token, rest) as yosys's next_token(text, " \\t\\r\\n", long_strings=true) splits it: a token that
+    starts with `"` runs to the `"` that is followed by a separator or the end (so it may contain spaces
+    and `;`), or to `";` there, which is returned as the quoted token plus the `;`."""
+    i = 0
+    while i < len(text) and text[i] in COMMAND_SEP:
+        i += 1
+    if i < len(text) and text[i] == '"':
+        for j in range(i + 1, len(text)):
+            if text[j] != '"':
+                continue
+            if j + 1 == len(text) or text[j + 1] in COMMAND_SEP:
+                return text[i:j + 1], text[j + 1:]
+            if text[j + 1] == ";" and (j + 2 == len(text) or text[j + 2] in COMMAND_SEP):
+                return text[i:j + 1] + ";", text[j + 2:]
+    j = i
+    while j < len(text) and text[j] not in COMMAND_SEP:
+        j += 1
+    return text[i:j], text[j:]
+
+
+def command_args(line: str) -> list[list[str]]:
+    """The argument lists of the commands in one yosys command line, split as Pass::call(design, string)
+    does: tokens are separated by whitespace (quoted ones as next_token above), a token whose last
+    character is `;` ends a command (the `;`s are dropped; `;;`/`;;;` also run clean, which reads no
+    file), a newline ends a command, and `#` starts a comment that runs to the end of the line."""
+    commands: list[list[str]] = []
+    args: list[str] = []
+    text = line
+    while True:
+        tok, text = next_token(text)
+        if not tok:
+            break
+        if tok[0] == "#":
+            nl = re.search(r"[\r\n]", text)
+            text = text[nl.start():] if nl else ""
+        elif tok[-1] == ";":
+            if tok := tok.rstrip(";"):
+                args.append(tok)
+            commands.append(args)
+            args = []
+        else:
+            args.append(tok)
+        if text.lstrip(" \t")[:1] in ("\r", "\n"):
+            commands.append(args)
+            args = []
+    commands.append(args)
+    return [c for c in commands if c]
+
+
 def script_files(profile: dict, cwd: Path | None) -> dict[str, str | None]:
     """{path: sha256} of every file the profile's yosys commands name themselves (`techmap -map x.v`,
-    `read_liberty y.lib`, `script z.ys`): any word of any of the `;`-separated commands with a directory
-    separator or a file extension that is not an option or a `{placeholder}` (those are flow-owned
-    outputs). `+/...` is yosys's own share/ directory, hashed as yosys_share. An absolute path is hashed
-    as it is; a relative one is looked up from `cwd`, the directory bool_area.py runs yosys in (its output
-    directory); one that is not a file there, or any relative one when `cwd` is unknown, is None, which
-    keeps every block using the profile from being cached (the command may compute the path at run time)."""
+    `read_liberty y.lib`, `script z.ys`): every argument of every command (tokenized as yosys does, see
+    command_args) with a directory separator or a file extension that is not an option or a
+    `{placeholder}` (those are flow-owned outputs), its quotes removed as yosys's rewrite_filename does.
+    `+/...` is yosys's own share/ directory, hashed as yosys_share. An absolute path is hashed as it is; a
+    relative one is looked up from `cwd`, the directory bool_area.py runs yosys in (its output directory);
+    one that is not a file there, or any relative one when `cwd` is unknown, is None, which keeps every
+    block using the profile from being cached (the command may compute the path at run time). So is a
+    `!shell` command: what it reads cannot be known."""
     found: dict[str, str | None] = {}
     for stage in SCRIPT_STAGES:
-        for cmd in profile["script"][stage]:
-            for word in cmd.replace(";", " ").split():
-                word = word.strip("\"'")
-                if word.startswith(("-", "+/")) or "{" in word or not FILE_TOKEN_RE.search(word):
+        for line in profile["script"][stage]:
+            for args in command_args(line):
+                if args[0].startswith("!"):
+                    found[" ".join(args)] = None
                     continue
-                if Path(word).is_absolute():
-                    found[word] = try_sha256(Path(word))
-                else:
-                    found[word] = try_sha256(cwd / word) if cwd else None
+                for word in args[1:]:
+                    if len(word) >= 2 and word[0] == word[-1] == '"':
+                        word = word[1:-1]
+                    if word.startswith(("-", "+/")) or "{" in word or not FILE_TOKEN_RE.search(word):
+                        continue
+                    if word.startswith("~/"):
+                        word = os.path.expanduser(word)
+                    if Path(word).is_absolute():
+                        found[word] = try_sha256(Path(word))
+                    else:
+                        found[word] = try_sha256(cwd / word) if cwd else None
     return found
 
 
