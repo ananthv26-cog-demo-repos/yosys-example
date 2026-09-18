@@ -1,6 +1,6 @@
 {
   "name": "asap7_rvt_tt_v1",
-  "version": 1,
+  "version": 2,
   "description": "v1 Boolean-layer area flow: SystemVerilog -> generic one-bit gates (NOT/AND/NAND/OR/NOR/XOR/XNOR/MUX + DFF) -> ASAP7 RVT TT cells via dfflibmap + ABC. Change anything here => bump `version` (results are only comparable within one profile).",
   "frontend": {
     "name": "slang",
