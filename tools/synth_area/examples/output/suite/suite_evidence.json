@@ -64,7 +64,7 @@
       "name": "adder8",
       "passed": true,
       "status": "ok",
-      "seconds": 2.225,
+      "seconds": 2.295,
       "errors": [],
       "artifacts": {
         "word_level": {
@@ -85,11 +85,11 @@
         },
         "metrics": {
           "present": true,
-          "sha256": "68d21dd946e273759682a6b1fcf7f34092b3b4aae6e560c440e8733ba9855f23"
+          "sha256": "510ddb580fbb0f08a587eca823bee23825a93cf9f8235f92f22e8235b1dc12f4"
         },
         "summary": {
           "present": true,
-          "sha256": "029791699db9e7f2a9517bbef704fa4f367d87c026f9cf374e1593bd27606e6d"
+          "sha256": "17b19201f1111e83dffa5c49ea3244faa40ba0f3974f0f0c8123136d75a05fac"
         },
         "manifest": {
           "present": true,
@@ -130,6 +130,7 @@
         ],
         "profile": "53f00dd357a390548114d0810bc9afa4e0e20e9f009a0e20c10ff35c4eefc464",
         "yosys_version": "Yosys 0.69+ (git sha1 b6fc93533, Release, GNU /usr/bin/c++ 11.4.0) [github.com/ananthv26-cog-demo-repos/yosys-example at main]",
+        "sv2v_version": "sv2v v0.0.13",
         "top": "adder8",
         "frontend": {
           "name": "slang",
@@ -159,7 +160,7 @@
       "name": "alu4",
       "passed": true,
       "status": "ok",
-      "seconds": 2.519,
+      "seconds": 3.189,
       "errors": [],
       "artifacts": {
         "word_level": {
@@ -180,11 +181,11 @@
         },
         "metrics": {
           "present": true,
-          "sha256": "76ba07f485cfc6a0bbf65b79e4b1612b64e942e49222eb53162326ce5752df4d"
+          "sha256": "63f1b6bafdce1784d8ad05422e696f133f0a205d81cb3dc032b53f449ff5055b"
         },
         "summary": {
           "present": true,
-          "sha256": "8811d24cec650d5e655f53adc4c31d610345159a6cec5159636963e9bb6d6ff6"
+          "sha256": "be40a3fa17c48125389f50c4900ae070acc65212ca4746bdbd725e15d4ea6be8"
         },
         "manifest": {
           "present": true,
@@ -225,6 +226,7 @@
         ],
         "profile": "53f00dd357a390548114d0810bc9afa4e0e20e9f009a0e20c10ff35c4eefc464",
         "yosys_version": "Yosys 0.69+ (git sha1 b6fc93533, Release, GNU /usr/bin/c++ 11.4.0) [github.com/ananthv26-cog-demo-repos/yosys-example at main]",
+        "sv2v_version": "sv2v v0.0.13",
         "top": "alu4",
         "frontend": {
           "name": "slang",
@@ -254,7 +256,7 @@
       "name": "and2",
       "passed": true,
       "status": "ok",
-      "seconds": 2.18,
+      "seconds": 3.499,
       "errors": [],
       "artifacts": {
         "word_level": {
@@ -275,11 +277,11 @@
         },
         "metrics": {
           "present": true,
-          "sha256": "5d312eebe5dd1d41658e0b7ac2b59f81750259e696b6ae6a183b6d52c785b3cc"
+          "sha256": "82256c65e85340c154bac6baee9c7e8765a3a6e520cb05d19cf89ca05c04a889"
         },
         "summary": {
           "present": true,
-          "sha256": "bccfff7a758fd07dc8cb93633d403367c9e6f19d43cbc9ab749a508114ccec6f"
+          "sha256": "b6f1d11dfa2ac2b7aca59c93a51a6eed6de65bff1242c631aaa3d97d93d16437"
         },
         "manifest": {
           "present": true,
@@ -320,6 +322,7 @@
         ],
         "profile": "53f00dd357a390548114d0810bc9afa4e0e20e9f009a0e20c10ff35c4eefc464",
         "yosys_version": "Yosys 0.69+ (git sha1 b6fc93533, Release, GNU /usr/bin/c++ 11.4.0) [github.com/ananthv26-cog-demo-repos/yosys-example at main]",
+        "sv2v_version": "sv2v v0.0.13",
         "top": "and2",
         "frontend": {
           "name": "slang",
@@ -349,7 +352,7 @@
       "name": "comparator8",
       "passed": true,
       "status": "ok",
-      "seconds": 2.317,
+      "seconds": 2.854,
       "errors": [],
       "artifacts": {
         "word_level": {
@@ -370,11 +373,11 @@
         },
         "metrics": {
           "present": true,
-          "sha256": "bf8cedc59e4c3ad74f1ca970fac38f7538c40cadd3c08990d637a05feb5ccbc3"
+          "sha256": "1dd702898ca77442c5cd05469ed5eb2d58dd66cae19cd49466e4d0901ca3f6c4"
         },
         "summary": {
           "present": true,
-          "sha256": "20f8e33f7f58ef48fb9652aa60de5698b81b79bd6ce5bdea752109ded72ae1a2"
+          "sha256": "fd9989975d49bead8ab57604eb60be3f14f0496a3a66e187ebb70fa1d2be81cd"
         },
         "manifest": {
           "present": true,
@@ -415,6 +418,7 @@
         ],
         "profile": "53f00dd357a390548114d0810bc9afa4e0e20e9f009a0e20c10ff35c4eefc464",
         "yosys_version": "Yosys 0.69+ (git sha1 b6fc93533, Release, GNU /usr/bin/c++ 11.4.0) [github.com/ananthv26-cog-demo-repos/yosys-example at main]",
+        "sv2v_version": "sv2v v0.0.13",
         "top": "comparator8",
         "frontend": {
           "name": "slang",
@@ -444,7 +448,7 @@
       "name": "counter4",
       "passed": true,
       "status": "ok",
-      "seconds": 2.228,
+      "seconds": 2.345,
       "errors": [],
       "artifacts": {
         "word_level": {
@@ -465,11 +469,11 @@
         },
         "metrics": {
           "present": true,
-          "sha256": "89fc7001a02729521834ecfcb4e42327a6fabeb12ae5c815de04c000213e3f1b"
+          "sha256": "836856082db8f74ccfae3bc9a4da629a453e7a6e360004be801a27c8fa023b4c"
         },
         "summary": {
           "present": true,
-          "sha256": "7c15487b37a4fab33a8d3ce085449a397235324ec4c4121fe92563184d460a00"
+          "sha256": "dd2ea02804ee51734f57ac8ec2fae8128a4689c7afaaa9341ef45cd2141a09b0"
         },
         "manifest": {
           "present": true,
@@ -510,6 +514,7 @@
         ],
         "profile": "53f00dd357a390548114d0810bc9afa4e0e20e9f009a0e20c10ff35c4eefc464",
         "yosys_version": "Yosys 0.69+ (git sha1 b6fc93533, Release, GNU /usr/bin/c++ 11.4.0) [github.com/ananthv26-cog-demo-repos/yosys-example at main]",
+        "sv2v_version": "sv2v v0.0.13",
         "top": "counter4",
         "frontend": {
           "name": "slang",
@@ -539,7 +544,7 @@
       "name": "counter8_en",
       "passed": true,
       "status": "ok",
-      "seconds": 2.24,
+      "seconds": 2.401,
       "errors": [],
       "artifacts": {
         "word_level": {
@@ -560,11 +565,11 @@
         },
         "metrics": {
           "present": true,
-          "sha256": "2db7f35cf083bd18899b27c7c8c3001ab3313c4d6d1f4cd894db4c532465492b"
+          "sha256": "0437fd875be6065db3d6de7ddfd77c994c503dcd11992328969d59f2b2517c1d"
         },
         "summary": {
           "present": true,
-          "sha256": "97999e76b990a2a3ea7e2f6b5ffdd4825e5cd770fb1beff801706e7c7a876695"
+          "sha256": "7deee2e83a1e57d01ade90bcc1a26c54e556ef6a08b9fe964df25ea2f26242c2"
         },
         "manifest": {
           "present": true,
@@ -605,6 +610,7 @@
         ],
         "profile": "53f00dd357a390548114d0810bc9afa4e0e20e9f009a0e20c10ff35c4eefc464",
         "yosys_version": "Yosys 0.69+ (git sha1 b6fc93533, Release, GNU /usr/bin/c++ 11.4.0) [github.com/ananthv26-cog-demo-repos/yosys-example at main]",
+        "sv2v_version": "sv2v v0.0.13",
         "top": "counter8_en",
         "frontend": {
           "name": "slang",
@@ -634,7 +640,7 @@
       "name": "dec2to4",
       "passed": true,
       "status": "ok",
-      "seconds": 2.18,
+      "seconds": 2.224,
       "errors": [],
       "artifacts": {
         "word_level": {
@@ -655,11 +661,11 @@
         },
         "metrics": {
           "present": true,
-          "sha256": "a27154b264ede1590957f547b08cd6ed9e0d7c8bbb862fce5d4c9c073a7e051c"
+          "sha256": "c3822de61185910c34f50e849338c755cb8505ea7eac56680fccb2e0031a5b21"
         },
         "summary": {
           "present": true,
-          "sha256": "6fc02a6b1fe817dbb1637227d3dc43d813bfb287647fb579dd96d3271850ec22"
+          "sha256": "b22fdb9c5e032c9ea54f37a59a17621a718ea9a5c085ea620c62ab5f7b2673f8"
         },
         "manifest": {
           "present": true,
@@ -700,6 +706,7 @@
         ],
         "profile": "53f00dd357a390548114d0810bc9afa4e0e20e9f009a0e20c10ff35c4eefc464",
         "yosys_version": "Yosys 0.69+ (git sha1 b6fc93533, Release, GNU /usr/bin/c++ 11.4.0) [github.com/ananthv26-cog-demo-repos/yosys-example at main]",
+        "sv2v_version": "sv2v v0.0.13",
         "top": "dec2to4",
         "frontend": {
           "name": "slang",
@@ -729,7 +736,7 @@
       "name": "dff",
       "passed": true,
       "status": "ok",
-      "seconds": 2.054,
+      "seconds": 2.086,
       "errors": [],
       "artifacts": {
         "word_level": {
@@ -750,11 +757,11 @@
         },
         "metrics": {
           "present": true,
-          "sha256": "97b57d509401938298acde94f67f3eb170a168311ff771509cf9c6f8342f17d2"
+          "sha256": "622bc42fa310c19fce661823860888f2dd0589740925b6c4774f5c3de1c5fad0"
         },
         "summary": {
           "present": true,
-          "sha256": "24827a4ab4a6ef9518ac20f91649b4e8df2f275b60924fa159cc7511a71d0614"
+          "sha256": "8e891776622588f87adb1e1d7d9e2f4377fc26479e18a7d888e66d3ee1bba9cf"
         },
         "manifest": {
           "present": true,
@@ -795,6 +802,7 @@
         ],
         "profile": "53f00dd357a390548114d0810bc9afa4e0e20e9f009a0e20c10ff35c4eefc464",
         "yosys_version": "Yosys 0.69+ (git sha1 b6fc93533, Release, GNU /usr/bin/c++ 11.4.0) [github.com/ananthv26-cog-demo-repos/yosys-example at main]",
+        "sv2v_version": "sv2v v0.0.13",
         "top": "dff",
         "frontend": {
           "name": "slang",
@@ -824,7 +832,7 @@
       "name": "dff_async_rst",
       "passed": true,
       "status": "ok",
-      "seconds": 2.308,
+      "seconds": 2.973,
       "errors": [],
       "artifacts": {
         "word_level": {
@@ -845,11 +853,11 @@
         },
         "metrics": {
           "present": true,
-          "sha256": "7b9e3d3323ce3b6394ca54496a369c2034fb13d45de5c5201bcd10f9d93cf55f"
+          "sha256": "b3d9019a84b3c63a24b11faf07b9c6deeceece6e01d3a0f842a73fc163a76e41"
         },
         "summary": {
           "present": true,
-          "sha256": "fcf13112811bf461ff53b89a329353e16000904aa414f6aa453a12da6ee50c39"
+          "sha256": "7cc3356efca1cd2c65d1a728bf14f8dd147efdaf76ed80ce1747dd9c0095dbb6"
         },
         "manifest": {
           "present": true,
@@ -890,6 +898,7 @@
         ],
         "profile": "53f00dd357a390548114d0810bc9afa4e0e20e9f009a0e20c10ff35c4eefc464",
         "yosys_version": "Yosys 0.69+ (git sha1 b6fc93533, Release, GNU /usr/bin/c++ 11.4.0) [github.com/ananthv26-cog-demo-repos/yosys-example at main]",
+        "sv2v_version": "sv2v v0.0.13",
         "top": "dff_async_rst",
         "frontend": {
           "name": "slang",
@@ -919,7 +928,7 @@
       "name": "dff_sync_rst",
       "passed": true,
       "status": "ok",
-      "seconds": 2.363,
+      "seconds": 2.735,
       "errors": [],
       "artifacts": {
         "word_level": {
@@ -940,11 +949,11 @@
         },
         "metrics": {
           "present": true,
-          "sha256": "195736f4c43cfa2cc67ded33bb363fdca02b17717554dd57eae79ffd905ec91e"
+          "sha256": "cf0d49e8033b6ab3d5b10ef8cd9f2b3f1e230a14f6e223a00d9a34dc981c5d86"
         },
         "summary": {
           "present": true,
-          "sha256": "f61225baadc455b81279daa2e8c24b46b20d9908343380a7e021c1e58029ba88"
+          "sha256": "e9166e7ed64fbfe47bb702d5f31c5da9b8a13ddb1c0209ec47c40b9066cd3636"
         },
         "manifest": {
           "present": true,
@@ -985,6 +994,7 @@
         ],
         "profile": "53f00dd357a390548114d0810bc9afa4e0e20e9f009a0e20c10ff35c4eefc464",
         "yosys_version": "Yosys 0.69+ (git sha1 b6fc93533, Release, GNU /usr/bin/c++ 11.4.0) [github.com/ananthv26-cog-demo-repos/yosys-example at main]",
+        "sv2v_version": "sv2v v0.0.13",
         "top": "dff_sync_rst",
         "frontend": {
           "name": "slang",
@@ -1014,7 +1024,7 @@
       "name": "fifo_d2_w4",
       "passed": true,
       "status": "ok",
-      "seconds": 2.794,
+      "seconds": 2.8,
       "errors": [],
       "artifacts": {
         "word_level": {
@@ -1035,11 +1045,11 @@
         },
         "metrics": {
           "present": true,
-          "sha256": "dab7af8b1f321496840fcf5ca11ef5ac4d8d894b10e86f2f3a521dd8e105a432"
+          "sha256": "ebd9a38ddb586af6dd5a60b2968e858af221b47a05382bacac33b6a99cd08044"
         },
         "summary": {
           "present": true,
-          "sha256": "ac8f07f9d7b6b4880a21bcdde19357ed51aefbe0747ec569ff0710ccd03756a7"
+          "sha256": "fb0eb4c040b2d5bc8fcd5b79eb5a001cddcaa7388d95a8e00d89d4fc97bf1d76"
         },
         "manifest": {
           "present": true,
@@ -1080,6 +1090,7 @@
         ],
         "profile": "53f00dd357a390548114d0810bc9afa4e0e20e9f009a0e20c10ff35c4eefc464",
         "yosys_version": "Yosys 0.69+ (git sha1 b6fc93533, Release, GNU /usr/bin/c++ 11.4.0) [github.com/ananthv26-cog-demo-repos/yosys-example at main]",
+        "sv2v_version": "sv2v v0.0.13",
         "top": "fifo_d2_w4",
         "frontend": {
           "name": "slang",
@@ -1109,7 +1120,7 @@
       "name": "fifo_fwft_d4_w8",
       "passed": true,
       "status": "ok",
-      "seconds": 3.179,
+      "seconds": 4.017,
       "errors": [],
       "artifacts": {
         "word_level": {
@@ -1130,11 +1141,11 @@
         },
         "metrics": {
           "present": true,
-          "sha256": "af305a8acdac188e23dfc4cbde65fce1ea24f0d4d596ad4b95c2b05948dc0ac6"
+          "sha256": "f39c7e1c5afae8212237814968753cff4f5bb9210f6fbf0d41d04523b7d78aca"
         },
         "summary": {
           "present": true,
-          "sha256": "7f3248357e21cb0586716c1273e3c7c140235d97b99bb811217451945c7e0515"
+          "sha256": "ff2cae60b3af5f8245df42e31fb6aa62f7c4de1aa823611d43b4b0365450a8c9"
         },
         "manifest": {
           "present": true,
@@ -1175,6 +1186,7 @@
         ],
         "profile": "53f00dd357a390548114d0810bc9afa4e0e20e9f009a0e20c10ff35c4eefc464",
         "yosys_version": "Yosys 0.69+ (git sha1 b6fc93533, Release, GNU /usr/bin/c++ 11.4.0) [github.com/ananthv26-cog-demo-repos/yosys-example at main]",
+        "sv2v_version": "sv2v v0.0.13",
         "top": "fifo_fwft_d4_w8",
         "frontend": {
           "name": "slang",
@@ -1204,7 +1216,7 @@
       "name": "fifo_shift_d4_w8",
       "passed": true,
       "status": "ok",
-      "seconds": 4.88,
+      "seconds": 4.923,
       "errors": [],
       "artifacts": {
         "word_level": {
@@ -1225,11 +1237,11 @@
         },
         "metrics": {
           "present": true,
-          "sha256": "9666f463337146dc9269f99f9ad64e4b61595e7b20a84cdc9fb87372131cb11b"
+          "sha256": "d3a6836936504fb92b163b362e67e3616dbe7d80f620c736a332783ff7d73c1a"
         },
         "summary": {
           "present": true,
-          "sha256": "eb7964b77494f87aaa2c7eee0f73533de679d9a9b2c1f33dc7e64fa0e335eaf5"
+          "sha256": "a166d3b6d0138b20ae63f296d121a37925af7f5b57402009f8b42597e7f5408d"
         },
         "manifest": {
           "present": true,
@@ -1270,6 +1282,7 @@
         ],
         "profile": "53f00dd357a390548114d0810bc9afa4e0e20e9f009a0e20c10ff35c4eefc464",
         "yosys_version": "Yosys 0.69+ (git sha1 b6fc93533, Release, GNU /usr/bin/c++ 11.4.0) [github.com/ananthv26-cog-demo-repos/yosys-example at main]",
+        "sv2v_version": "sv2v v0.0.13",
         "top": "fifo_shift_d4_w8",
         "frontend": {
           "name": "slang",
@@ -1299,7 +1312,7 @@
       "name": "fifo_almost_flags_d8_w8",
       "passed": true,
       "status": "ok",
-      "seconds": 3.78,
+      "seconds": 5.064,
       "errors": [],
       "artifacts": {
         "word_level": {
@@ -1320,11 +1333,11 @@
         },
         "metrics": {
           "present": true,
-          "sha256": "bab561d702787b928b1443b355954dade7ae2e49fccd729e2c192d009d5dfaa8"
+          "sha256": "c45157420c0d3f952a9f33f273219a2a7880c22c4ad877925699810330f7597f"
         },
         "summary": {
           "present": true,
-          "sha256": "45a19a27115110c7c67e56899a8f7f47842e39f7a8d7be8f7146ac98bf517a7f"
+          "sha256": "90ce93302e31d6851454d2b5f3c3aa004438e953c89545ebb38ad526516b7ed7"
         },
         "manifest": {
           "present": true,
@@ -1365,6 +1378,7 @@
         ],
         "profile": "53f00dd357a390548114d0810bc9afa4e0e20e9f009a0e20c10ff35c4eefc464",
         "yosys_version": "Yosys 0.69+ (git sha1 b6fc93533, Release, GNU /usr/bin/c++ 11.4.0) [github.com/ananthv26-cog-demo-repos/yosys-example at main]",
+        "sv2v_version": "sv2v v0.0.13",
         "top": "fifo_almost_flags_d8_w8",
         "frontend": {
           "name": "slang",
@@ -1394,7 +1408,7 @@
       "name": "fifo_bypass_d4_w8",
       "passed": true,
       "status": "ok",
-      "seconds": 3.307,
+      "seconds": 3.388,
       "errors": [],
       "artifacts": {
         "word_level": {
@@ -1415,11 +1429,11 @@
         },
         "metrics": {
           "present": true,
-          "sha256": "940c6ee5e536bf901ca9e1aaaaca80c466a052806d955a0712efd0f16d2e2bfc"
+          "sha256": "e88ec11d890fe787f4893426ba9fac87f40b429a411ce1235ec77dd86352c8a1"
         },
         "summary": {
           "present": true,
-          "sha256": "7754dfe87b6720471a5ac8bad1202c24d09dcd2a09fd1fff43d829cfd7f1c7aa"
+          "sha256": "f50750fca32d0aba468a858bc48a62c9d27012f94bb05c9f5fc537adac8656b6"
         },
         "manifest": {
           "present": true,
@@ -1460,6 +1474,7 @@
         ],
         "profile": "53f00dd357a390548114d0810bc9afa4e0e20e9f009a0e20c10ff35c4eefc464",
         "yosys_version": "Yosys 0.69+ (git sha1 b6fc93533, Release, GNU /usr/bin/c++ 11.4.0) [github.com/ananthv26-cog-demo-repos/yosys-example at main]",
+        "sv2v_version": "sv2v v0.0.13",
         "top": "fifo_bypass_d4_w8",
         "frontend": {
           "name": "slang",
@@ -1489,7 +1504,7 @@
       "name": "fifo_clr_d4_w8",
       "passed": true,
       "status": "ok",
-      "seconds": 3.189,
+      "seconds": 4.347,
       "errors": [],
       "artifacts": {
         "word_level": {
@@ -1510,11 +1525,11 @@
         },
         "metrics": {
           "present": true,
-          "sha256": "86415ca5073e69756893d88be4b73697050d4e66aed2b6cae1867b798ee66067"
+          "sha256": "daff7d003670b76a89b13374107747762de1b1a3f8208f6acef64f44c5fac5a4"
         },
         "summary": {
           "present": true,
-          "sha256": "96d7b610bfa4ac404843eb37997a88d014611323bcf8204946dc1d4a4576142a"
+          "sha256": "cf6eb0b5f02e2d0304a423ed9cf97aa9b4834c2d7977a191ede361b3b6a41866"
         },
         "manifest": {
           "present": true,
@@ -1555,6 +1570,7 @@
         ],
         "profile": "53f00dd357a390548114d0810bc9afa4e0e20e9f009a0e20c10ff35c4eefc464",
         "yosys_version": "Yosys 0.69+ (git sha1 b6fc93533, Release, GNU /usr/bin/c++ 11.4.0) [github.com/ananthv26-cog-demo-repos/yosys-example at main]",
+        "sv2v_version": "sv2v v0.0.13",
         "top": "fifo_clr_d4_w8",
         "frontend": {
           "name": "slang",
@@ -1584,7 +1600,7 @@
       "name": "fifo_enum_state_d4_w8",
       "passed": true,
       "status": "ok",
-      "seconds": 4.595,
+      "seconds": 4.757,
       "errors": [],
       "artifacts": {
         "word_level": {
@@ -1605,11 +1621,11 @@
         },
         "metrics": {
           "present": true,
-          "sha256": "258a36de77a48583504ebab0ad62b3cf37206d2d2ede1085c1a91088037d86ff"
+          "sha256": "096ab86649f188eae96a0a5dc10c8ed1d229e7cb6dfe455645722b18f8a655d6"
         },
         "summary": {
           "present": true,
-          "sha256": "df82b33e5b1e0d4b6313c106bfc95158e90a1ea501acf8161633bf9d95a787cf"
+          "sha256": "09cf07d0d92de633e0f3d0ae5e835a563643d360b38d58dcb841e597346df545"
         },
         "manifest": {
           "present": true,
@@ -1650,6 +1666,7 @@
         ],
         "profile": "53f00dd357a390548114d0810bc9afa4e0e20e9f009a0e20c10ff35c4eefc464",
         "yosys_version": "Yosys 0.69+ (git sha1 b6fc93533, Release, GNU /usr/bin/c++ 11.4.0) [github.com/ananthv26-cog-demo-repos/yosys-example at main]",
+        "sv2v_version": "sv2v v0.0.13",
         "top": "fifo_enum_state_d4_w8",
         "frontend": {
           "name": "slang",
@@ -1679,7 +1696,7 @@
       "name": "fifo_err_flags_d4_w8",
       "passed": true,
       "status": "ok",
-      "seconds": 3.176,
+      "seconds": 3.47,
       "errors": [],
       "artifacts": {
         "word_level": {
@@ -1700,11 +1717,11 @@
         },
         "metrics": {
           "present": true,
-          "sha256": "215a78f9f4ec8dc08cbc4b68a92fa81d3d691d06217fc56d0852e1ddaad07cf6"
+          "sha256": "c8388df142d073a679a468b1b2fd9cbe2603665a1dbe4ede8ebcb65000a2dd14"
         },
         "summary": {
           "present": true,
-          "sha256": "77229771d1fe28de56e56c40406e74c22ca73f2266cf244b7a555d42a4aaefb0"
+          "sha256": "4c655de736413ba42760153579631d2ef31f04bcac0a90228b29d44647309581"
         },
         "manifest": {
           "present": true,
@@ -1745,6 +1762,7 @@
         ],
         "profile": "53f00dd357a390548114d0810bc9afa4e0e20e9f009a0e20c10ff35c4eefc464",
         "yosys_version": "Yosys 0.69+ (git sha1 b6fc93533, Release, GNU /usr/bin/c++ 11.4.0) [github.com/ananthv26-cog-demo-repos/yosys-example at main]",
+        "sv2v_version": "sv2v v0.0.13",
         "top": "fifo_err_flags_d4_w8",
         "frontend": {
           "name": "slang",
@@ -1774,7 +1792,7 @@
       "name": "fifo_generate_d4_w8",
       "passed": true,
       "status": "ok",
-      "seconds": 3.072,
+      "seconds": 3.353,
       "errors": [],
       "artifacts": {
         "word_level": {
@@ -1795,11 +1813,11 @@
         },
         "metrics": {
           "present": true,
-          "sha256": "9b974c3cd10cb02d6fc85449d6de403c34cc7791b772268efb5ad34f155b58f2"
+          "sha256": "06b47bc50c632dbac406f4a566a3d4c73dbf902b4628cadb43d7dcf2ea72aa05"
         },
         "summary": {
           "present": true,
-          "sha256": "96e86d754c0fda48102cb567666a6076e3fcb2199c99ca35359ded9ff9a6918d"
+          "sha256": "97114470193841847c9d114449e71bcfd0e345c640436f568613fe5d9afc98d3"
         },
         "manifest": {
           "present": true,
@@ -1840,6 +1858,7 @@
         ],
         "profile": "53f00dd357a390548114d0810bc9afa4e0e20e9f009a0e20c10ff35c4eefc464",
         "yosys_version": "Yosys 0.69+ (git sha1 b6fc93533, Release, GNU /usr/bin/c++ 11.4.0) [github.com/ananthv26-cog-demo-repos/yosys-example at main]",
+        "sv2v_version": "sv2v v0.0.13",
         "top": "fifo_generate_d4_w8",
         "frontend": {
           "name": "slang",
@@ -1869,7 +1888,7 @@
       "name": "fifo_gray_ptr_d8_w8",
       "passed": true,
       "status": "ok",
-      "seconds": 3.813,
+      "seconds": 4.011,
       "errors": [],
       "artifacts": {
         "word_level": {
@@ -1890,11 +1909,11 @@
         },
         "metrics": {
           "present": true,
-          "sha256": "2aee1d32849b5589d9b43cee415fd59740ee8df0e22885fdf6ff1a4c8a4e9a29"
+          "sha256": "eb967ed30270d08ab6255386b1c28806fdf4e8406cd419cdcd64589de363fa9e"
         },
         "summary": {
           "present": true,
-          "sha256": "821d0cb6d8a2112ca33438df512279d631a99d934e9b130bff2fc10eeecdda82"
+          "sha256": "0f4ba3a51827b80b42e00fa5cefa4a46ba139271089a0f8a20c2c1f46d8b875e"
         },
         "manifest": {
           "present": true,
@@ -1935,6 +1954,7 @@
         ],
         "profile": "53f00dd357a390548114d0810bc9afa4e0e20e9f009a0e20c10ff35c4eefc464",
         "yosys_version": "Yosys 0.69+ (git sha1 b6fc93533, Release, GNU /usr/bin/c++ 11.4.0) [github.com/ananthv26-cog-demo-repos/yosys-example at main]",
+        "sv2v_version": "sv2v v0.0.13",
         "top": "fifo_gray_ptr_d8_w8",
         "frontend": {
           "name": "slang",
@@ -1964,7 +1984,7 @@
       "name": "fifo_last_d4_w8",
       "passed": true,
       "status": "ok",
-      "seconds": 3.171,
+      "seconds": 3.884,
       "errors": [],
       "artifacts": {
         "word_level": {
@@ -1985,11 +2005,11 @@
         },
         "metrics": {
           "present": true,
-          "sha256": "b373c3aec021ced737b19c1bdb514fb05b963fa5f092fa6b5d375c54dda75cba"
+          "sha256": "9644f5082d2f03c67cf373a6d93dcdc4e96f7d3e9fa9c46ec8739c49217fdb34"
         },
         "summary": {
           "present": true,
-          "sha256": "563bb30ee835da8380e44520f3fea3275fae153dcaa48b6c5a2ff1a7982872db"
+          "sha256": "468e9d0a98c0f7b3b315c3070adf75488adb57448a43c0e1be84d77663ad79cd"
         },
         "manifest": {
           "present": true,
@@ -2030,6 +2050,7 @@
         ],
         "profile": "53f00dd357a390548114d0810bc9afa4e0e20e9f009a0e20c10ff35c4eefc464",
         "yosys_version": "Yosys 0.69+ (git sha1 b6fc93533, Release, GNU /usr/bin/c++ 11.4.0) [github.com/ananthv26-cog-demo-repos/yosys-example at main]",
+        "sv2v_version": "sv2v v0.0.13",
         "top": "fifo_last_d4_w8",
         "frontend": {
           "name": "slang",
@@ -2059,7 +2080,7 @@
       "name": "fifo_onehot_d4_w8",
       "passed": true,
       "status": "ok",
-      "seconds": 2.974,
+      "seconds": 4.242,
       "errors": [],
       "artifacts": {
         "word_level": {
@@ -2080,11 +2101,11 @@
         },
         "metrics": {
           "present": true,
-          "sha256": "6c0aa1b073cb1b7674c1a85d48e5db5cc63f85c7a2b870573917cbac64778529"
+          "sha256": "9a6e1838f1a0a16b293c07ab01006ad45cb59c520f4526cf9134453be3ee4480"
         },
         "summary": {
           "present": true,
-          "sha256": "47215eb5b2b7c9d5a2791d2837c859b23b35d5cec0c8e132f8ad86425d6c6c7f"
+          "sha256": "afd0602692c45c06642397747daee341cab265851252daa23775efdbb1f13341"
         },
         "manifest": {
           "present": true,
@@ -2125,6 +2146,7 @@
         ],
         "profile": "53f00dd357a390548114d0810bc9afa4e0e20e9f009a0e20c10ff35c4eefc464",
         "yosys_version": "Yosys 0.69+ (git sha1 b6fc93533, Release, GNU /usr/bin/c++ 11.4.0) [github.com/ananthv26-cog-demo-repos/yosys-example at main]",
+        "sv2v_version": "sv2v v0.0.13",
         "top": "fifo_onehot_d4_w8",
         "frontend": {
           "name": "slang",
@@ -2154,7 +2176,7 @@
       "name": "fifo_pipe_d3_w8",
       "passed": true,
       "status": "ok",
-      "seconds": 3.144,
+      "seconds": 3.682,
       "errors": [],
       "artifacts": {
         "word_level": {
@@ -2175,11 +2197,11 @@
         },
         "metrics": {
           "present": true,
-          "sha256": "d567bf7f0d599549843351fc9d85866bd80b92cf42c5074bbf2d3b54660d53f1"
+          "sha256": "e9b2302912e1ec23a1dbcd4d17fbdb3f66ee08f863ddcdbcc4a5fae46d947b4d"
         },
         "summary": {
           "present": true,
-          "sha256": "116332231957f78905b620a2e7efb42d21d350e17b35a7041624bac30718bd21"
+          "sha256": "43184ecc6ddeab56815a6ce64848edfa5297e48fc9f731e59281f0b1f338fe32"
         },
         "manifest": {
           "present": true,
@@ -2220,6 +2242,7 @@
         ],
         "profile": "53f00dd357a390548114d0810bc9afa4e0e20e9f009a0e20c10ff35c4eefc464",
         "yosys_version": "Yosys 0.69+ (git sha1 b6fc93533, Release, GNU /usr/bin/c++ 11.4.0) [github.com/ananthv26-cog-demo-repos/yosys-example at main]",
+        "sv2v_version": "sv2v v0.0.13",
         "top": "fifo_pipe_d3_w8",
         "frontend": {
           "name": "slang",
@@ -2249,7 +2272,7 @@
       "name": "fifo_ptr_wrap_d8_w8",
       "passed": true,
       "status": "ok",
-      "seconds": 3.55,
+      "seconds": 3.644,
       "errors": [],
       "artifacts": {
         "word_level": {
@@ -2270,11 +2293,11 @@
         },
         "metrics": {
           "present": true,
-          "sha256": "5849acb5159d80c2b054accbf1cc44294003dc65b1ca90b5f86f3a3fd9cfb81c"
+          "sha256": "0b1699c449e50e6f1ac589c6a10a744d08fb2a0ea6a8b9201f9100bb6261b449"
         },
         "summary": {
           "present": true,
-          "sha256": "c54582a187baddce5103305e23c3264f2c17e65555336e533940ee0130117b87"
+          "sha256": "a499dafc4afcba3ab78f2cb6e86c928fa3fe1c8eaebb36492f068432ed8c1e6d"
         },
         "manifest": {
           "present": true,
@@ -2315,6 +2338,7 @@
         ],
         "profile": "53f00dd357a390548114d0810bc9afa4e0e20e9f009a0e20c10ff35c4eefc464",
         "yosys_version": "Yosys 0.69+ (git sha1 b6fc93533, Release, GNU /usr/bin/c++ 11.4.0) [github.com/ananthv26-cog-demo-repos/yosys-example at main]",
+        "sv2v_version": "sv2v v0.0.13",
         "top": "fifo_ptr_wrap_d8_w8",
         "frontend": {
           "name": "slang",
@@ -2344,7 +2368,7 @@
       "name": "fifo_regout_d4_w8",
       "passed": true,
       "status": "ok",
-      "seconds": 3.021,
+      "seconds": 5.36,
       "errors": [],
       "artifacts": {
         "word_level": {
@@ -2365,11 +2389,11 @@
         },
         "metrics": {
           "present": true,
-          "sha256": "a2c3b20522de10acdc128cbce1f898ec219dce1548a4cd7b8214a4b2a4e9e639"
+          "sha256": "3214d387bac4d43e98b3cbb7b4b0dadb1885b6feb134f9933c9b880d46149f5a"
         },
         "summary": {
           "present": true,
-          "sha256": "ddb0064b55ebde7e5767555a767e124e8233fdde6115465baf41bbd05f5af99b"
+          "sha256": "dce6d808997ad631be142c6bb61307ba204b74a7bef32d67d28c85cc0191c24c"
         },
         "manifest": {
           "present": true,
@@ -2410,6 +2434,7 @@
         ],
         "profile": "53f00dd357a390548114d0810bc9afa4e0e20e9f009a0e20c10ff35c4eefc464",
         "yosys_version": "Yosys 0.69+ (git sha1 b6fc93533, Release, GNU /usr/bin/c++ 11.4.0) [github.com/ananthv26-cog-demo-repos/yosys-example at main]",
+        "sv2v_version": "sv2v v0.0.13",
         "top": "fifo_regout_d4_w8",
         "frontend": {
           "name": "slang",
@@ -2439,7 +2464,7 @@
       "name": "fifo_sync_rst_d4_w8",
       "passed": true,
       "status": "ok",
-      "seconds": 2.506,
+      "seconds": 2.858,
       "errors": [],
       "artifacts": {
         "word_level": {
@@ -2460,11 +2485,11 @@
         },
         "metrics": {
           "present": true,
-          "sha256": "bb05233ba848937049476e62efb38d28743ce75366b69ccc308dd91319047b52"
+          "sha256": "0f0660967a8ef9d91a4986ec8393436f0249f9a9b8e3e06dc0081b0efb4a6810"
         },
         "summary": {
           "present": true,
-          "sha256": "489b56a34b9241880156aa13c6b19d918639feff50c9c60633c08038273b47d7"
+          "sha256": "d6b1c7d73c344c1f91097f236fb27ee103998edcd0c02606f04d65c7dff87361"
         },
         "manifest": {
           "present": true,
@@ -2505,6 +2530,7 @@
         ],
         "profile": "53f00dd357a390548114d0810bc9afa4e0e20e9f009a0e20c10ff35c4eefc464",
         "yosys_version": "Yosys 0.69+ (git sha1 b6fc93533, Release, GNU /usr/bin/c++ 11.4.0) [github.com/ananthv26-cog-demo-repos/yosys-example at main]",
+        "sv2v_version": "sv2v v0.0.13",
         "top": "fifo_sync_rst_d4_w8",
         "frontend": {
           "name": "slang",
@@ -2534,7 +2560,7 @@
       "name": "fsm_traffic",
       "passed": true,
       "status": "ok",
-      "seconds": 2.392,
+      "seconds": 2.416,
       "errors": [],
       "artifacts": {
         "word_level": {
@@ -2555,11 +2581,11 @@
         },
         "metrics": {
           "present": true,
-          "sha256": "699a0930fc104659b73448556809c6deebaa3fc2871d07f1830c4b66877b542d"
+          "sha256": "bf2328d433d6dbaa9153c60a00d290fd617752ec34288ba7ec0d4f1373681537"
         },
         "summary": {
           "present": true,
-          "sha256": "ef511da508fb04e9332471dcbba30234ce94561fd55704488319d5805dff5d4e"
+          "sha256": "b644df71a6f6cdbf1a7fae09d7657f6cb95338720a32416c7d45a08d65ac7cbe"
         },
         "manifest": {
           "present": true,
@@ -2600,6 +2626,7 @@
         ],
         "profile": "53f00dd357a390548114d0810bc9afa4e0e20e9f009a0e20c10ff35c4eefc464",
         "yosys_version": "Yosys 0.69+ (git sha1 b6fc93533, Release, GNU /usr/bin/c++ 11.4.0) [github.com/ananthv26-cog-demo-repos/yosys-example at main]",
+        "sv2v_version": "sv2v v0.0.13",
         "top": "fsm_traffic",
         "frontend": {
           "name": "slang",
@@ -2629,7 +2656,7 @@
       "name": "full_adder",
       "passed": true,
       "status": "ok",
-      "seconds": 2.228,
+      "seconds": 2.255,
       "errors": [],
       "artifacts": {
         "word_level": {
@@ -2650,11 +2677,11 @@
         },
         "metrics": {
           "present": true,
-          "sha256": "0f202258d233ad8af9418b068ebc5163dc7b65e9195fc4f33a2c1ff067e10342"
+          "sha256": "6c4f1e93bdfecc4a37475406c0c09676e77df1a6bcdd93e9ab1b6a65f789b62b"
         },
         "summary": {
           "present": true,
-          "sha256": "8ce667ef8763dbb1a84f094ba4d5d68b5d89684d8d22311a058c3c99227d96d7"
+          "sha256": "6da3ca04da2a39583e25151d25c4f8cf9f9f51ada8dda50826029239f46f9401"
         },
         "manifest": {
           "present": true,
@@ -2695,6 +2722,7 @@
         ],
         "profile": "53f00dd357a390548114d0810bc9afa4e0e20e9f009a0e20c10ff35c4eefc464",
         "yosys_version": "Yosys 0.69+ (git sha1 b6fc93533, Release, GNU /usr/bin/c++ 11.4.0) [github.com/ananthv26-cog-demo-repos/yosys-example at main]",
+        "sv2v_version": "sv2v v0.0.13",
         "top": "full_adder",
         "frontend": {
           "name": "slang",
@@ -2724,7 +2752,7 @@
       "name": "gray_counter4",
       "passed": true,
       "status": "ok",
-      "seconds": 2.312,
+      "seconds": 2.273,
       "errors": [],
       "artifacts": {
         "word_level": {
@@ -2745,11 +2773,11 @@
         },
         "metrics": {
           "present": true,
-          "sha256": "f4e59fa49981ed832417fbf7b0ac2a7a8ed07da851bab3132f57960d4928acdb"
+          "sha256": "383e052e54a2d39d0b86d50497ace4ac67a12674ac99499d01593edff77af2bc"
         },
         "summary": {
           "present": true,
-          "sha256": "1f1397e8a3a19aed3b229c9c14238d7837b19815e7fe7b82d3bf978eba24248b"
+          "sha256": "bcc7319e53880c37f5360b7077a1308d0a1a3e6ad120f5f6c2783325fb58c32a"
         },
         "manifest": {
           "present": true,
@@ -2790,6 +2818,7 @@
         ],
         "profile": "53f00dd357a390548114d0810bc9afa4e0e20e9f009a0e20c10ff35c4eefc464",
         "yosys_version": "Yosys 0.69+ (git sha1 b6fc93533, Release, GNU /usr/bin/c++ 11.4.0) [github.com/ananthv26-cog-demo-repos/yosys-example at main]",
+        "sv2v_version": "sv2v v0.0.13",
         "top": "gray_counter4",
         "frontend": {
           "name": "slang",
@@ -2819,7 +2848,7 @@
       "name": "half_adder",
       "passed": true,
       "status": "ok",
-      "seconds": 2.189,
+      "seconds": 2.273,
       "errors": [],
       "artifacts": {
         "word_level": {
@@ -2840,11 +2869,11 @@
         },
         "metrics": {
           "present": true,
-          "sha256": "4b3cbc10c482fea3af75b232c12d0061624308d094104179fe13a60d1d3b1216"
+          "sha256": "2891d8bac413c3c30d1000bd0d2fb2c1e55d3835e878e19581fe0afd4d50a32e"
         },
         "summary": {
           "present": true,
-          "sha256": "46bd074b74d8bd7ff86bc840c3aabe0097f3a4c1862e7f518e03cea31aa84cb3"
+          "sha256": "0649fd73b03a60d1a526695e8d0c2cc396f6e1b6715df60eed0e66d9f6441e10"
         },
         "manifest": {
           "present": true,
@@ -2885,6 +2914,7 @@
         ],
         "profile": "53f00dd357a390548114d0810bc9afa4e0e20e9f009a0e20c10ff35c4eefc464",
         "yosys_version": "Yosys 0.69+ (git sha1 b6fc93533, Release, GNU /usr/bin/c++ 11.4.0) [github.com/ananthv26-cog-demo-repos/yosys-example at main]",
+        "sv2v_version": "sv2v v0.0.13",
         "top": "half_adder",
         "frontend": {
           "name": "slang",
@@ -2914,7 +2944,7 @@
       "name": "inv",
       "passed": true,
       "status": "ok",
-      "seconds": 2.211,
+      "seconds": 2.328,
       "errors": [],
       "artifacts": {
         "word_level": {
@@ -2935,11 +2965,11 @@
         },
         "metrics": {
           "present": true,
-          "sha256": "5fe004dfe522114890ae44927a64ab03ca7ae8e81a071d3b9d8f7c02efa1739f"
+          "sha256": "e23df1f3be50624b1d4c4002a374abcfe91c7efc9d035f7c8eac4fcc9e828619"
         },
         "summary": {
           "present": true,
-          "sha256": "07e79ddbd4e085f1fc2ec18f05bc65e2d51e0c27325e8bd9b504582bf75e1f61"
+          "sha256": "ed6c8643eb7e6efdec7a28634f65ca231507d813a3acb0c06c27820a3b0f59de"
         },
         "manifest": {
           "present": true,
@@ -2980,6 +3010,7 @@
         ],
         "profile": "53f00dd357a390548114d0810bc9afa4e0e20e9f009a0e20c10ff35c4eefc464",
         "yosys_version": "Yosys 0.69+ (git sha1 b6fc93533, Release, GNU /usr/bin/c++ 11.4.0) [github.com/ananthv26-cog-demo-repos/yosys-example at main]",
+        "sv2v_version": "sv2v v0.0.13",
         "top": "inv",
         "frontend": {
           "name": "slang",
@@ -3009,7 +3040,7 @@
       "name": "lfsr8",
       "passed": true,
       "status": "ok",
-      "seconds": 2.289,
+      "seconds": 2.542,
       "errors": [],
       "artifacts": {
         "word_level": {
@@ -3030,11 +3061,11 @@
         },
         "metrics": {
           "present": true,
-          "sha256": "efec00e79a399227cd4c2c0089a7c101f30cdd432279cf9d9c6ae0d837a159b6"
+          "sha256": "ac184728f6206d00db3c1c00f22c920412359dab8ab9f3cd366a9ac365c1eca6"
         },
         "summary": {
           "present": true,
-          "sha256": "adf2190f5ca79071e597c2e76a07d089d8e99860cce86f318372776e1a5acd2a"
+          "sha256": "1d57cfd6c12480126baa966ee16444345255b2dced3e75259e76f81a836c1799"
         },
         "manifest": {
           "present": true,
@@ -3075,6 +3106,7 @@
         ],
         "profile": "53f00dd357a390548114d0810bc9afa4e0e20e9f009a0e20c10ff35c4eefc464",
         "yosys_version": "Yosys 0.69+ (git sha1 b6fc93533, Release, GNU /usr/bin/c++ 11.4.0) [github.com/ananthv26-cog-demo-repos/yosys-example at main]",
+        "sv2v_version": "sv2v v0.0.13",
         "top": "lfsr8",
         "frontend": {
           "name": "slang",
@@ -3104,7 +3136,7 @@
       "name": "mux2",
       "passed": true,
       "status": "ok",
-      "seconds": 2.297,
+      "seconds": 3.779,
       "errors": [],
       "artifacts": {
         "word_level": {
@@ -3125,11 +3157,11 @@
         },
         "metrics": {
           "present": true,
-          "sha256": "e1e120dbfc3ff666873fec22ea8f7b23bad2854ccdf45635893d97f9055dc132"
+          "sha256": "9c1f11216383c3949f33190a8524501b6572a83b3f01efbf6ad9f8085f7964bb"
         },
         "summary": {
           "present": true,
-          "sha256": "30fbf05c27beb6dc70a31736d9d840b2f8e0c2775aa3e0b0981d22ca47868f8c"
+          "sha256": "9062598886cd76e1bf1d85e58d50b2dd5ff5fe6c14a68d26c7614cef73ecbe15"
         },
         "manifest": {
           "present": true,
@@ -3170,6 +3202,7 @@
         ],
         "profile": "53f00dd357a390548114d0810bc9afa4e0e20e9f009a0e20c10ff35c4eefc464",
         "yosys_version": "Yosys 0.69+ (git sha1 b6fc93533, Release, GNU /usr/bin/c++ 11.4.0) [github.com/ananthv26-cog-demo-repos/yosys-example at main]",
+        "sv2v_version": "sv2v v0.0.13",
         "top": "mux2",
         "frontend": {
           "name": "slang",
@@ -3199,7 +3232,7 @@
       "name": "mux4",
       "passed": true,
       "status": "ok",
-      "seconds": 2.274,
+      "seconds": 2.317,
       "errors": [],
       "artifacts": {
         "word_level": {
@@ -3220,11 +3253,11 @@
         },
         "metrics": {
           "present": true,
-          "sha256": "14f880d7812d4259d57d4bab42d63b260d13e242605d056a4019b363550ce9d3"
+          "sha256": "da257d08ab73ba4adec07c7cfa94eaf10a7035870c3bd34c567b4852c903b924"
         },
         "summary": {
           "present": true,
-          "sha256": "2f7cb6460dae9372c22300b95b7d2870c5ae13f529359785370d3ab2108e8871"
+          "sha256": "0e0243f65a8a84f4f054ea75db450b36431fc8da2b584761a805f2821a5954c5"
         },
         "manifest": {
           "present": true,
@@ -3265,6 +3298,7 @@
         ],
         "profile": "53f00dd357a390548114d0810bc9afa4e0e20e9f009a0e20c10ff35c4eefc464",
         "yosys_version": "Yosys 0.69+ (git sha1 b6fc93533, Release, GNU /usr/bin/c++ 11.4.0) [github.com/ananthv26-cog-demo-repos/yosys-example at main]",
+        "sv2v_version": "sv2v v0.0.13",
         "top": "mux4",
         "frontend": {
           "name": "slang",
@@ -3294,7 +3328,7 @@
       "name": "or2",
       "passed": true,
       "status": "ok",
-      "seconds": 2.304,
+      "seconds": 2.807,
       "errors": [],
       "artifacts": {
         "word_level": {
@@ -3315,11 +3349,11 @@
         },
         "metrics": {
           "present": true,
-          "sha256": "fa7b2279cac0a1fbc437d0e36221f0cae1f5b242bc0f2e1e2a1f3f9407119e1c"
+          "sha256": "51a4a967d74b0ac4e83b2c28d0b26a1c99fa7b3f994a3f115ef90c33087f05c3"
         },
         "summary": {
           "present": true,
-          "sha256": "c27b6c26753775fe9684749e9b4a317df0589f0a289bbab2f4fff8f6c8219ed4"
+          "sha256": "72cded3fd75586ca18fbce60310f8feb70cf01a87167b3253912e6901429eae5"
         },
         "manifest": {
           "present": true,
@@ -3360,6 +3394,7 @@
         ],
         "profile": "53f00dd357a390548114d0810bc9afa4e0e20e9f009a0e20c10ff35c4eefc464",
         "yosys_version": "Yosys 0.69+ (git sha1 b6fc93533, Release, GNU /usr/bin/c++ 11.4.0) [github.com/ananthv26-cog-demo-repos/yosys-example at main]",
+        "sv2v_version": "sv2v v0.0.13",
         "top": "or2",
         "frontend": {
           "name": "slang",
@@ -3389,7 +3424,7 @@
       "name": "parity8",
       "passed": true,
       "status": "ok",
-      "seconds": 2.301,
+      "seconds": 2.429,
       "errors": [],
       "artifacts": {
         "word_level": {
@@ -3410,11 +3445,11 @@
         },
         "metrics": {
           "present": true,
-          "sha256": "1f9099f55d2bd5fe023e2f02cc44503da2cb3ce4a6e9f1cab3498d225a27593f"
+          "sha256": "95063feeb9a8c08991e97213df94862eae316e5e648251871e937894024132e3"
         },
         "summary": {
           "present": true,
-          "sha256": "a9c7a7521d4033a819e28f565d63fd3340e215c901b500dbd9a5350152a2787f"
+          "sha256": "c0769f94deabff9de0cb22817722efeb36e538d098567dc98c0b3cc116d9333c"
         },
         "manifest": {
           "present": true,
@@ -3455,6 +3490,7 @@
         ],
         "profile": "53f00dd357a390548114d0810bc9afa4e0e20e9f009a0e20c10ff35c4eefc464",
         "yosys_version": "Yosys 0.69+ (git sha1 b6fc93533, Release, GNU /usr/bin/c++ 11.4.0) [github.com/ananthv26-cog-demo-repos/yosys-example at main]",
+        "sv2v_version": "sv2v v0.0.13",
         "top": "parity8",
         "frontend": {
           "name": "slang",
@@ -3484,7 +3520,7 @@
       "name": "priority_enc8",
       "passed": true,
       "status": "ok",
-      "seconds": 2.364,
+      "seconds": 2.538,
       "errors": [],
       "artifacts": {
         "word_level": {
@@ -3505,11 +3541,11 @@
         },
         "metrics": {
           "present": true,
-          "sha256": "66f57c717ec18f5e77d93154a4927ae3a06718ab08a1555817026fe223423a4d"
+          "sha256": "8344924be5db8c67020253c98066566d446e6324590f1a8cb8b6533bc8b91794"
         },
         "summary": {
           "present": true,
-          "sha256": "5230b9a575c1947e05d46b2ade27c471621d6abb6df4d8418e182ab141072444"
+          "sha256": "c9e1f52e2e7a203bac4098e3ae19fcb9da32e508b486d4ad840880e7614a696a"
         },
         "manifest": {
           "present": true,
@@ -3550,6 +3586,7 @@
         ],
         "profile": "53f00dd357a390548114d0810bc9afa4e0e20e9f009a0e20c10ff35c4eefc464",
         "yosys_version": "Yosys 0.69+ (git sha1 b6fc93533, Release, GNU /usr/bin/c++ 11.4.0) [github.com/ananthv26-cog-demo-repos/yosys-example at main]",
+        "sv2v_version": "sv2v v0.0.13",
         "top": "priority_enc8",
         "frontend": {
           "name": "slang",
@@ -3579,7 +3616,7 @@
       "name": "reg8_en",
       "passed": true,
       "status": "ok",
-      "seconds": 2.455,
+      "seconds": 3.096,
       "errors": [],
       "artifacts": {
         "word_level": {
@@ -3600,11 +3637,11 @@
         },
         "metrics": {
           "present": true,
-          "sha256": "2d226c7370f4d094e31775e4166f192af83a543ff3104ad62a56e817038d7a9d"
+          "sha256": "0daf59a39ed53028c21c6880ba9dff7cb05da6eb6d499517f74786a46b420810"
         },
         "summary": {
           "present": true,
-          "sha256": "8225d4687941ccaabdc5f32e93a7974d8970fc55c4d817047938725878b7199f"
+          "sha256": "55a4f379c458604a1f8a691c72d3736e550390d1e6980a00d05c5cd0a643d8e3"
         },
         "manifest": {
           "present": true,
@@ -3645,6 +3682,7 @@
         ],
         "profile": "53f00dd357a390548114d0810bc9afa4e0e20e9f009a0e20c10ff35c4eefc464",
         "yosys_version": "Yosys 0.69+ (git sha1 b6fc93533, Release, GNU /usr/bin/c++ 11.4.0) [github.com/ananthv26-cog-demo-repos/yosys-example at main]",
+        "sv2v_version": "sv2v v0.0.13",
         "top": "reg8_en",
         "frontend": {
           "name": "slang",
@@ -3674,7 +3712,7 @@
       "name": "shift_reg8",
       "passed": true,
       "status": "ok",
-      "seconds": 2.295,
+      "seconds": 2.362,
       "errors": [],
       "artifacts": {
         "word_level": {
@@ -3695,11 +3733,11 @@
         },
         "metrics": {
           "present": true,
-          "sha256": "9e6c7f19c13bc42a342375e0a0d322687935eb2b3d128a54c4f2fb0cc0511d19"
+          "sha256": "c05fec9fb8a9c56d5e2e7904e94559bdd7504771e87c67294abb6b75afd8ed34"
         },
         "summary": {
           "present": true,
-          "sha256": "97eb0bf54370883aa346ed218bc9a777bd3dbde5531b4db0a04a783e60e6ce70"
+          "sha256": "00a7f09d533b74acf3570f9ca87722c3d003eb2f3a8bdf5fd2990c1f58074664"
         },
         "manifest": {
           "present": true,
@@ -3740,6 +3778,7 @@
         ],
         "profile": "53f00dd357a390548114d0810bc9afa4e0e20e9f009a0e20c10ff35c4eefc464",
         "yosys_version": "Yosys 0.69+ (git sha1 b6fc93533, Release, GNU /usr/bin/c++ 11.4.0) [github.com/ananthv26-cog-demo-repos/yosys-example at main]",
+        "sv2v_version": "sv2v v0.0.13",
         "top": "shift_reg8",
         "frontend": {
           "name": "slang",
@@ -3769,7 +3808,7 @@
       "name": "skid_buffer",
       "passed": true,
       "status": "ok",
-      "seconds": 2.555,
+      "seconds": 2.705,
       "errors": [],
       "artifacts": {
         "word_level": {
@@ -3790,11 +3829,11 @@
         },
         "metrics": {
           "present": true,
-          "sha256": "f70c98c154bb3ba9af0e34f3b4a0438cd5a9482f671b1ade79e61f1539365293"
+          "sha256": "600ce445cc7e0a23f1583ef939b5797408a48d67155a9184b6d2c5a759eb5cf0"
         },
         "summary": {
           "present": true,
-          "sha256": "577e55e2e95caf8a64f39ea000e1030e1a14192c59ff4adb8351053860240ab5"
+          "sha256": "b982debe5603ec3eef15ef8a44282c7171cb1102831566ca73d52d9dcb66f610"
         },
         "manifest": {
           "present": true,
@@ -3835,6 +3874,7 @@
         ],
         "profile": "53f00dd357a390548114d0810bc9afa4e0e20e9f009a0e20c10ff35c4eefc464",
         "yosys_version": "Yosys 0.69+ (git sha1 b6fc93533, Release, GNU /usr/bin/c++ 11.4.0) [github.com/ananthv26-cog-demo-repos/yosys-example at main]",
+        "sv2v_version": "sv2v v0.0.13",
         "top": "skid_buffer",
         "frontend": {
           "name": "slang",
@@ -3864,7 +3904,7 @@
       "name": "sync_fifo_d16_w32",
       "passed": true,
       "status": "ok",
-      "seconds": 11.3,
+      "seconds": 12.273,
       "errors": [],
       "artifacts": {
         "word_level": {
@@ -3885,11 +3925,11 @@
         },
         "metrics": {
           "present": true,
-          "sha256": "2f68d2f445ec227e014ed3a86c2f37d70bb15dfa71197a484628cd50c206e8a2"
+          "sha256": "ce0388b689bbdd5419fcd9e077301fd4e68e3f21ea0b0e2f123f8466ff4a58fb"
         },
         "summary": {
           "present": true,
-          "sha256": "e0c6b292f2ea5a492174a1d8c616ccfae3e3aa498f43af5b7f3f186b9bb838d9"
+          "sha256": "7b6ecb9b92600042e1df723ad18ebcd367026d8bfc4b2e7d1f528d1878424d05"
         },
         "manifest": {
           "present": true,
@@ -3931,6 +3971,7 @@
         ],
         "profile": "53f00dd357a390548114d0810bc9afa4e0e20e9f009a0e20c10ff35c4eefc464",
         "yosys_version": "Yosys 0.69+ (git sha1 b6fc93533, Release, GNU /usr/bin/c++ 11.4.0) [github.com/ananthv26-cog-demo-repos/yosys-example at main]",
+        "sv2v_version": "sv2v v0.0.13",
         "top": "sync_fifo_d16_w32",
         "frontend": {
           "name": "slang",
@@ -3960,7 +4001,7 @@
       "name": "sync_fifo_d16_w8",
       "passed": true,
       "status": "ok",
-      "seconds": 4.882,
+      "seconds": 6.596,
       "errors": [],
       "artifacts": {
         "word_level": {
@@ -3981,11 +4022,11 @@
         },
         "metrics": {
           "present": true,
-          "sha256": "d40c008b72857adafc0063fcca1391f5e1273f3e8e1d1c514a4fe86e0cb812cc"
+          "sha256": "7639155ac4e4ff1e1f047d0bda7ddd37b69fe953fca0818d07b4b384ed0be3dc"
         },
         "summary": {
           "present": true,
-          "sha256": "39636a536684d2f0e9bced2cae3f6baff4c2f887569bf23ca35c4c18390a9795"
+          "sha256": "c354034a761d5b61f72d7a521fbda0ad43881d753e570ba2153a8d3c407b8de8"
         },
         "manifest": {
           "present": true,
@@ -4027,6 +4068,7 @@
         ],
         "profile": "53f00dd357a390548114d0810bc9afa4e0e20e9f009a0e20c10ff35c4eefc464",
         "yosys_version": "Yosys 0.69+ (git sha1 b6fc93533, Release, GNU /usr/bin/c++ 11.4.0) [github.com/ananthv26-cog-demo-repos/yosys-example at main]",
+        "sv2v_version": "sv2v v0.0.13",
         "top": "sync_fifo_d16_w8",
         "frontend": {
           "name": "slang",
@@ -4056,7 +4098,7 @@
       "name": "sync_fifo_d4_w8",
       "passed": true,
       "status": "ok",
-      "seconds": 3.104,
+      "seconds": 3.459,
       "errors": [],
       "artifacts": {
         "word_level": {
@@ -4077,11 +4119,11 @@
         },
         "metrics": {
           "present": true,
-          "sha256": "63f719b5e904912a218b7043ae4825d89e67d7c727bcb83cef1eb07b5f8e9d6e"
+          "sha256": "a9db2d1f0d60acee7bd04d1989a4e65a47e49d0bdfaf3f434fb3b93e0800ac7d"
         },
         "summary": {
           "present": true,
-          "sha256": "22fcd0ec69592cc53e930678799bc4610e803dc758092828a0b65d4b5c5bbf44"
+          "sha256": "7c5ec4987721440f04ed262f2751edd367f91761322fcf243470509f5361eb2d"
         },
         "manifest": {
           "present": true,
@@ -4118,11 +4160,12 @@
       "warnings": 2,
       "inputs": {
         "sources": [
-          "1e2aefb979e8e7804ccabbf64b1a9035f1ce767334449bad5b4b3364f9569a93",
-          "2c0460fe1659a9b67d2b476bed7d7403d3edacfb3ccfdf2689da07e750de3097"
+          "2c0460fe1659a9b67d2b476bed7d7403d3edacfb3ccfdf2689da07e750de3097",
+          "1e2aefb979e8e7804ccabbf64b1a9035f1ce767334449bad5b4b3364f9569a93"
         ],
         "profile": "53f00dd357a390548114d0810bc9afa4e0e20e9f009a0e20c10ff35c4eefc464",
         "yosys_version": "Yosys 0.69+ (git sha1 b6fc93533, Release, GNU /usr/bin/c++ 11.4.0) [github.com/ananthv26-cog-demo-repos/yosys-example at main]",
+        "sv2v_version": "sv2v v0.0.13",
         "top": "sync_fifo_d4_w8",
         "frontend": {
           "name": "slang",
@@ -4152,7 +4195,7 @@
       "name": "sync_fifo_d8_w8",
       "passed": true,
       "status": "ok",
-      "seconds": 3.619,
+      "seconds": 4.127,
       "errors": [],
       "artifacts": {
         "word_level": {
@@ -4173,11 +4216,11 @@
         },
         "metrics": {
           "present": true,
-          "sha256": "8d9e68d2189f138e2287f6a28937ddf025ea882f7521696001e845a6e4c0262c"
+          "sha256": "0e0a1a2acddc2763be3894dcf07b41b925e081ab85a2602b89b942bd9d4e7998"
         },
         "summary": {
           "present": true,
-          "sha256": "3417b80b7cdea0d4160418af3318606367144c29becd76292f34eb9348f83ae4"
+          "sha256": "e884d7b9934b2dff10b3bc0643c5a3e0c4dd73672b3a2d9720bcabfef6826c40"
         },
         "manifest": {
           "present": true,
@@ -4219,6 +4262,7 @@
         ],
         "profile": "53f00dd357a390548114d0810bc9afa4e0e20e9f009a0e20c10ff35c4eefc464",
         "yosys_version": "Yosys 0.69+ (git sha1 b6fc93533, Release, GNU /usr/bin/c++ 11.4.0) [github.com/ananthv26-cog-demo-repos/yosys-example at main]",
+        "sv2v_version": "sv2v v0.0.13",
         "top": "sync_fifo_d8_w8",
         "frontend": {
           "name": "slang",
@@ -4248,7 +4292,7 @@
       "name": "xor2",
       "passed": true,
       "status": "ok",
-      "seconds": 2.491,
+      "seconds": 2.31,
       "errors": [],
       "artifacts": {
         "word_level": {
@@ -4269,11 +4313,11 @@
         },
         "metrics": {
           "present": true,
-          "sha256": "c18a758697a13670bc12b9fa7d3750f6670ff9d1cca55905a07fb46f40772227"
+          "sha256": "b9e284bb08f54c292a914fa908ef5cfe50ce7edc44e1eac9f59a6b034c40998b"
         },
         "summary": {
           "present": true,
-          "sha256": "f7361b2af1847dba4d422da10baf2e9434faa1cfd9a3b6144606337f60700e9c"
+          "sha256": "3a910b627fb04e306c87ef98dd124e90503f5df21ba110fd6bc72f8f5b631b00"
         },
         "manifest": {
           "present": true,
@@ -4314,6 +4358,7 @@
         ],
         "profile": "53f00dd357a390548114d0810bc9afa4e0e20e9f009a0e20c10ff35c4eefc464",
         "yosys_version": "Yosys 0.69+ (git sha1 b6fc93533, Release, GNU /usr/bin/c++ 11.4.0) [github.com/ananthv26-cog-demo-repos/yosys-example at main]",
+        "sv2v_version": "sv2v v0.0.13",
         "top": "xor2",
         "frontend": {
           "name": "slang",
@@ -4343,7 +4388,7 @@
       "name": "sync_fifo",
       "passed": true,
       "status": "ok",
-      "seconds": 11.333,
+      "seconds": 13.318,
       "errors": [],
       "artifacts": {
         "word_level": {
@@ -4364,11 +4409,11 @@
         },
         "metrics": {
           "present": true,
-          "sha256": "fcd6e47438beb2897da81d38aa7bde84a1183008dd3ec0681e70916bf93f50ed"
+          "sha256": "85c33fa02f7573c429941d866c32b8c099419ceb26538bb87a45cee2ff85650e"
         },
         "summary": {
           "present": true,
-          "sha256": "3c2c3051b25f85bd26693a7409435ce3cf3da199a7a22429c7c21923ac7120e2"
+          "sha256": "ca975b24a221293140c07e8b9b94d46b5790afe4d75a6b00508064d74f04fe34"
         },
         "manifest": {
           "present": true,
@@ -4409,6 +4454,7 @@
         ],
         "profile": "53f00dd357a390548114d0810bc9afa4e0e20e9f009a0e20c10ff35c4eefc464",
         "yosys_version": "Yosys 0.69+ (git sha1 b6fc93533, Release, GNU /usr/bin/c++ 11.4.0) [github.com/ananthv26-cog-demo-repos/yosys-example at main]",
+        "sv2v_version": "sv2v v0.0.13",
         "top": "sync_fifo",
         "frontend": {
           "name": "slang",
@@ -4438,7 +4484,7 @@
       "name": "async_fifo",
       "passed": true,
       "status": "ok",
-      "seconds": 3.515,
+      "seconds": 3.618,
       "errors": [],
       "artifacts": {
         "word_level": {
@@ -4459,11 +4505,11 @@
         },
         "metrics": {
           "present": true,
-          "sha256": "c8aee345e4d74ffd3e7ba5b023c20efb5b670adb6c1f0b4c27cfe1041d31a3c2"
+          "sha256": "96848539b477d0da08f669da911e184224c9ce6370047572b02bf2510d5868b5"
         },
         "summary": {
           "present": true,
-          "sha256": "3ec0191033541d8eaa872341cc72770b5e72877d666de3530f3e87e351d39fac"
+          "sha256": "f193def33f432766a493309375c965e49b7dbdf45ebc1da9cdf2b929f9bc0cc5"
         },
         "manifest": {
           "present": true,
@@ -4504,6 +4550,7 @@
         ],
         "profile": "53f00dd357a390548114d0810bc9afa4e0e20e9f009a0e20c10ff35c4eefc464",
         "yosys_version": "Yosys 0.69+ (git sha1 b6fc93533, Release, GNU /usr/bin/c++ 11.4.0) [github.com/ananthv26-cog-demo-repos/yosys-example at main]",
+        "sv2v_version": "sv2v v0.0.13",
         "top": "async_fifo",
         "frontend": {
           "name": "slang",
@@ -4533,7 +4580,7 @@
       "name": "struct_fifo",
       "passed": true,
       "status": "ok",
-      "seconds": 5.019,
+      "seconds": 5.455,
       "errors": [],
       "artifacts": {
         "word_level": {
@@ -4554,11 +4601,11 @@
         },
         "metrics": {
           "present": true,
-          "sha256": "e7932d2616f1f77c50f92dae7d982bd9000ec35055629db967450ce3ac091cab"
+          "sha256": "127fbfc4a70e6e800d9dd8588ddf28588454d79257ddfff306a60c3f20f94551"
         },
         "summary": {
           "present": true,
-          "sha256": "148f12d4e82c42865d23da622c51e0df30044a85835744b01aa8775dacdabd54"
+          "sha256": "e23b5a22dfd18d4d46ee5cf9d16e275c2ce491c3980da08ca33bc2d6bf71658f"
         },
         "manifest": {
           "present": true,
@@ -4595,11 +4642,12 @@
       "warnings": 2,
       "inputs": {
         "sources": [
-          "1ff90c57d4d481c2308a8796f9f0dbb7084811af1c2470fe179c52ce383c065d",
-          "75999e45251245f729ec4c3a15032908d933b3a81cc73d37479decbffb23d696"
+          "75999e45251245f729ec4c3a15032908d933b3a81cc73d37479decbffb23d696",
+          "1ff90c57d4d481c2308a8796f9f0dbb7084811af1c2470fe179c52ce383c065d"
         ],
         "profile": "53f00dd357a390548114d0810bc9afa4e0e20e9f009a0e20c10ff35c4eefc464",
         "yosys_version": "Yosys 0.69+ (git sha1 b6fc93533, Release, GNU /usr/bin/c++ 11.4.0) [github.com/ananthv26-cog-demo-repos/yosys-example at main]",
+        "sv2v_version": "sv2v v0.0.13",
         "top": "struct_fifo",
         "frontend": {
           "name": "slang",
@@ -4629,7 +4677,7 @@
       "name": "if_fifo",
       "passed": true,
       "status": "ok",
-      "seconds": 3.202,
+      "seconds": 3.555,
       "errors": [],
       "artifacts": {
         "word_level": {
@@ -4650,11 +4698,11 @@
         },
         "metrics": {
           "present": true,
-          "sha256": "42d90734e17eab0dc2de00f1f2fd31ec33d024de5f168fd647f50bd3165cb8f1"
+          "sha256": "c6354df2b936a242ffdafda670692d84ac4ad27e6663976f1ac6e0589e8c962c"
         },
         "summary": {
           "present": true,
-          "sha256": "2330e5196175ea88d2f99f9ee1eba39442b02126f8820ef90129a59ebd18e863"
+          "sha256": "8668ee0a291366462c9562e6ef3dc3cc3f6da9fd2d7346642dc02e22ba26c7c0"
         },
         "manifest": {
           "present": true,
@@ -4695,6 +4743,7 @@
         ],
         "profile": "53f00dd357a390548114d0810bc9afa4e0e20e9f009a0e20c10ff35c4eefc464",
         "yosys_version": "Yosys 0.69+ (git sha1 b6fc93533, Release, GNU /usr/bin/c++ 11.4.0) [github.com/ananthv26-cog-demo-repos/yosys-example at main]",
+        "sv2v_version": "sv2v v0.0.13",
         "top": "if_fifo_top",
         "frontend": {
           "name": "slang",

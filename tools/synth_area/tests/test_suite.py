@@ -133,8 +133,13 @@ class SuiteRunnerTests(unittest.TestCase):
             (tmp / "badblock.json").write_text(json.dumps(
                 {"schema_version": suite_evidence.EVIDENCE_SCHEMA_VERSION, "blocks": [{"name": []}]}))
             (tmp / "oldschema.json").write_text(json.dumps({"schema_version": 1, "blocks": []}))
+            # two records under one name: whichever came last would silently be the one compared against
+            dup = json.loads((tmp / "out" / "suite_evidence.json").read_text())
+            dup["blocks"].append(dup["blocks"][0])
+            (tmp / "dupbase.json").write_text(json.dumps(dup))
             for bad_baseline in (str(tmp / "typo.json"), str(tmp / "notevidence.json"),
-                                 str(tmp / "badblock.json"), str(tmp / "oldschema.json")):
+                                 str(tmp / "badblock.json"), str(tmp / "oldschema.json"),
+                                 str(tmp / "dupbase.json")):
                 proc = subprocess.run([sys.executable, str(SUITE), str(manifest), "-o", str(tmp / "nobase"),
                                        "--baseline", bad_baseline], capture_output=True, text=True, check=False)
                 self.assertEqual(proc.returncode, 2, proc.stderr)

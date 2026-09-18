@@ -20,6 +20,7 @@ which reports whether every layer file of every shared block came out byte-ident
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
 
 EVIDENCE_SCHEMA_VERSION = 2
@@ -89,10 +90,12 @@ def block_evidence(result: dict) -> dict:
 
     sources = metrics.get("sources")
     ev["inputs"] = {
-        "sources": sorted(s.get("sha256") or "" for s in sources if isinstance(s, dict))
+        # in file order: a package has to be read before the module that uses it
+        "sources": [s.get("sha256") or "" for s in sources if isinstance(s, dict)]
         if isinstance(sources, list) else None,
         "profile": section(metrics, "profile").get("sha256"),
         "yosys_version": section(metrics, "tools").get("yosys_version"),
+        "sv2v_version": section(metrics, "tools").get("sv2v_version"),
         "top": metrics.get("top"),
         # defines, include dirs and frontend args change the layers without changing a source hash
         "frontend": section(metrics, "frontend") or None,
@@ -247,9 +250,13 @@ def load_baseline(path: Path) -> dict:
         raise ValueError(f"{path} is schema_version {data.get('schema_version')!r}, not "
                          f"{EVIDENCE_SCHEMA_VERSION}: rerun the suite to regenerate it")
     # determinism indexes blocks by name and reads nested dicts; reject that here, not after the corpus has run
+    names: set[str] = set()
     for b in blocks:
         if not isinstance(b, dict) or not isinstance(b.get("name"), str):
             raise ValueError(f"{path} has a block that is not an object with a `name` string")  # noqa: TRY004
+        if b["name"] in names:  # determinism indexes by name and would silently keep the last one
+            raise ValueError(f"{path} has duplicate block name {b['name']!r}")
+        names.add(b["name"])
         if not isinstance(b.get("inputs"), dict) or not isinstance(b.get("artifacts"), dict):
             raise ValueError(f"{path}: block {b['name']} has no `inputs`/`artifacts` object")  # noqa: TRY004
         if any(not isinstance(b["artifacts"].get(layer, {}), dict) for layer in LAYERS):
@@ -259,13 +266,13 @@ def load_baseline(path: Path) -> dict:
 
 def write_atomic(path: Path, text: str) -> None:
     """An interrupted run must leave the previous rollup, not half of a new one."""
-    tmp = path.with_suffix(path.suffix + ".tmp")
+    tmp = path.with_suffix(f"{path.suffix}.{os.getpid()}.tmp")  # two runs must not share a scratch file
     tmp.write_text(text)
     tmp.replace(path)
 
 
-def write(results: list[dict], out_dir: Path, baseline_path: Path | None = None) -> dict:
-    baseline = load_baseline(baseline_path) if baseline_path else None
+def write(results: list[dict], out_dir: Path, baseline: dict | None = None) -> dict:
+    """`baseline` is an already-loaded suite_evidence.json: callers validate it before running blocks."""
     evidence = build(results, baseline)
     write_atomic(out_dir / "suite_evidence.json", json.dumps(evidence, indent=2) + "\n")
     write_atomic(out_dir / "EVIDENCE.md", render(evidence))
@@ -276,5 +283,5 @@ if __name__ == "__main__":  # pragma: no cover - re-render from an existing suit
     import sys
     summary = json.loads(Path(sys.argv[1]).read_text())
     base = Path(sys.argv[2]) if len(sys.argv) > 2 else None
-    ev = write(summary["results"], Path(sys.argv[1]).resolve().parent, base)
+    ev = write(summary["results"], Path(sys.argv[1]).resolve().parent, load_baseline(base) if base else None)
     sys.stdout.write(render(ev))
