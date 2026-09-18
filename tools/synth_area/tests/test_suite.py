@@ -281,6 +281,20 @@ class SuiteCacheTests(unittest.TestCase):
             self.assertFalse(suite_cache.is_hit(out / "inv", ["x"], sys.executable))
             code, s6, _ = run()
             self.assertEqual(cached(s6), {"inv": False, "and2": True})
+            # outputs found by glob (sim/, equiv_*) and the binaries the run resolved are part of the record
+            code, s6b, _ = run(extra=())
+            self.assertEqual((code, cached(s6b)), (0, {"inv": False, "and2": False}))
+            data = json.loads((out / "inv" / suite_cache.RECORD).read_text())
+            self.assertTrue(data["artifacts"]["sim/sim.log"] and data["artifacts"]["equiv_rtl_vs_graph.log"])
+            self.assertIsNone(data["artifacts"]["sv2v_out.v"])
+            self.assertTrue(all(data["fingerprint"]["tools"][t] for t in ("python", "yosys", "iverilog", "vvp")))
+            (out / "inv" / "sim" / "sim.log").unlink()
+            code, s6c, _ = run(extra=())
+            self.assertEqual((code, cached(s6c)), (0, {"inv": False, "and2": True}))
+            (out / "and2" / "equiv_graph_vs_mapped.log").unlink()
+            code, s6d, _ = run(extra=())
+            self.assertEqual((code, cached(s6d)), (0, {"inv": True, "and2": False}))
+            self.assertTrue((out / "and2" / "equiv_graph_vs_mapped.log").is_file())
             # different flow options, --no-cache, and --baseline all rerun
             code, s7, _ = run(extra=("--sim-cycles", "0", "--equiv-seq", "3"))
             self.assertEqual((code, cached(s7)), (0, {"inv": False, "and2": False}))
@@ -301,7 +315,8 @@ class SuiteCacheTests(unittest.TestCase):
             self.assertTrue(suite_cache.is_hit(out / "inv", argv, sys.executable))
             # a record whose tool-code, tool-binary or interpreter hash differs is a miss
             data = json.loads((out / "inv" / suite_cache.RECORD).read_text())
-            for path, value in (("code", {"bool_area.py": "0" * 64}), ("tools", {"yosys": "0" * 64}), ("python", "/p")):
+            for path, value in (("code", {"bool_area.py": "0" * 64}), ("tools", {"yosys": "0" * 64}),
+                                ("tools", {"python": "0" * 64}), ("tools", {"sv2v": "0" * 64}), ("python", "/p")):
                 edited = json.loads(json.dumps(data))
                 if isinstance(value, dict):
                     edited["fingerprint"][path].update(value)

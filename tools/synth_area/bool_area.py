@@ -93,12 +93,21 @@ SIM_DIR = "sim"
 EQUIV_GLOB = "equiv_*.ys", "equiv_*.log"
 
 
-def purge_outputs(out_dir: Path) -> None:
-    """Remove every file this flow owns so a rerun can never leave a previous run's results behind."""
+def owned_files(out_dir: Path) -> list[Path]:
+    """Every path this flow may write below `out_dir`: the fixed artifacts (whether or not they exist), the
+    sv2v output, the equivalence scripts/logs and every file currently under the simulation directory."""
     owned = [out_dir / v for v in ARTIFACTS.values()] + [out_dir / SV2V_OUT]
     for pattern in EQUIV_GLOB:
-        owned.extend(out_dir.glob(pattern))
-    for p in owned:
+        owned.extend(sorted(out_dir.glob(pattern)))
+    sim_dir = out_dir / SIM_DIR
+    if sim_dir.is_dir() and not sim_dir.is_symlink():
+        owned.extend(p for p in sorted(sim_dir.rglob("*")) if p.is_file() or p.is_symlink())
+    return owned
+
+
+def purge_outputs(out_dir: Path) -> None:
+    """Remove every file this flow owns so a rerun can never leave a previous run's results behind."""
+    for p in owned_files(out_dir):
         if p.is_symlink() or p.is_file():
             p.unlink()
     sim_dir = out_dir / SIM_DIR
@@ -526,6 +535,7 @@ def main(argv: list[str] | None = None) -> int:
         if args.sv2v or frontend == "sv2v":
             return fail("tools", f"sv2v not executable: {sv2v}", 2)
         sv2v = None
+    metrics["tools"]["sv2v"] = sv2v
     if sv2v:
         metrics["tools"]["sv2v_version"] = tool_version(sv2v, "--version")
 
@@ -715,6 +725,7 @@ def main(argv: list[str] | None = None) -> int:
         except ValueError as e:
             return fail("simulation", str(e))
         iverilog, vvp = shutil.which("iverilog"), shutil.which("vvp")
+        metrics["tools"].update(iverilog=iverilog, vvp=vvp)
         if not (iverilog and vvp):
             metrics["simulation"] = {"status": "skipped", "error": "iverilog/vvp not on PATH"}
             metrics["warnings"].append("simulation skipped: iverilog/vvp not found")
