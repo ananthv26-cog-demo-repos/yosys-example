@@ -22,6 +22,7 @@ CORPUS = TOOL / "corpus"
 
 sys.path.insert(0, str(HERE))
 sys.path.insert(0, str(TOOL))
+import suite_cache
 import suite_evidence
 import synth_area
 from test_bool_area import run_flow
@@ -219,6 +220,103 @@ class SuiteRunnerTests(unittest.TestCase):
                 self.assertIn("missing_python", r["errors"][0])
                 self.assertIn("stale artifacts", r["errors"][1])
                 self.assertIn("| inv | FAIL(launch) |", (tmp / "out" / "suite_table.md").read_text())
+
+
+@unittest.skipUnless(YOSYS, "yosys binary not found")
+class SuiteCacheTests(unittest.TestCase):
+    def test_unchanged_blocks_are_reused_and_any_changed_input_reruns(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="suite_cache_") as td:
+            tmp, out = Path(td), Path(td) / "out"
+            for name in ("inv", "and2"):  # private copies so the sources can be edited
+                (tmp / f"{name}.sv").write_text((CORPUS / f"{name}.sv").read_text())
+            blocks = [{"name": "inv", "sources": [str(tmp / "inv.sv")], "top": "inv", "expect": {"gate_total": 1}},
+                      {"name": "and2", "sources": [str(tmp / "and2.sv")], "top": "and2", "expect": {"gate_total": 1}}]
+            manifest = tmp / "suite.json"
+            manifest.write_text(json.dumps({"blocks": blocks}))
+
+            def run(*more: str, extra: tuple[str, ...] = ("--sim-cycles", "0")) -> tuple[int, dict, str]:
+                proc = subprocess.run([sys.executable, str(SUITE), str(manifest), "-o", str(out), "-j", "2", *more,
+                                       "--", *extra], capture_output=True, text=True, check=False)
+                self.assertNotIn("Traceback", proc.stderr)
+                return proc.returncode, json.loads((out / "suite_summary.json").read_text()), proc.stdout
+
+            def cached(summary: dict) -> dict[str, bool]:
+                return {r["name"]: r["cached"] for r in summary["results"]}
+
+            code, s1, _ = run()
+            self.assertEqual(code, 0)
+            self.assertEqual((cached(s1), s1["cached"]), ({"inv": False, "and2": False}, 0))
+            self.assertTrue((out / "inv" / suite_cache.RECORD).is_file())
+            graph_before = (out / "inv" / "boolean_graph.json").read_bytes()
+            # nothing changed: both reused, results in manifest order, and every report says so
+            code, s2, stdout = run()
+            self.assertEqual(code, 0)
+            self.assertEqual((cached(s2), s2["cached"]), ({"inv": True, "and2": True}, 2))
+            self.assertEqual([r["name"] for r in s2["results"]], ["inv", "and2"])
+            self.assertEqual(s2["results"][0]["summary"], s1["results"][0]["summary"])
+            self.assertIn("2 cached", stdout)
+            self.assertIn("| inv | PASS |", (out / "suite_table.md").read_text())
+            self.assertIn("| cached |", (out / "suite_table.md").read_text())
+            self.assertIn("2/2 blocks reused", (out / "EVIDENCE.md").read_text())
+            self.assertTrue(all(b["cached"] for b in json.loads((out / "suite_evidence.json").read_text())["blocks"]))
+            # a hand-count expectation is re-evaluated on a hit, so editing the manifest fails without a rerun
+            blocks[1]["expect"] = {"gate_total": 99}
+            manifest.write_text(json.dumps({"blocks": blocks}))
+            code, s3, _ = run()
+            self.assertEqual(code, 1)
+            self.assertEqual(cached(s3), {"inv": True, "and2": True})
+            self.assertFalse(s3["results"][1]["passed"])
+            blocks[1]["expect"] = {"gate_total": 1}
+            manifest.write_text(json.dumps({"blocks": blocks}))
+            # an edited source reruns only its block
+            (tmp / "and2.sv").write_text((tmp / "and2.sv").read_text() + "\n// edited\n")
+            code, s4, _ = run()
+            self.assertEqual((code, cached(s4)), (0, {"inv": True, "and2": False}))
+            # a missing or altered artifact is a miss, never served from the record
+            (out / "inv" / "boolean_graph.json").unlink()
+            code, s5, _ = run()
+            self.assertEqual((code, cached(s5)), (0, {"inv": False, "and2": True}))
+            self.assertEqual((out / "inv" / "boolean_graph.json").read_bytes(), graph_before)
+            (out / "inv" / "metrics.json").write_text((out / "inv" / "metrics.json").read_text() + "\n")
+            self.assertFalse(suite_cache.is_hit(out / "inv", ["x"], sys.executable))
+            code, s6, _ = run()
+            self.assertEqual(cached(s6), {"inv": False, "and2": True})
+            # different flow options, --no-cache, and --baseline all rerun
+            code, s7, _ = run(extra=("--sim-cycles", "0", "--equiv-seq", "3"))
+            self.assertEqual((code, cached(s7)), (0, {"inv": False, "and2": False}))
+            code, s8, _ = run("--no-cache", extra=("--sim-cycles", "0", "--equiv-seq", "3"))
+            self.assertEqual((code, cached(s8)), (0, {"inv": False, "and2": False}))
+            code, s9, _ = run("--baseline", str(out / "suite_evidence.json"),
+                              extra=("--sim-cycles", "0", "--equiv-seq", "3"))
+            self.assertEqual((code, cached(s9)), (0, {"inv": False, "and2": False}))
+            self.assertTrue({c["id"]: c for c in json.loads((out / "suite_evidence.json").read_text())["criteria"]}
+                            ["determinism"]["ok"])
+            # the record is dropped before a rerun starts, so an interrupted run cannot leave a stale hit
+            argv = [str(TOOL / "bool_area.py"), str(tmp / "inv.sv"), "--top", "inv", "-o", str(out / "inv"), "-q",
+                    "--sim-cycles", "0", "--equiv-seq", "3"]
+            self.assertTrue(suite_cache.is_hit(out / "inv", argv, sys.executable))
+            suite_cache.forget(out / "inv")
+            self.assertFalse(suite_cache.is_hit(out / "inv", argv, sys.executable))
+            self.assertTrue(suite_cache.record(out / "inv", argv, sys.executable))
+            self.assertTrue(suite_cache.is_hit(out / "inv", argv, sys.executable))
+            # a record whose tool-code, tool-binary or interpreter hash differs is a miss
+            data = json.loads((out / "inv" / suite_cache.RECORD).read_text())
+            for path, value in (("code", {"bool_area.py": "0" * 64}), ("tools", {"yosys": "0" * 64}), ("python", "/p")):
+                edited = json.loads(json.dumps(data))
+                if isinstance(value, dict):
+                    edited["fingerprint"][path].update(value)
+                else:
+                    edited["fingerprint"][path] = value
+                (out / "inv" / suite_cache.RECORD).write_text(json.dumps(edited))
+                self.assertFalse(suite_cache.is_hit(out / "inv", argv, sys.executable), path)
+            # a failed run is never recorded
+            (tmp / "true_python").write_text("#!/bin/sh\nexit 0\n")
+            (tmp / "true_python").chmod(0o755)
+            (out / "inv" / "metrics.json").write_text('{"status": "failed", "stage": "mapping", "errors": ["boom"]}')
+            proc = subprocess.run([sys.executable, str(SUITE), str(manifest), "-o", str(out), "--only", "inv",
+                                   "--python", str(tmp / "true_python")], capture_output=True, text=True, check=False)
+            self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)
+            self.assertFalse((out / "inv" / suite_cache.RECORD).exists())
 
 
 class EvidenceAccountingTests(unittest.TestCase):

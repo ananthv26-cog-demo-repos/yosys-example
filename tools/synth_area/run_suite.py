@@ -24,6 +24,12 @@ the output directory so the numbers can be pasted into a report.
 Blocks are independent processes, so `-j` runs them concurrently (`-j0` = one per core);
 the output files stay in manifest order regardless, though the console lines appear in
 completion order. A `--baseline` mismatch fails the run.
+
+A block whose previous run in the same output directory is still valid (same command line,
+source/include/profile/Liberty hashes, tool binaries and tool code; every artifact still on disk
+unchanged) is reused and reported as `cached` instead of rerun; see suite_cache.py. Its
+hand-count checks are re-evaluated against the current manifest. `--no-cache` reruns everything,
+and `--baseline` implies it: a determinism check has to re-derive the layer files.
 """
 
 from __future__ import annotations
@@ -39,6 +45,7 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
+import suite_cache
 import suite_evidence
 from bool_area import purge_outputs
 
@@ -60,18 +67,27 @@ def metrics_schema_error(metrics: object) -> str | None:
     return None
 
 
-def run_block(entry: dict, out_dir: Path, extra: list[str], python: str) -> dict:
+def block_command(entry: dict, out_dir: Path, extra: list[str], python: str) -> list[str]:
     sources = [str((HERE / s).resolve()) for s in entry["sources"]]
-    block_out = out_dir / entry["name"]
-    cmd = [python, str(HERE / "bool_area.py"), *sources, "--top", entry["top"], "-o", str(block_out), "-q"]
+    cmd = [python, str(HERE / "bool_area.py"), *sources, "--top", entry["top"], "-o", str(out_dir / entry["name"]), "-q"]
     for inc in entry.get("include", []):
         cmd += ["-I", str((HERE / inc).resolve())]
     for d in entry.get("define", []):
         cmd += ["-D", d]
-    cmd += [*entry.get("args", []), *extra]
+    return cmd + [*entry.get("args", []), *extra]
+
+
+def run_block(entry: dict, out_dir: Path, extra: list[str], python: str, cache: bool = False) -> dict:
+    """Run one block (or reuse its still-valid previous run when `cache`) and check its expectations."""
+    block_out = out_dir / entry["name"]
+    cmd = block_command(entry, out_dir, extra, python)
     t0 = time.time()
     res = {"name": entry["name"], "top": entry["top"], "exit_code": None, "seconds": None, "out_dir": str(block_out),
-           "checks": []}
+           "cached": False, "checks": []}
+    if cache and suite_cache.is_hit(block_out, cmd[1:], python):
+        res.update(exit_code=0, cached=True, seconds=round(time.time() - t0, 3))
+        return collect(entry, res, block_out, "")
+    suite_cache.forget(block_out)
     try:
         p = subprocess.run(cmd, capture_output=True, text=True, check=False)
     except OSError as e:
@@ -85,6 +101,14 @@ def run_block(entry: dict, out_dir: Path, extra: list[str], python: str) -> dict
                    summary={k: None for k in TABLE_COLS}, equivalence=None, simulation=None, passed=False)
         return res
     res.update(exit_code=p.returncode, seconds=round(time.time() - t0, 3))
+    collect(entry, res, block_out, p.stderr)
+    if res["exit_code"] == 0 and res["status"] == "ok":  # recorded even for --no-cache: the next run may reuse it
+        suite_cache.record(block_out, cmd[1:], python)
+    return res
+
+
+def collect(entry: dict, res: dict, block_out: Path, stderr: str) -> dict:
+    """Fill `res` from the block's metrics.json and check the manifest's expectations against it."""
     metrics_path = block_out / "metrics.json"
     metrics, bad_metrics = None, None
     try:
@@ -96,12 +120,12 @@ def run_block(entry: dict, out_dir: Path, extra: list[str], python: str) -> dict
     res["status"] = metrics["status"] if metrics else ("bad-metrics" if bad_metrics else "no-metrics")
     res["stage"] = metrics["stage"] if metrics else None
     res["errors"] = (metrics["errors"] if metrics else [bad_metrics] if bad_metrics else []) or (
-        [p.stderr.strip()] if p.returncode else [])
+        [stderr.strip()] if res["exit_code"] else [])
     summary = (metrics or {}).get("summary") or {}
     res["summary"] = {k: summary.get(k) for k in TABLE_COLS}
     res["equivalence"] = ((metrics or {}).get("equivalence") or {}).get("status")
     res["simulation"] = ((metrics or {}).get("simulation") or {}).get("status")
-    ok = p.returncode == 0 and res["status"] == "ok"
+    ok = res["exit_code"] == 0 and res["status"] == "ok"
     for key, want in entry.get("expect", {}).items():
         got = summary.get(key)
         passed = got == want
@@ -132,7 +156,7 @@ def markdown_table(results: list[dict]) -> str:
     for r in results:
         checks = f"{sum(c['passed'] for c in r['checks'])}/{len(r['checks'])}" if r["checks"] else "-"
         cells = [r["name"], "PASS" if r["passed"] else f"FAIL({r['stage']})", str(r["equivalence"]), str(r["simulation"]),
-                 *[str(r["summary"][c]) for c in TABLE_COLS], checks, str(r["seconds"])]
+                 *[str(r["summary"][c]) for c in TABLE_COLS], checks, "cached" if r.get("cached") else str(r["seconds"])]
         lines.append("| " + " | ".join(cells) + " |")
     return "\n".join(lines) + "\n"
 
@@ -144,7 +168,10 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--only", action="append", default=[], help="run only these block names")
     ap.add_argument("-j", "--jobs", type=int, default=1,
                     help="blocks to run concurrently (0 = one per core); each block is its own process")
-    ap.add_argument("--baseline", help="an earlier suite_evidence.json to check layer files against for determinism")
+    ap.add_argument("--baseline", help="an earlier suite_evidence.json to check layer files against for determinism "
+                                       "(implies --no-cache)")
+    ap.add_argument("--no-cache", action="store_true",
+                    help="rerun every block even if its previous run in the output directory is still valid")
     ap.add_argument("--python", default=sys.executable)
     ap.add_argument("extra", nargs="*", help="extra arguments passed to bool_area.py (after --)")
     argv = sys.argv[1:] if argv is None else list(argv)
@@ -179,10 +206,12 @@ def main(argv: list[str] | None = None) -> int:
         except ValueError as e:
             ap.error(f"--baseline {e}")
 
+    use_cache = not args.no_cache and not args.baseline
+
     def run_and_report(e: dict) -> dict:
-        r = run_block(e, out_dir, args.extra, args.python)
-        print(f"[suite] {'ok  ' if r['passed'] else 'FAIL'} {r['name']:<22} {block_detail(r)} ({r['seconds']}s)",
-              flush=True)
+        r = run_block(e, out_dir, args.extra, args.python, cache=use_cache)
+        took = "cached" if r["cached"] else f"{r['seconds']}s"
+        print(f"[suite] {'ok  ' if r['passed'] else 'FAIL'} {r['name']:<22} {block_detail(r)} ({took})", flush=True)
         return r
 
     t0 = time.time()
@@ -192,16 +221,18 @@ def main(argv: list[str] | None = None) -> int:
         with ThreadPoolExecutor(max_workers=jobs) as pool:  # each block is a subprocess; threads only wait on them
             results = list(pool.map(run_and_report, entries))
     passed = sum(r["passed"] for r in results)
+    cached = sum(r["cached"] for r in results)
     summary = {"manifest": str(manifest_path), "blocks": len(results), "passed": passed,
-               "failed": len(results) - passed, "jobs": jobs, "wall_seconds": round(time.time() - t0, 3),
-               "results": results}
+               "failed": len(results) - passed, "cached": cached, "jobs": jobs,
+               "wall_seconds": round(time.time() - t0, 3), "results": results}
     suite_evidence.write_atomic(out_dir / "suite_summary.json", json.dumps(summary, indent=2) + "\n")
     suite_evidence.write_atomic(out_dir / "suite_table.md", markdown_table(results))
     evidence = suite_evidence.write(results, out_dir, baseline)
     for c in evidence["criteria"]:
         if c["ok"] is not True:
             print(f"[suite] criterion {'UNKNOWN' if c['ok'] is None else 'FAILED'}: {c['id']} — {c['measured']}")
-    print(f"[suite] {passed}/{len(results)} blocks passed in {summary['wall_seconds']}s (-j{jobs}), "
+    print(f"[suite] {passed}/{len(results)} blocks passed in {summary['wall_seconds']}s (-j{jobs}"
+          f"{f', {cached} cached' if cached else ''}), "
           f"{evidence['criteria_passed']}/{evidence['criteria_total']} criteria -> {out_dir / 'EVIDENCE.md'}")
     # corpus-wide criteria can legitimately fail for an --only selection, but a baseline was asked
     # for explicitly: layer files that changed make the run fail

@@ -65,6 +65,8 @@ Expected (one core, this machine):
 python3 tools/synth_area/run_suite.py -o out/suite2 -j0 --baseline out/suite/suite_evidence.json
 ```
 
+Rerunning into the same `-o` directory only redoes blocks whose inputs changed: each successful block leaves a `suite_cache.json` with the sha256 of its sources, include dirs, profile, Liberty files, yosys/sv2v/iverilog binaries, the tool's own `.py` files, the full `bool_area.py` argument list and every artifact it wrote; anything differing (or a missing/edited artifact) reruns. An unchanged 49-block suite rechecks in ~0.3 s and reports `49 cached`; `EVIDENCE.md` states how many blocks were reused rather than re-derived. `--no-cache` forces a full rerun, and `--baseline` always re-derives (a cached copy would make the determinism check vacuous).
+
 **Scaling.** The same `sync_fifo` at three sizes (`examples/stress/`, not in the corpus), whole flow wall time:
 
 | block | flops | gates | ASAP7 cells | area µm² | synth+map | graph-vs-mapped proof | total |
