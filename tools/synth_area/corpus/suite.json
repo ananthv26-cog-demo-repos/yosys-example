@@ -126,6 +126,136 @@
       "top": "fifo_shift_d4_w8"
     },
     {
+      "name": "fifo_almost_flags_d8_w8",
+      "sources": [
+        "corpus/fifo_almost_flags_d8_w8.sv"
+      ],
+      "top": "fifo_almost_flags_d8_w8",
+      "expect": {
+        "dff": 74
+      }
+    },
+    {
+      "name": "fifo_bypass_d4_w8",
+      "sources": [
+        "corpus/fifo_bypass_d4_w8.sv"
+      ],
+      "top": "fifo_bypass_d4_w8",
+      "expect": {
+        "dff": 39
+      }
+    },
+    {
+      "name": "fifo_clr_d4_w8",
+      "sources": [
+        "corpus/fifo_clr_d4_w8.sv"
+      ],
+      "top": "fifo_clr_d4_w8",
+      "expect": {
+        "dff": 39
+      }
+    },
+    {
+      "name": "fifo_enum_state_d4_w8",
+      "sources": [
+        "corpus/fifo_enum_state_d4_w8.sv"
+      ],
+      "top": "fifo_enum_state_d4_w8",
+      "expect": {
+        "dff": 39
+      }
+    },
+    {
+      "name": "fifo_err_flags_d4_w8",
+      "sources": [
+        "corpus/fifo_err_flags_d4_w8.sv"
+      ],
+      "top": "fifo_err_flags_d4_w8",
+      "expect": {
+        "dff": 41
+      }
+    },
+    {
+      "name": "fifo_generate_d4_w8",
+      "sources": [
+        "corpus/fifo_generate_d4_w8.sv"
+      ],
+      "top": "fifo_generate_d4_w8",
+      "expect": {
+        "dff": 39
+      }
+    },
+    {
+      "name": "fifo_gray_ptr_d8_w8",
+      "sources": [
+        "corpus/fifo_gray_ptr_d8_w8.sv"
+      ],
+      "top": "fifo_gray_ptr_d8_w8",
+      "expect": {
+        "dff": 78
+      }
+    },
+    {
+      "name": "fifo_last_d4_w8",
+      "sources": [
+        "corpus/fifo_last_d4_w8.sv"
+      ],
+      "top": "fifo_last_d4_w8",
+      "expect": {
+        "dff": 46
+      }
+    },
+    {
+      "name": "fifo_onehot_d4_w8",
+      "sources": [
+        "corpus/fifo_onehot_d4_w8.sv"
+      ],
+      "top": "fifo_onehot_d4_w8",
+      "expect": {
+        "dff": 43
+      }
+    },
+    {
+      "name": "fifo_pipe_d3_w8",
+      "sources": [
+        "corpus/fifo_pipe_d3_w8.sv"
+      ],
+      "top": "fifo_pipe_d3_w8",
+      "expect": {
+        "dff": 27
+      }
+    },
+    {
+      "name": "fifo_ptr_wrap_d8_w8",
+      "sources": [
+        "corpus/fifo_ptr_wrap_d8_w8.sv"
+      ],
+      "top": "fifo_ptr_wrap_d8_w8",
+      "expect": {
+        "dff": 72
+      }
+    },
+    {
+      "name": "fifo_regout_d4_w8",
+      "sources": [
+        "corpus/fifo_regout_d4_w8.sv"
+      ],
+      "top": "fifo_regout_d4_w8",
+      "expect": {
+        "dff": 48
+      }
+    },
+    {
+      "name": "fifo_sync_rst_d4_w8",
+      "sources": [
+        "corpus/fifo_sync_rst_d4_w8.sv"
+      ],
+      "top": "fifo_sync_rst_d4_w8",
+      "expect": {
+        "dff": 41
+      }
+    },
+    {
       "name": "fsm_traffic",
       "sources": [
         "corpus/fsm_traffic.sv"

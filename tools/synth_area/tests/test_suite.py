@@ -57,7 +57,7 @@ class SuiteRunnerTests(unittest.TestCase):
         names = [b["name"] for b in m["blocks"]]
         self.assertGreaterEqual(len(names), 20)
         self.assertEqual(len(names), len(set(names)))
-        self.assertGreaterEqual(sum("fifo" in n for n in names), 8)
+        self.assertGreaterEqual(sum("fifo" in n for n in names), 20)
         for b in m["blocks"]:
             for s in b["sources"]:
                 self.assertTrue((TOOL / s).exists(), s)
