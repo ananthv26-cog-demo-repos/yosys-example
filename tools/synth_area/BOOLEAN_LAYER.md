@@ -120,6 +120,17 @@ X-pessimism, and the formal check above already proves those bits functionally e
 is a sample, not a proof — it is kept because it also exercises the Liberty cell models,
 which the formal check does not. `--sim-cycles 0` disables it.
 
+**Scheduling.** The two proofs and the simulation only need the mapped netlist, so once
+synthesis is done `bool_area.py` runs them as three concurrent processes (`--check-jobs`,
+default 3; `1` runs them one after another). Each writes only its own files
+(`equiv_rtl_vs_graph*`, `equiv_graph_vs_mapped*`, `sim/`) and the results are merged in a
+fixed order, so `metrics.json` is byte-identical apart from the timings and an equivalence
+failure is always reported ahead of a simulation mismatch. `timing.checks_seconds` is the
+wall time of that phase; the win is bounded by the slowest of the three (on the 16×32
+FIFO 3.2 s → 2.4 s, on the 64×32 one 31.6 s → 28.0 s, both dominated by the graph-vs-ASAP7
+proof). A `run_suite.py -j8` run already keeps every core busy, so there the gain is
+smaller (49 blocks 17.1 s → 16.1 s) but it does not slow down either.
+
 ## Corpus results (`run_suite.py`, profile `asap7_rvt_tt_v1` v2, one core)
 
 49/49 blocks pass, 46 `proven` and 3 `bounded`, all 49 `match` in simulation. Median

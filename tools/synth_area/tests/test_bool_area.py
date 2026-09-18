@@ -9,12 +9,14 @@ simulation tests are skipped without iverilog/sv2v.
 from __future__ import annotations
 
 import filecmp
+import itertools
 import json
 import os
 import shutil
 import subprocess
 import sys
 import tempfile
+import time
 import unittest
 from pathlib import Path
 from unittest import mock
@@ -412,6 +414,98 @@ class BoolAreaFlowTests(unittest.TestCase):
         )
         self.assertEqual(res["status"], "mismatch", res)
         self.assertGreater(res["mismatches"], 0)
+
+    def flow_with_slow_checks(self, out: Path, *extra: str, sim: dict | None = None) -> tuple[int, dict, dict]:
+        """Run and2 in-process with every check (both proofs, the simulation) padded to take >= 0.4 s and its
+        wall-clock window recorded; `sim` replaces the simulation result (the real one needs iverilog)."""
+        real_yosys, real_sim, windows = bool_area.run_yosys, bool_area.run_diff_sim, {}
+
+        def window(name: str, fn, *a, **kw):
+            t0 = time.monotonic()
+            res = fn(*a, **kw)
+            time.sleep(max(0.0, 0.4 - (time.monotonic() - t0)))
+            windows[name] = (t0, time.monotonic())
+            return res
+
+        def fake_yosys(yosys: str, script: str, script_path: Path, log_path: Path, timeout: int):
+            if not script_path.name.startswith("equiv_"):
+                return real_yosys(yosys, script, script_path, log_path, timeout)
+            return window(script_path.stem.removeprefix("equiv_"), real_yosys, yosys, script, script_path, log_path,
+                          timeout)
+
+        def fake_sim(**kw):
+            if sim is None:
+                return window("simulation", real_sim, **kw)
+            return window("simulation", lambda: dict(sim, work_dir=str(kw["work"])))
+
+        with mock.patch.object(bool_area, "run_yosys", fake_yosys), mock.patch.object(bool_area, "run_diff_sim", fake_sim):
+            code = bool_area.main([str(CORPUS / "and2.sv"), "--top", "and2", "-o", str(out), "-q", "--sim-cycles", "20",
+                                   *extra])
+        return code, json.loads((out / "metrics.json").read_text()), windows
+
+    @unittest.skipUnless(IVERILOG, "the simulation check is only scheduled when iverilog is on PATH")
+    def test_checks_run_concurrently_and_are_merged_in_a_fixed_order(self) -> None:
+        stub = {"status": "match", "cycles": 20, "compared_bits": 20, "mismatches": 0, "gate_x_bits": 0}
+        code3, m3, w3 = self.flow_with_slow_checks(self.tmp / "par", sim=stub)
+        code1, m1, w1 = self.flow_with_slow_checks(self.tmp / "seq", "--check-jobs", "1", sim=stub)
+        self.assertEqual((code3, code1), (0, 0), (m3["errors"], m1["errors"]))
+        self.assertEqual(set(w3), {"rtl_vs_graph", "graph_vs_mapped", "simulation"})
+        self.assertEqual(set(w1), set(w3))
+        # all three windows overlap by default; with --check-jobs 1 none do
+        self.assertLess(max(t0 for t0, _ in w3.values()), min(t1 for _, t1 in w3.values()), w3)
+        for a, b in itertools.combinations(sorted(w1.values()), 2):
+            self.assertLessEqual(a[1], b[0], w1)
+        self.assertEqual((m3["timing"]["check_jobs"], m1["timing"]["check_jobs"]), (3, 1))
+        self.assertLess(m3["timing"]["checks_seconds"], m1["timing"]["checks_seconds"])
+        self.assertGreaterEqual(m1["timing"]["checks_seconds"], 1.2)
+        # each check owns its own files: both proof scripts/logs and the sim directory exist side by side
+        for name in ("equiv_rtl_vs_graph.ys", "equiv_rtl_vs_graph.log", "equiv_graph_vs_mapped.ys",
+                     "equiv_graph_vs_mapped.log"):
+            self.assertTrue((self.tmp / "par" / name).is_file(), name)
+        self.assertEqual(m3["simulation"]["work_dir"], str(self.tmp / "par" / "sim"))
+        # the same metrics.json, in the same order, apart from timing and where the run lives
+        self.assertEqual(list(m3["equivalence"]["checks"]), ["rtl_vs_graph", "graph_vs_mapped"])
+        self.assertEqual(list(m3), list(m1))
+        self.assertEqual(m3["simulation"]["status"], "match")
+        for m in (m3, m1):
+            m.pop("timing"), m.pop("wall_seconds"), m.pop("artifacts")
+            m["simulation"].pop("work_dir")
+            for chk in m["equivalence"]["checks"].values():
+                chk.pop("seconds"), chk.pop("log")
+        self.assertEqual(json.dumps(m3), json.dumps(m1))
+
+    @unittest.skipUnless(IVERILOG, "the simulation check is only scheduled when iverilog is on PATH")
+    def test_check_failures_are_reported_in_a_fixed_order(self) -> None:
+        # the simulation finishes long before the proofs and mismatches, yet the run is triaged as an equivalence
+        # failure (proofs are the gate) and the simulation result is still recorded
+        real = bool_area.run_yosys
+
+        def broken_rtl_proof(yosys: str, script: str, script_path: Path, log_path: Path, timeout: int):
+            if script_path.name == "equiv_rtl_vs_graph.ys":
+                script_path.write_text(script)
+                log_path.write_text("Found 1 $equiv cells in 1 modules.\n  Of those cells 0 are proven and 1 are unproven.\n"
+                                    "ERROR: Found 1 unproven $equiv cells!\n")
+                return False, log_path.read_text(), 0.0
+            return real(yosys, script, script_path, log_path, timeout)
+
+        bad = {"status": "mismatch", "cycles": 20, "compared_bits": 20, "mismatches": 3, "gate_x_bits": 0,
+               "first_mismatches": ["cycle 2 y: rtl=1 gate=0"]}
+        with mock.patch.object(bool_area, "run_yosys", broken_rtl_proof):
+            code, m, _ = self.flow_with_slow_checks(self.tmp / "fail", "--equiv-bmc", "0", sim=bad)
+        self.assertEqual((code, m["status"], m["stage"]), (1, "failed", "equivalence"))
+        self.assertIn("rtl_vs_graph", m["errors"][0])
+        self.assertEqual(m["equivalence"]["status"], "failed")
+        self.assertEqual(m["equivalence"]["checks"]["graph_vs_mapped"]["status"], "proven")
+        self.assertEqual(m["simulation"]["status"], "mismatch")
+        # with the proofs passing, the simulation mismatch is what fails the run
+        code, m, _ = self.flow_with_slow_checks(self.tmp / "simfail", sim=bad)
+        self.assertEqual((code, m["stage"], m["equivalence"]["status"]), (1, "simulation", "proven"))
+        self.assertIn("cycle 2 y", m["errors"][0])
+
+    def test_check_jobs_is_validated(self) -> None:
+        code, _, err = run_flow(self.tmp / "bad", "and2", [CORPUS / "and2.sv"], "--check-jobs", "0")
+        self.assertEqual(code, 2)
+        self.assertIn("--check-jobs must be at least 1", err)
 
 
 if __name__ == "__main__":
