@@ -35,7 +35,6 @@ Numbers are only comparable between runs of the same profile version.
 from __future__ import annotations
 
 import argparse
-import hashlib
 import json
 import re
 import shlex
@@ -48,6 +47,8 @@ from pathlib import Path
 
 from boolean_graph import GRAPH_SCHEMA_VERSION, UnsupportedCell, build_graph, compute_metrics
 from diff_sim import classify_ports, run_diff_sim
+from mapped_cells import MAPPED_SCHEMA_VERSION, build_cells, cell_types, load_liberty
+from run_report import build_manifest, render_summary, sha256_file
 from sequential_overlay import SEQ_SCHEMA_VERSION, build_overlay
 from synth_area import (
     IDENT_RE,
@@ -78,7 +79,10 @@ ARTIFACTS = {
     "mapped_json": "mapped_yosys.json",
     "netlist": "mapped_netlist.v",
     "graph": "boolean_graph.json",
+    "mapped_cells": "mapped_cells.json",
     "metrics": "metrics.json",
+    "manifest": "run_manifest.json",
+    "summary": "summary.md",
     "log": "yosys.log",
     "script": "synth.ys",
     "stat_json": "stat.json",
@@ -108,14 +112,6 @@ class FlowError(Exception):
     def __init__(self, stage: str, msg: str):
         super().__init__(msg)
         self.stage = stage
-
-
-def sha256_file(p: Path) -> str:
-    h = hashlib.sha256()
-    with p.open("rb") as f:
-        for chunk in iter(lambda: f.read(1 << 20), b""):
-            h.update(chunk)
-    return h.hexdigest()
 
 
 PROFILE_SCHEMA = {
@@ -438,9 +434,22 @@ def main(argv: list[str] | None = None) -> int:
         "wall_seconds": None,
     }
 
+    schema_versions = {"word_level": WORD_SCHEMA_VERSION, "sequential_overlay": SEQ_SCHEMA_VERSION,
+                       "boolean_graph": GRAPH_SCHEMA_VERSION, "mapped_cells": MAPPED_SCHEMA_VERSION,
+                       "metrics": METRICS_SCHEMA_VERSION}
+
     def finish(code: int) -> int:
         metrics["wall_seconds"] = round(time.time() - t_start, 3)
         out["metrics"].write_text(json.dumps(metrics, indent=2) + "\n")
+        try:  # the manifest hashes every other artifact, so metrics.json and summary.md come first
+            out["summary"].write_text(render_summary(metrics))
+            manifest = build_manifest(metrics, out, sys.argv if argv is None else [sys.argv[0], *argv], schema_versions)
+            out["manifest"].write_text(json.dumps(manifest, indent=1) + "\n")
+        except OSError as e:
+            metrics["status"], metrics["stage"] = "failed", "artifacts"
+            metrics["errors"].append(f"could not write run_manifest.json / summary.md: {e}")
+            out["metrics"].write_text(json.dumps(metrics, indent=2) + "\n")
+            code = code or 1
         if not args.quiet:
             if metrics["status"] == "ok":
                 b, m = metrics["boolean"], metrics["mapped"]
@@ -605,6 +614,24 @@ def main(argv: list[str] | None = None) -> int:
         return fail("mapping", f"mapped cells without Liberty area: {sorted(mapped['unknown_area_cell_types'])}")
     metrics["mapped"] = mapped
     metrics["summary"] = flat_summary(metrics["boolean"], mapped)
+
+    # --- 3b. mapped cells with pin-to-net connections, cross-checked against `stat` ---
+    try:
+        mapped_data = json.loads(out["mapped_json"].read_text())
+        cells = build_cells(mapped_data, args.top, load_liberty(libs, cell_types(mapped_data, args.top)), src_base=out_dir)
+        out["mapped_cells"].write_text(json.dumps(cells, indent=1) + "\n")
+    except UnsupportedCell as e:
+        return fail("mapping", str(e))
+    except (ValueError, KeyError) as e:
+        return fail("mapping", f"could not build mapped-cell report: {e}")
+    except OSError as e:
+        return fail("artifacts", f"could not write mapped-cell report: {e}")
+    cs = cells["summary"]
+    if cs["cells"] != mapped["num_cells"] or abs(cs["area"] - mapped["area"]) > 1e-6 * max(1, cs["cells"]):
+        return fail("mapping", f"mapped_cells.json disagrees with stat: {cs['cells']} cells / area {cs['area']} "
+                               f"vs {mapped['num_cells']} / {mapped['area']}")
+    mapped["cells_schema_version"] = MAPPED_SCHEMA_VERSION
+    mapped["pin_connections"] = cs["pins"]
 
     # --- 4. formal equivalence: RTL == Boolean graph == mapped netlist ---
     if args.no_equiv:
