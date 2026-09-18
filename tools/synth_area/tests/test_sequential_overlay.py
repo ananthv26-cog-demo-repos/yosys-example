@@ -155,8 +155,19 @@ class OverlayTests(unittest.TestCase):
                                                       "set": {"signal": "s", "active": "high"},
                                                       "clear": {"signal": "c", "active": "low"}})
         self.assertEqual(r["summary"]["reset_bits"], {"async_load": 4, "async_set_clear": 1})
-        self.assertEqual(r["summary"]["resets"], [{"signal": "ld", "kind": "async_load", "active": "high",
-                                                   "registers": 1, "bits": 4}])
+        self.assertEqual(r["summary"]["resets"], [
+            {"signal": "c", "kind": "async_clear", "active": "low", "registers": 1, "bits": 1},
+            {"signal": "ld", "kind": "async_load", "active": "high", "registers": 1, "bits": 4},
+            {"signal": "s", "kind": "async_set", "active": "high", "registers": 1, "bits": 1},
+        ], "set and clear nets are grouped as their own reset controls")
+
+    def test_unknown_state_holding_cell_fails_loudly(self) -> None:
+        with self.assertRaises(sequential_overlay.UnsupportedCell) as cm:
+            self.build({
+                "$r": reg("$dff", {"CLK": [2], "D": [13], "Q": [13]}, {"CLK_POLARITY": 1, "WIDTH": 1}),
+                "$l": reg("$dlatch", {"EN": [4], "D": D, "Q": Q}, {"EN_POLARITY": 1, "WIDTH": 4}),
+            })
+        self.assertIn("$dlatch x1", str(cm.exception))
 
     def test_constant_d_bits_and_missing_names(self) -> None:
         r = self.build({"$q": reg("$dff", {"CLK": [2], "D": ["0", 77, 7, 8], "Q": Q},

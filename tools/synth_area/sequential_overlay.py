@@ -11,9 +11,10 @@ paths start and end, so this file makes those boundaries explicit and names them
 labels use the same `name[idx]` convention as boolean_graph.json DFF nodes, so the two files
 join on that label.
 
-Only RTLIL register cells are accepted (`$dff`, `$adff`, `$sdff`, `$aldff`, `$dffsr` and their
-enable variants); memories, latches and everything combinational are not this layer's job and
-are skipped by type, not by guessing. Output is deterministic: registers are ordered by
+Only RTLIL register cells are described (`$dff`, `$adff`, `$sdff`, `$aldff`, `$dffsr` and their
+enable variants). Combinational cells and memories are skipped by type; any other `$`-cell with a
+`Q` output (a latch, or a register type newer than this list) raises UnsupportedCell rather than
+vanishing from the overlay. Output is deterministic: registers are ordered by
 (Q signal, Yosys cell) and given ids `regNNNN`.
 """
 
@@ -87,14 +88,28 @@ def describe_reset(ctype: str, params: dict, sig: dict[str, str], width: int) ->
     return None
 
 
+def reset_controls(rs: dict | None) -> list[tuple[str, str, str]]:
+    """(signal, kind, active) of every control net a register's reset uses: one for plain resets, the
+    `set` and `clear` nets separately (kinds `async_set` / `async_clear`) for `$dffsr*`."""
+    if rs is None:
+        return []
+    if "signal" in rs:
+        return [(rs["signal"], rs["kind"], rs["active"])]
+    return [(rs["set"]["signal"], "async_set", rs["set"]["active"]),
+            (rs["clear"]["signal"], "async_clear", rs["clear"]["active"])]
+
+
 def build_overlay(data: dict, top: str | None, src_base: Path | None = None) -> dict:
     top_name, mod = pick_module(data, top)
     names = bit_names(mod)
     inits = init_bits(mod)
     regs: list[dict] = []
+    unknown_state: Counter[str] = Counter()
     for cname, c in mod.get("cells", {}).items():
         ctype = c["type"]
         if ctype not in REGISTER_TYPES:
+            if ctype.startswith("$") and "Q" in c.get("connections", {}):
+                unknown_state[ctype] += 1
             continue
         params = {k: param_value(v) for k, v in c.get("parameters", {}).items()}
         conns = c.get("connections", {})
@@ -121,6 +136,9 @@ def build_overlay(data: dict, top: str | None, src_base: Path | None = None) -> 
             ],
             "src": normalize_src(c.get("attributes", {}).get("src"), src_base),
         })
+    if unknown_state:
+        listing = ", ".join(f"{t} x{n}" for t, n in sorted(unknown_state.items()))
+        raise UnsupportedCell(f"state-holding cells the sequential overlay cannot describe: {listing}")
     regs.sort(key=lambda r: (r["q"], r["yosys_cell"]))
     for i, r in enumerate(regs):
         r["id"] = f"reg{i:04d}"
@@ -135,9 +153,8 @@ def build_overlay(data: dict, top: str | None, src_base: Path | None = None) -> 
     for r in regs:
         clk = r["clock"]
         tally(clocks, (clk["signal"], clk["edge"]), clk, r["width"])
-        rs = r["reset"]
-        if rs and "signal" in rs:
-            fields = {"signal": rs["signal"], "kind": rs["kind"], "active": rs["active"]}
+        for signal, kind, active in reset_controls(r["reset"]):
+            fields = {"signal": signal, "kind": kind, "active": active}
             tally(resets, tuple(fields.values()), fields, r["width"])
     kinds = Counter((r["reset"] or {}).get("kind", "none") for r in regs)
     return {
