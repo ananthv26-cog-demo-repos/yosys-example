@@ -17,6 +17,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 HERE = Path(__file__).resolve().parent
 TOOL = HERE.parent
@@ -92,6 +93,73 @@ class BoolAreaFlowTests(unittest.TestCase):
         self.assertEqual(m["equivalence"]["status"], "proven")
         for chk in m["equivalence"]["checks"].values():
             self.assertGreaterEqual(chk["equiv_cells"], b["output_bits"])
+        # RTL vs graph needs the full induction depth; graph vs mapped (registers paired 1:1) is proven at 1
+        checks = m["equivalence"]["checks"]
+        self.assertEqual((checks["rtl_vs_graph"]["seq"], checks["graph_vs_mapped"]["seq"]), (5, 1))
+        self.assertIn("equiv_induct -seq 1", (out / "equiv_graph_vs_mapped.ys").read_text())
+        self.assertEqual(checks["graph_vs_mapped"]["log"], str(out / "equiv_graph_vs_mapped.log"))
+        self.assertFalse(list(out.glob("equiv_*_seq*")), "no retry happened, so no kept short attempt")
+
+    def flow_with_mapped_seq1_unproven(self, out: Path, *extra: str) -> tuple[int, dict, list[int]]:
+        """Run and2 in-process with graph-vs-mapped `-seq 1` faked to leave every cell unproven."""
+        real, seqs = bool_area.run_yosys, []
+
+        def fake(yosys: str, script: str, script_path: Path, log_path: Path, timeout: int):
+            if "read_liberty" in script and "equiv_induct" in script:
+                seqs.append(int(script.split("equiv_induct -seq ")[1].split()[0]))
+                if seqs[-1] == 1:
+                    script_path.write_text(script)
+                    log_path.write_text("Found 3 $equiv cells in 1 modules.\n"
+                                        "  Of those cells 0 are proven and 3 are unproven.\n"
+                                        "ERROR: Found 3 unproven $equiv cells!\n")
+                    return False, log_path.read_text(), 0.25
+            return real(yosys, script, script_path, log_path, timeout)
+
+        with mock.patch.object(bool_area, "run_yosys", fake):
+            code = bool_area.main([str(CORPUS / "and2.sv"), "--top", "and2", "-o", str(out), "-q", "--sim-cycles", "0",
+                                   *extra])
+        return code, json.loads((out / "metrics.json").read_text()), seqs
+
+    def test_mapped_proof_retries_at_full_depth_when_short_induction_leaves_cells_unproven(self) -> None:
+        out = self.tmp / "retry"
+        code, m, seqs = self.flow_with_mapped_seq1_unproven(out)
+        self.assertEqual(code, 0, m["errors"])
+        self.assertEqual(seqs, [1, 5])
+        chk = m["equivalence"]["checks"]["graph_vs_mapped"]
+        self.assertEqual((chk["status"], chk["seq"], chk["unproven"]), ("proven", 5, 0))
+        self.assertGreater(chk["seconds"], 0.25, "seconds covers both attempts")
+        self.assertEqual(m["timing"]["equiv_graph_vs_mapped_seconds"], chk["seconds"])
+        self.assertTrue(any("3 cells not proven by -seq 1" in w and "retrying at -seq 5" in w for w in m["warnings"]),
+                        m["warnings"])
+        self.assertEqual(m["equivalence"]["status"], "proven")
+        # the short attempt is kept beside the deeper one that replaced it, and both are flow-owned outputs
+        self.assertIn("3 are unproven", (out / "equiv_graph_vs_mapped_seq1.log").read_text())
+        self.assertIn("equiv_induct -seq 1", (out / "equiv_graph_vs_mapped_seq1.ys").read_text())
+        self.assertIn("equiv_induct -seq 5", (out / "equiv_graph_vs_mapped.ys").read_text())
+        self.assertEqual(chk["log"], str(out / "equiv_graph_vs_mapped.log"))
+        owned = {p.name for p in bool_area.owned_files(out)}
+        self.assertTrue({"equiv_graph_vs_mapped_seq1.ys", "equiv_graph_vs_mapped_seq1.log"} <= owned, owned)
+        # RTL vs graph is unaffected: one attempt at the configured depth
+        self.assertEqual(m["equivalence"]["checks"]["rtl_vs_graph"]["seq"], 5)
+        self.assertFalse(list(out.glob("equiv_rtl_vs_graph_seq*")))
+
+    def test_mapped_short_induction_can_be_skipped_or_is_the_only_attempt(self) -> None:
+        code, m, seqs = self.flow_with_mapped_seq1_unproven(self.tmp / "skip", "--equiv-mapped-seq", "0")
+        self.assertEqual(code, 0, m["errors"])
+        self.assertEqual(seqs, [5])
+        self.assertEqual(m["equivalence"]["checks"]["graph_vs_mapped"]["seq"], 5)
+        self.assertFalse(list((self.tmp / "skip").glob("equiv_*_seq*")))
+        # equal depths run once; a short depth that fails with no deeper one to fall back to fails closed
+        code, m, seqs = self.flow_with_mapped_seq1_unproven(self.tmp / "same", "--equiv-seq", "1", "--equiv-bmc", "0")
+        self.assertEqual(seqs, [1])
+        self.assertEqual((code, m["stage"], m["equivalence"]["checks"]["graph_vs_mapped"]["status"]),
+                         (1, "equivalence", "failed"))
+
+    def test_equiv_depths_are_validated(self) -> None:
+        for bad in (("--equiv-seq", "0"), ("--equiv-mapped-seq", "-1")):
+            code, _, err = run_flow(self.tmp / "bad", "and2", [CORPUS / "and2.sv"], *bad)
+            self.assertEqual(code, 2, bad)
+            self.assertIn("--equiv-seq must be at least 1", err)
 
     def test_determinism(self) -> None:
         for d in ("a", "b"):

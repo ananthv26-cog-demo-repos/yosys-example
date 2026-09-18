@@ -73,6 +73,10 @@ Two checks, both with Yosys' SAT-based `equiv_*` passes on the flattened designs
    with the ASAP7 cells expanded from their Liberty functions. Flop `Q` wires carry a
    `keep` attribute through mapping so registers pair by name; that costs a few inverters
    (a `QN`-only cell followed by an `INV`) and is the price of a wire-for-wire proof.
+   Because every register is paired, `-seq 1` induction is normally enough here, so it is
+   tried first (`--equiv-mapped-seq`, default 1) and only cells it leaves unproven are
+   retried at `--equiv-seq`; `checks.graph_vs_mapped.seq` records the depth that closed the
+   proof and a kept `equiv_graph_vs_mapped_seq1.{ys,log}` marks a retry.
 
 `equiv_status -assert` must report zero unproven cells **and** at least as many `$equiv`
 cells as there are output bits (a guard against the two designs silently not being

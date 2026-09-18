@@ -428,6 +428,9 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--slang-arg", action="append", default=[], metavar="ARG", help="extra read_slang option")
     ap.add_argument("--no-equiv", action="store_true", help="skip the formal equivalence checks")
     ap.add_argument("--equiv-seq", type=int, default=5, help="induction / unrolling depth for equiv passes")
+    ap.add_argument("--equiv-mapped-seq", type=int, default=1,
+                    help="induction depth tried first for graph vs mapped, where every register is paired by name "
+                         "and 1 usually suffices; anything left unproven is retried at --equiv-seq (0: skip the short try)")
     ap.add_argument("--equiv-bmc", type=int, default=10,
                     help="cycles for the bounded-from-reset fallback proof when induction fails (>= 2: cycle 1 is "
                          "the reset cycle and is not compared); 0 disables")
@@ -446,6 +449,8 @@ def main(argv: list[str] | None = None) -> int:
     args = ap.parse_args(argv)
     if not IDENT_RE.match(args.top):
         ap.error(f"--top must be a plain module identifier, got {args.top!r}")
+    if args.equiv_seq < 1 or args.equiv_mapped_seq < 0:
+        ap.error("--equiv-seq must be at least 1 and --equiv-mapped-seq at least 0")
     if args.equiv_bmc < 0 or args.equiv_bmc == 1:
         ap.error("--equiv-bmc must be 0 (disabled) or at least 2: cycle 1 is the reset cycle and is skipped, "
                  "so a depth of 1 would compare no outputs")
@@ -704,15 +709,32 @@ def main(argv: list[str] | None = None) -> int:
             sim_resets = dict(sim_reset_args or {})
             metrics["warnings"].append(f"bounded-proof reset classification unavailable: {e}")
         eq: dict = {"status": "proven",
-                    "method": f"yosys equiv_make + equiv_simple/equiv_induct -seq {args.equiv_seq}; "
+                    "method": f"yosys equiv_make + equiv_simple/equiv_induct -seq {args.equiv_seq} "
+                              f"(graph vs mapped: -seq {args.equiv_mapped_seq} first); "
                               f"fallback: miter + sat -seq {args.equiv_bmc} from reset",
                     "checks": {}}
+        # graph vs mapped tries the short induction first; only cells it leaves unproven justify the deeper one
+        depths = {"rtl_vs_graph": [args.equiv_seq],
+                  "graph_vs_mapped": list(dict.fromkeys(d for d in (args.equiv_mapped_seq, args.equiv_seq) if d))}
         for name, setup in setups.items():
-            ok, log_text, secs = run_yosys(yosys, equiv_induct_script(setup, args.equiv_seq), out_dir / f"equiv_{name}.ys",
-                                           out_dir / f"equiv_{name}.log", args.timeout)
-            status = parse_equiv_status(log_text)
-            status["seconds"] = secs
-            status["log"] = str(out_dir / f"equiv_{name}.log")
+            secs = 0.0
+            ys, log = out_dir / f"equiv_{name}.ys", out_dir / f"equiv_{name}.log"
+            for i, seq in enumerate(depths[name]):
+                ok, log_text, run_secs = run_yosys(yosys, equiv_induct_script(setup, seq), ys, log, args.timeout)
+                secs += run_secs
+                status = parse_equiv_status(log_text)
+                status["seq"] = seq
+                status["log"] = str(log)
+                if ok or not status["unproven"] or i == len(depths[name]) - 1:
+                    break
+                try:  # keep the short attempt's script/log beside the deeper one that replaces it
+                    for p in (ys, log):
+                        p.replace(p.with_name(f"equiv_{name}_seq{seq}{p.suffix}"))
+                except OSError as e:
+                    return fail("artifacts", f"could not keep equiv_{name} -seq {seq} attempt: {e}")
+                metrics["warnings"].append(f"equivalence {name}: {status['unproven']} cells not proven by -seq {seq} "
+                                           f"induction in {run_secs} s; retrying at -seq {depths[name][i + 1]}")
+            status["seconds"] = round(secs, 3)
             status["status"] = "proven" if ok and status["unproven"] == 0 else "failed"
             if not ok and status["unproven"] is None:
                 status["error"] = first_error(log_text, "equivalence run failed (see log)")
