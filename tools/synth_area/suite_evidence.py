@@ -267,8 +267,11 @@ def load_baseline(path: Path) -> dict:
 def write_atomic(path: Path, text: str) -> None:
     """An interrupted run must leave the previous rollup, not half of a new one."""
     tmp = path.with_suffix(f"{path.suffix}.{os.getpid()}.tmp")  # two runs must not share a scratch file
-    tmp.write_text(text)
-    tmp.replace(path)
+    try:
+        tmp.write_text(text)
+        tmp.replace(path)
+    finally:
+        tmp.unlink(missing_ok=True)  # a failed write must not leave scratch behind either
 
 
 def write(results: list[dict], out_dir: Path, baseline: dict | None = None) -> dict:
