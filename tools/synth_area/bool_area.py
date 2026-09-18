@@ -438,18 +438,30 @@ def main(argv: list[str] | None = None) -> int:
                        "boolean_graph": GRAPH_SCHEMA_VERSION, "mapped_cells": MAPPED_SCHEMA_VERSION,
                        "metrics": METRICS_SCHEMA_VERSION}
 
+    def write_reports() -> bool:
+        """metrics.json, then summary.md, then the manifest (it hashes the other two). A report that
+        cannot be written marks the run failed/artifacts and the others are still attempted."""
+        out["metrics"].write_text(json.dumps(metrics, indent=2) + "\n")
+        ok = True
+        for key, render in (("summary", lambda: render_summary(metrics)),
+                            ("manifest", lambda: json.dumps(build_manifest(
+                                metrics, out, sys.argv if argv is None else [sys.argv[0], *argv], schema_versions),
+                                indent=1) + "\n")):
+            try:
+                out[key].write_text(render())
+            except OSError as e:
+                metrics["status"], metrics["stage"] = "failed", "artifacts"
+                msg = f"could not write {ARTIFACTS[key]}: {e}"
+                if msg not in metrics["errors"]:
+                    metrics["errors"].append(msg)
+                ok = False
+        return ok
+
     def finish(code: int) -> int:
         metrics["wall_seconds"] = round(time.time() - t_start, 3)
-        out["metrics"].write_text(json.dumps(metrics, indent=2) + "\n")
-        try:  # the manifest hashes every other artifact, so metrics.json and summary.md come first
-            out["summary"].write_text(render_summary(metrics))
-            manifest = build_manifest(metrics, out, sys.argv if argv is None else [sys.argv[0], *argv], schema_versions)
-            out["manifest"].write_text(json.dumps(manifest, indent=1) + "\n")
-        except OSError as e:
-            metrics["status"], metrics["stage"] = "failed", "artifacts"
-            metrics["errors"].append(f"could not write run_manifest.json / summary.md: {e}")
-            out["metrics"].write_text(json.dumps(metrics, indent=2) + "\n")
+        if not write_reports():
             code = code or 1
+            write_reports()  # second pass: every report that can still be written now says failed/artifacts
         if not args.quiet:
             if metrics["status"] == "ok":
                 b, m = metrics["boolean"], metrics["mapped"]

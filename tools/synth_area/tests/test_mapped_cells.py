@@ -274,6 +274,29 @@ class MappedCellsFlowTests(unittest.TestCase):
         self.assertFalse(man["layers"]["mapped_cells"]["present"])
         self.assertIn("## Errors", (out / "summary.md").read_text())
 
+    def test_unwritable_report_fails_the_run_and_the_other_reports_say_so(self) -> None:
+        """A directory squatting on summary.md (or run_manifest.json) survives the output purge and makes
+        that write fail: the exit code, metrics.json and whichever report still can be written all agree."""
+        for blocked, other in (("summary.md", "run_manifest.json"), ("run_manifest.json", "summary.md")):
+            out = self.tmp / f"blocked_{blocked}"
+            (out / blocked).mkdir(parents=True)
+            proc = subprocess.run([sys.executable, str(TOOL / "bool_area.py"), str(CORPUS / "inv.sv"), "--top", "inv",
+                                   "-o", str(out), "-q", "--no-equiv", "--sim-cycles", "0"],
+                                  capture_output=True, text=True, check=False)
+            self.assertEqual(proc.returncode, 1, blocked)
+            m = json.loads((out / "metrics.json").read_text())
+            self.assertEqual((m["status"], m["stage"]), ("failed", "artifacts"))
+            self.assertEqual(len(m["errors"]), 1, m["errors"])
+            self.assertIn(f"could not write {blocked}", m["errors"][0])
+            text = (out / other).read_text()
+            self.assertIn("failed", text)
+            self.assertIn(f"could not write {blocked}", text)
+            if other == "run_manifest.json":
+                man = json.loads(text)
+                self.assertEqual(man["artifacts"]["summary"], {"path": str(out / "summary.md"), "exists": False})
+                self.assertEqual(man["artifacts"]["metrics"]["sha256"],
+                                 hashlib.sha256((out / "metrics.json").read_bytes()).hexdigest())
+
 
 if __name__ == "__main__":
     unittest.main()
