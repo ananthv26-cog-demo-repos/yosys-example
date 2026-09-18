@@ -25,6 +25,15 @@
     ]
   },
   "script": {
+    "word": [
+      "hierarchy -check -top {top}",
+      "proc",
+      "flatten",
+      "opt_clean",
+      "opt_dff",
+      "opt_clean",
+      "write_json {word_json}"
+    ],
     "lower": [
       "hierarchy -check -top {top}",
       "synth -top {top} -flatten",

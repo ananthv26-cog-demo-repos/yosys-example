@@ -4,11 +4,14 @@ bool_area: Yosys Boolean-layer area prototype, v1 flow.
 
     bool_area.py fifo.sv [pkg.sv ...] --top fifo -o out/fifo/
 
-    SystemVerilog --slang--> generic one-bit Boolean gates --dfflibmap/abc--> ASAP7 cells
-                             (NOT AND NAND OR NOR XOR XNOR MUX + DFF)
+    SystemVerilog --slang--> word-level RTLIL --synth/abc--> generic one-bit Boolean gates
+                  --dfflibmap/abc--> ASAP7 cells      (NOT AND NAND OR NOR XOR XNOR MUX + DFF)
 
 Writes into the output directory:
 
+    word_yosys.json      write_json after `proc; flatten; opt_dff` (multi-bit RTLIL cells)
+    word_level.json      word-level operations (ADD/EQ/MUX/REG/MEMRD ...), widths, signedness,
+                         operand signals, memories, source locations
     generic_yosys.json   write_json of the generic Boolean-gate netlist
     mapped_yosys.json    write_json of the ASAP7-mapped netlist
     mapped_netlist.v     same, as structural Verilog
@@ -53,6 +56,7 @@ from synth_area import (
     summarize_stats,
     tool_version,
 )
+from word_level import WORD_SCHEMA_VERSION, build_report
 
 METRICS_SCHEMA_VERSION = 2
 HERE = Path(__file__).resolve().parent
@@ -62,6 +66,10 @@ FRONTENDS = ("slang", "sv2v", "verilog")
 LIBERTY_READ_FLAGS = "-ignore_miss_func -ignore_miss_dir -ignore_miss_data_latch"
 
 ARTIFACTS = {
+    "word_script": "word.ys",
+    "word_log": "word.log",
+    "word_json": "word_yosys.json",
+    "word": "word_level.json",
     "generic_json": "generic_yosys.json",
     "mapped_json": "mapped_yosys.json",
     "netlist": "mapped_netlist.v",
@@ -110,8 +118,9 @@ PROFILE_SCHEMA = {
     "name": str, "version": (int, str), "frontend": dict, "boolean_gates": list, "abc_gates": str,
     "dff_types": list, "liberty": dict, "script": dict,
 }
-SCRIPT_PLACEHOLDERS = ("top", "abc_gates", "dfflegalize_cells", "liberty_args", "generic_json", "mapped_json",
-                       "netlist", "stat_json", "stat_txt")
+SCRIPT_PLACEHOLDERS = ("top", "abc_gates", "dfflegalize_cells", "liberty_args", "word_json", "generic_json",
+                       "mapped_json", "netlist", "stat_json", "stat_txt")
+SCRIPT_STAGES = ("word", "lower", "map")
 
 
 def all_strings(v: object) -> bool:
@@ -156,7 +165,7 @@ def load_profile(name_or_path: str) -> tuple[dict, Path]:
     for key in ("boolean_gates", "dff_types"):
         if not all_strings(profile[key]):
             raise FlowError("profile", f"profile {p}: {key!r} must be a list of strings")
-    for key in ("lower", "map"):
+    for key in SCRIPT_STAGES:
         cmds = profile["script"].get(key)
         if not all_strings(cmds):
             raise FlowError("profile", f"profile {p}: script.{key} must be a list of yosys command strings")
@@ -195,19 +204,30 @@ def render(lines: list[str], **subst: str) -> list[str]:
     return [ln.format(**subst) for ln in lines]
 
 
-def synth_script(profile: dict, read_cmd: str, top: str, libs: list[Path], out: dict[str, Path]) -> str:
+def script_subst(profile: dict, top: str, libs: list[Path], out: dict[str, Path]) -> dict[str, str]:
     liberty_args = " ".join(f"-liberty {shlex.quote(str(p))}" for p in libs)
-    subst = {
+    return {
         "top": top,
         "abc_gates": profile["abc_gates"],
         "dfflegalize_cells": " ".join(f"-cell {t} 01" for t in profile["dff_types"]),
         "liberty_args": liberty_args,
+        "word_json": shlex.quote(str(out["word_json"])),
         "generic_json": shlex.quote(str(out["generic_json"])),
         "mapped_json": shlex.quote(str(out["mapped_json"])),
         "netlist": shlex.quote(str(out["netlist"])),
         "stat_json": shlex.quote(str(out["stat_json"])),
         "stat_txt": shlex.quote(str(out["stat_txt"])),
     }
+
+
+def word_script(profile: dict, read_cmd: str, top: str, libs: list[Path], out: dict[str, Path]) -> str:
+    """Separate yosys run: the word-level checkpoint must not perturb the Boolean/mapped results."""
+    subst = script_subst(profile, top, libs, out)
+    return "\n".join([read_cmd, *render(profile["script"]["word"], **subst)]) + "\n"
+
+
+def synth_script(profile: dict, read_cmd: str, top: str, libs: list[Path], out: dict[str, Path]) -> str:
+    subst = script_subst(profile, top, libs, out)
     lines = [read_cmd, *render(profile["script"]["lower"], **subst), *render(profile["script"]["map"], **subst)]
     return "\n".join(lines) + "\n"
 
@@ -510,15 +530,25 @@ def main(argv: list[str] | None = None) -> int:
         metrics["frontend"]["slang_args"] = slang_args
     read_cmd = read_cmd_for(frontend, read_sources, includes, defines, args.top, slang_args)
 
-    # --- 1. synthesis: RTL -> generic gates -> ASAP7 (single yosys run) ---
-    for stale in ("generic_json", "mapped_json", "netlist", "stat_json", "stat_txt"):
+    # --- 1a. word-level checkpoint: RTL -> proc/flatten/opt_dff -> write_json (own yosys run) ---
+    for stale in ("word_json", "generic_json", "mapped_json", "netlist", "stat_json", "stat_txt"):
         if out[stale].exists():
             out[stale].unlink()
+    ok, log_text, secs = run_yosys(yosys, word_script(profile, read_cmd, args.top, libs, out), out["word_script"],
+                                   out["word_log"], args.timeout)
+    metrics["timing"]["word_seconds"] = secs
+    warnings, _ = extract_yosys_diagnostics(log_text)
+    metrics["warnings"].extend(warnings)
+    if not ok or not out["word_json"].exists():
+        stage = "parse" if "Executing PROC pass" not in log_text else "word"
+        return fail(stage, first_error(log_text, "yosys failed during word-level elaboration (see word.log)"))
+
+    # --- 1b. synthesis: RTL -> generic gates -> ASAP7 (single yosys run) ---
     ok, log_text, secs = run_yosys(yosys, synth_script(profile, read_cmd, args.top, libs, out), out["script"],
                                    out["log"], args.timeout)
     metrics["timing"]["synth_seconds"] = secs
     warnings, _ = extract_yosys_diagnostics(log_text)
-    metrics["warnings"].extend(warnings)
+    metrics["warnings"].extend(w for w in warnings if w not in metrics["warnings"])
     if not ok or not out["generic_json"].exists():
         stage = "parse" if not out["generic_json"].exists() and "write_json" not in log_text else "lowering"
         if "Executing Liberty frontend" in log_text or "DFFLIBMAP" in log_text:
@@ -527,7 +557,17 @@ def main(argv: list[str] | None = None) -> int:
     if not out["mapped_json"].exists() or not out["stat_json"].exists():
         return fail("mapping", first_error(log_text, "mapping did not produce mapped_yosys.json / stat.json"))
 
-    # --- 2. Boolean graph + structural metrics ---
+    # --- 2a. word-level operations (before any bit-level mapping) ---
+    try:
+        word = build_report(json.loads(out["word_json"].read_text()), args.top, src_base=out_dir)
+        out["word"].write_text(json.dumps(word, indent=1) + "\n")
+    except UnsupportedCell as e:
+        return fail("word", str(e))
+    except (ValueError, KeyError) as e:
+        return fail("word", f"could not build word-level report: {e}")
+    metrics["word_level"] = {"schema_version": WORD_SCHEMA_VERSION, **word["summary"]}
+
+    # --- 2b. Boolean graph + structural metrics ---
     try:
         graph = build_graph(json.loads(out["generic_json"].read_text()), args.top, set(profile["dff_types"]))
         out["graph"].write_text(json.dumps(graph, indent=1) + "\n")
