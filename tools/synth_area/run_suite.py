@@ -17,21 +17,28 @@ manifest's own options, so they win where bool_area.py takes the last value (e.g
 
 `expect` values are compared exactly against `metrics.json` -> `summary`; `expect_max`
 gives upper bounds. Any block whose flow fails or whose expectations do not hold makes the
-suite exit nonzero. A `suite_summary.json` and a Markdown table are written to the
-output directory so the numbers can be pasted into a report.
+suite exit nonzero. `suite_summary.json`, a Markdown table, and the reviewer rollup
+(`suite_evidence.json` / `EVIDENCE.md`, one line per PRD success criterion) are written to
+the output directory so the numbers can be pasted into a report.
+
+Blocks are independent processes, so `-j` runs them concurrently (`-j0` = one per core);
+output files stay in manifest order regardless.
 """
 
 from __future__ import annotations
 
 import argparse
 import json
+import os
 import subprocess
 import sys
 import time
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
+import suite_evidence
 from bool_area import purge_outputs
 
 TABLE_COLS = ("gate_total", "dff", "edge_total", "max_depth", "max_fanout", "mapped_cell_total", "mapped_cell_area")
@@ -108,6 +115,16 @@ def run_block(entry: dict, out_dir: Path, extra: list[str], python: str) -> dict
     return res
 
 
+def block_detail(r: dict) -> str:
+    s = r["summary"]
+    detail = (f"gates={s['gate_total']} dffs={s['dff']} depth={s['max_depth']} cells={s['mapped_cell_total']} "
+              f"area={s['mapped_cell_area']}") if r["status"] == "ok" else "; ".join(r["errors"])[:200]
+    bad = [c for c in r["checks"] if not c["passed"]]
+    if bad:
+        detail += " | expectation failed: " + ", ".join(f"{c['key']} {c['op']} {c['want']} (got {c['got']})" for c in bad)
+    return detail
+
+
 def markdown_table(results: list[dict]) -> str:
     head = ["block", "status", "equiv", "sim", *TABLE_COLS, "checks", "s"]
     lines = ["| " + " | ".join(head) + " |", "|" + "---|" * len(head)]
@@ -124,6 +141,9 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("manifest", nargs="?", default=str(HERE / "corpus" / "suite.json"))
     ap.add_argument("-o", "--out-dir", required=True)
     ap.add_argument("--only", action="append", default=[], help="run only these block names")
+    ap.add_argument("-j", "--jobs", type=int, default=1,
+                    help="blocks to run concurrently (0 = one per core); each block is its own process")
+    ap.add_argument("--baseline", help="an earlier suite_evidence.json to check layer files against for determinism")
     ap.add_argument("--python", default=sys.executable)
     ap.add_argument("extra", nargs="*", help="extra arguments passed to bool_area.py (after --)")
     argv = sys.argv[1:] if argv is None else list(argv)
@@ -143,24 +163,34 @@ def main(argv: list[str] | None = None) -> int:
     unknown = sorted(set(args.only or []) - {e["name"] for e in manifest["blocks"]})
     if unknown:
         ap.error(f"--only names not in the manifest: {', '.join(unknown)}")
-    results = []
-    for e in entries:
+    if args.jobs < 0:
+        ap.error("--jobs must be 0 (one per core) or a positive number of blocks")
+    jobs = max(1, min(args.jobs or (os.cpu_count() or 1), len(entries) or 1))
+
+    def run_and_report(e: dict) -> dict:
         r = run_block(e, out_dir, args.extra, args.python)
-        results.append(r)
-        flag = "ok  " if r["passed"] else "FAIL"
-        s = r["summary"]
-        detail = (f"gates={s['gate_total']} dffs={s['dff']} depth={s['max_depth']} cells={s['mapped_cell_total']} "
-                  f"area={s['mapped_cell_area']}") if r["status"] == "ok" else "; ".join(r["errors"])[:200]
-        bad = [c for c in r["checks"] if not c["passed"]]
-        if bad:
-            detail += " | expectation failed: " + ", ".join(f"{c['key']} {c['op']} {c['want']} (got {c['got']})" for c in bad)
-        print(f"[suite] {flag} {r['name']:<22} {detail} ({r['seconds']}s)")
+        print(f"[suite] {'ok  ' if r['passed'] else 'FAIL'} {r['name']:<22} {block_detail(r)} ({r['seconds']}s)",
+              flush=True)
+        return r
+
+    t0 = time.time()
+    if jobs == 1:
+        results = [run_and_report(e) for e in entries]
+    else:
+        with ThreadPoolExecutor(max_workers=jobs) as pool:  # each block is a subprocess; threads only wait on them
+            results = list(pool.map(run_and_report, entries))
     passed = sum(r["passed"] for r in results)
     summary = {"manifest": str(manifest_path), "blocks": len(results), "passed": passed,
-               "failed": len(results) - passed, "results": results}
+               "failed": len(results) - passed, "jobs": jobs, "wall_seconds": round(time.time() - t0, 3),
+               "results": results}
     (out_dir / "suite_summary.json").write_text(json.dumps(summary, indent=2) + "\n")
     (out_dir / "suite_table.md").write_text(markdown_table(results))
-    print(f"[suite] {passed}/{len(results)} blocks passed -> {out_dir / 'suite_summary.json'}")
+    evidence = suite_evidence.write(results, out_dir, Path(args.baseline).resolve() if args.baseline else None)
+    for c in evidence["criteria"]:
+        if c["ok"] is not True:
+            print(f"[suite] criterion {'UNKNOWN' if c['ok'] is None else 'FAILED'}: {c['id']} — {c['measured']}")
+    print(f"[suite] {passed}/{len(results)} blocks passed in {summary['wall_seconds']}s (-j{jobs}), "
+          f"{evidence['criteria_passed']}/{evidence['criteria_total']} criteria -> {out_dir / 'EVIDENCE.md'}")
     return 0 if passed == len(results) else 1
 
 

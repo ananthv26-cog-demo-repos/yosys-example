@@ -82,6 +82,27 @@ class SuiteRunnerTests(unittest.TestCase):
             self.assertEqual(by["and2_wrong"]["checks"][0]["got"], 1)
             table = (tmp / "out" / "suite_table.md").read_text()
             self.assertIn("| inv | PASS |", table)
+            evidence = json.loads((tmp / "out" / "suite_evidence.json").read_text())
+            by_id = {c["id"]: c for c in evidence["criteria"]}
+            # the two-block throwaway manifest cannot satisfy the corpus-wide criteria, but the
+            # per-run ones must hold and the layers must be there
+            self.assertTrue(by_id["all_layers"]["ok"], by_id["all_layers"])
+            self.assertTrue(by_id["asap7_area"]["ok"], by_id["asap7_area"])
+            self.assertFalse(by_id["blocks_pass"]["ok"])
+            self.assertFalse(by_id["fifo_variants"]["ok"])
+            self.assertIsNone(by_id["determinism"]["ok"])
+            self.assertIn("PASS", (tmp / "out" / "EVIDENCE.md").read_text())
+            # rerunning the same blocks against that evidence proves the layer files are reproducible
+            proc = subprocess.run([sys.executable, str(SUITE), str(manifest), "-o", str(tmp / "out2"),
+                                   "--baseline", str(tmp / "out" / "suite_evidence.json"), "-j", "2", "--",
+                                   "--sim-cycles", "0"], capture_output=True, text=True, check=False)
+            self.assertEqual(proc.returncode, 1, proc.stdout + proc.stderr)  # and2_wrong still fails its expectation
+            rerun = json.loads((tmp / "out2" / "suite_evidence.json").read_text())
+            det = {c["id"]: c for c in rerun["criteria"]}["determinism"]
+            self.assertTrue(det["ok"], det)
+            self.assertEqual([r["name"] for r in
+                              json.loads((tmp / "out2" / "suite_summary.json").read_text())["results"]],
+                             ["inv", "and2_wrong"], "-j must not reorder the results")
             # a selection with a name the manifest does not have is a usage error, even next to valid names
             for only in (["--only", "typo"], ["--only", "inv", "--only", "typo"]):
                 proc = subprocess.run([sys.executable, str(SUITE), str(manifest), "-o", str(tmp / "none"), *only],
