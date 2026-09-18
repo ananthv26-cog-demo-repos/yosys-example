@@ -1,0 +1,217 @@
+{
+ "schema_version": 1,
+ "top": "sync_fifo",
+ "status": "ok",
+ "stage": "done",
+ "generated_by": {
+  "tool": "bool_area.py",
+  "argv": [
+   "tools/synth_area/bool_area.py",
+   "tools/synth_area/examples/sync_fifo.sv",
+   "--top",
+   "sync_fifo",
+   "-o",
+   "<out>"
+  ],
+  "python": "3.12.13",
+  "yosys": "<repo>/build/yosys",
+  "yosys_version": "Yosys 0.69+ (git sha1 150c32b03, Release, GNU /usr/bin/g++-11 11.4.0) [github.com/ananthv26-cog-demo-repos/yosys-example at main]",
+  "sv2v_version": "sv2v v0.0.13"
+ },
+ "sources": [
+  {
+   "path": "<repo>/tools/synth_area/examples/sync_fifo.sv",
+   "sha256": "2c0460fe1659a9b67d2b476bed7d7403d3edacfb3ccfdf2689da07e750de3097"
+  }
+ ],
+ "profile": {
+  "name": "asap7_rvt_tt_v1",
+  "version": 2,
+  "path": "<repo>/tools/synth_area/profiles/asap7_rvt_tt_v1.json",
+  "sha256": "53f00dd357a390548114d0810bc9afa4e0e20e9f009a0e20c10ff35c4eefc464",
+  "liberty": [
+   {
+    "file": "asap7sc7p5t_AO_RVT_TT_nldm_211120.lib.gz",
+    "sha256": "fe9f1c18e88ab129d63ad82adc256f3a85c7e38e47dabbe0a96749b41087dea1"
+   },
+   {
+    "file": "asap7sc7p5t_INVBUF_RVT_TT_nldm_220122.lib.gz",
+    "sha256": "8d6db2c2f83c3c162be54a5e102b2d379fcaaaef2db5f0b1d4152c395d01fea1"
+   },
+   {
+    "file": "asap7sc7p5t_OA_RVT_TT_nldm_211120.lib.gz",
+    "sha256": "bbe6d904d58c7367de1ed7639e4eae386c65fa0a5af26ae62dc5e4e2ec52b08b"
+   },
+   {
+    "file": "asap7sc7p5t_SEQ_RVT_TT_nldm_220123.lib.gz",
+    "sha256": "99aa4415b6402a83e401f82ea930724ca1139274813a29eeafebd73591dd381a"
+   },
+   {
+    "file": "asap7sc7p5t_SIMPLE_RVT_TT_nldm_211120.lib.gz",
+    "sha256": "073ac4b6b08f272b6953b0ad54d1d9743767a7d15a0e2964ed86cf44c3dbe00e"
+   }
+  ],
+  "liberty_verified": true,
+  "boolean_gates": [
+   "NOT",
+   "AND",
+   "NAND",
+   "OR",
+   "NOR",
+   "XOR",
+   "XNOR",
+   "MUX"
+  ],
+  "dff_types": [
+   "$_DFF_P_",
+   "$_DFF_N_",
+   "$_DFF_PN0_",
+   "$_DFF_PN1_",
+   "$_DFF_PP0_",
+   "$_DFF_PP1_"
+  ]
+ },
+ "frontend": {
+  "name": "slang",
+  "slang_args": [
+   "--ignore-assertions",
+   "--ignore-initial",
+   "--ignore-timing"
+  ],
+  "include_dirs": [],
+  "defines": []
+ },
+ "layers": {
+  "word_level": {
+   "file": "word_level.json",
+   "schema_version": 1,
+   "present": true
+  },
+  "sequential_overlay": {
+   "file": "sequential_overlay.json",
+   "schema_version": 1,
+   "present": true
+  },
+  "boolean_graph": {
+   "file": "boolean_graph.json",
+   "schema_version": 1,
+   "present": true
+  },
+  "mapped_cells": {
+   "file": "mapped_cells.json",
+   "schema_version": 1,
+   "present": true
+  },
+  "metrics": {
+   "file": "metrics.json",
+   "schema_version": 2,
+   "present": true
+  }
+ },
+ "artifacts": {
+  "generic_json": {
+   "path": "<out>/generic_yosys.json",
+   "exists": true,
+   "bytes": 991090,
+   "sha256": "40bd69689f2ce2f9a30201deaee5cfd2e072fa853d1903de704ba5066a9cdc4f"
+  },
+  "graph": {
+   "path": "<out>/boolean_graph.json",
+   "exists": true,
+   "bytes": 679015,
+   "sha256": "939a24f1099a7b487d9e80462ba619533a5c43bbda8f0b6c1d87d3ab44d4f2ad"
+  },
+  "log": {
+   "path": "<out>/yosys.log",
+   "exists": true,
+   "bytes": 62752,
+   "sha256": "59cbb24438052039594f8bc1918b63e9c3bc66dc65cffd6252711d1c36dde559"
+  },
+  "mapped_cells": {
+   "path": "<out>/mapped_cells.json",
+   "exists": true,
+   "bytes": 1157834,
+   "sha256": "ad95065968e4623a3bcabdc3c06e890ccb164770be502c2cfc814690fcfa8cb2"
+  },
+  "mapped_json": {
+   "path": "<out>/mapped_yosys.json",
+   "exists": true,
+   "bytes": 1048723,
+   "sha256": "fb1e1d916f03f0cc246bfceb3169c6ca43ef43efc932421f0ef0fc6cd59794d1"
+  },
+  "metrics": {
+   "path": "<out>/metrics.json",
+   "exists": true,
+   "bytes": 9864,
+   "sha256": "574781ae3e675b5a8f133abc8063aabd901f285cc7b6aa6d771ad1dfc524c3db"
+  },
+  "netlist": {
+   "path": "<out>/mapped_netlist.v",
+   "exists": true,
+   "bytes": 263792,
+   "sha256": "185729afe1d6fc47d2aae8af39cf006beb15242cd5d12856e4ea142fc851a892"
+  },
+  "script": {
+   "path": "<out>/synth.ys",
+   "exists": true,
+   "bytes": 3055,
+   "sha256": "98808bd737b29bd51d2d460d17119236a07f033a36d2a4b4ea17157083fffca8"
+  },
+  "sequential": {
+   "path": "<out>/sequential_overlay.json",
+   "exists": true,
+   "bytes": 3098,
+   "sha256": "ea9384d0e87c2e59c33ae3ce2f1fbb27279f526d6e8d6fc77a204ac848bcca5c"
+  },
+  "stat_json": {
+   "path": "<out>/stat.json",
+   "exists": true,
+   "bytes": 5658,
+   "sha256": "912399f653e537154536ba9de8e9bfdd26180a0eae2ed2d522d63546d0df49da"
+  },
+  "stat_txt": {
+   "path": "<out>/stat.txt",
+   "exists": true,
+   "bytes": 2882,
+   "sha256": "3b749b4c29d831f9b96e87e659ba1518cf23d8b4ad2330236a477c6e2a53af6b"
+  },
+  "summary": {
+   "path": "<out>/summary.md",
+   "exists": true,
+   "bytes": 3034,
+   "sha256": "edd7f5640754c82acae0b4c2a66c0f5fb302852fe8ba154ddd8369938c1d325c"
+  },
+  "word": {
+   "path": "<out>/word_level.json",
+   "exists": true,
+   "bytes": 18142,
+   "sha256": "2a4d7a37251756d014e5fecd8f4637e1696c98c49332b941e1eaa28b2ae86ce3"
+  },
+  "word_json": {
+   "path": "<out>/word_yosys.json",
+   "exists": true,
+   "bytes": 28375,
+   "sha256": "976f87c0863c15ed7a82cd66047d499c359825db86c63841d9d827febf0c809d"
+  },
+  "word_log": {
+   "path": "<out>/word.log",
+   "exists": true,
+   "bytes": 4759,
+   "sha256": "bf844c40f3fe0af6483e0a52fc47509cbc15621c58c7c46b8be2ba93266ada79"
+  },
+  "word_script": {
+   "path": "<out>/word.ys",
+   "exists": true,
+   "bytes": 281,
+   "sha256": "02a17a6eb4125392bbf428dad102eded38a1c835ee754ee2a71e0cacc454830c"
+  }
+ },
+ "timing": {
+  "word_seconds": 0.009,
+  "synth_seconds": 1.51,
+  "equiv_rtl_vs_graph_seconds": 0.352,
+  "equiv_graph_vs_mapped_seconds": 7.13,
+  "sim_seconds": 0.686
+ },
+ "errors": []
+}

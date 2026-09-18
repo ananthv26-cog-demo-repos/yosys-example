@@ -33,8 +33,8 @@ module tb;
       end
     end
     cycle = cycle + 1;
-    en = $random(seed) & {1{1'b1}};
-    rst = (cycle < 4 || ($random(seed) & 63) == 0) ? 1'b1 : 1'b0;
+    en <= $random(seed) & {1{1'b1}};
+    rst <= (cycle < 4 || ($random(seed) & 63) == 0) ? 1'b1 : 1'b0;
     if (cycle == 200) begin
       $display("DIFFSIM cycles=%0d compared_bits=%0d mismatches=%0d gate_x_bits=%0d", cycle, compared_bits, mismatches, gate_x_bits);
       $finish;

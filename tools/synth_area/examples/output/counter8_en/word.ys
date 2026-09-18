@@ -1,0 +1,8 @@
+read_slang --top counter8_en --ignore-assertions --ignore-initial --ignore-timing <repo>/tools/synth_area/corpus/counter8_en.sv
+hierarchy -check -top counter8_en
+proc
+flatten
+opt_clean
+opt_dff
+opt_clean
+write_json <out>/word_yosys.json

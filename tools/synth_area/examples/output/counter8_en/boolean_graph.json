@@ -517,7 +517,7 @@
    "type": "DFF",
    "dff_type": "$_DFF_P_",
    "cell": "$auto$ff.cc:337:slice$89",
-   "src": "<repo>/tools/synth_area/corpus/counter8_en.sv:3.5",
+   "src": "../../repos/yosys-example/tools/synth_area/corpus/counter8_en.sv:3.5",
    "inputs": {
     "C": 0,
     "D": 24
@@ -531,7 +531,7 @@
    "type": "DFF",
    "dff_type": "$_DFF_P_",
    "cell": "$auto$ff.cc:337:slice$90",
-   "src": "<repo>/tools/synth_area/corpus/counter8_en.sv:3.5",
+   "src": "../../repos/yosys-example/tools/synth_area/corpus/counter8_en.sv:3.5",
    "inputs": {
     "C": 0,
     "D": 15
@@ -545,7 +545,7 @@
    "type": "DFF",
    "dff_type": "$_DFF_P_",
    "cell": "$auto$ff.cc:337:slice$91",
-   "src": "<repo>/tools/synth_area/corpus/counter8_en.sv:3.5",
+   "src": "../../repos/yosys-example/tools/synth_area/corpus/counter8_en.sv:3.5",
    "inputs": {
     "C": 0,
     "D": 36
@@ -559,7 +559,7 @@
    "type": "DFF",
    "dff_type": "$_DFF_P_",
    "cell": "$auto$ff.cc:337:slice$92",
-   "src": "<repo>/tools/synth_area/corpus/counter8_en.sv:3.5",
+   "src": "../../repos/yosys-example/tools/synth_area/corpus/counter8_en.sv:3.5",
    "inputs": {
     "C": 0,
     "D": 40
@@ -573,7 +573,7 @@
    "type": "DFF",
    "dff_type": "$_DFF_P_",
    "cell": "$auto$ff.cc:337:slice$93",
-   "src": "<repo>/tools/synth_area/corpus/counter8_en.sv:3.5",
+   "src": "../../repos/yosys-example/tools/synth_area/corpus/counter8_en.sv:3.5",
    "inputs": {
     "C": 0,
     "D": 27
@@ -587,7 +587,7 @@
    "type": "DFF",
    "dff_type": "$_DFF_P_",
    "cell": "$auto$ff.cc:337:slice$94",
-   "src": "<repo>/tools/synth_area/corpus/counter8_en.sv:3.5",
+   "src": "../../repos/yosys-example/tools/synth_area/corpus/counter8_en.sv:3.5",
    "inputs": {
     "C": 0,
     "D": 20
@@ -601,7 +601,7 @@
    "type": "DFF",
    "dff_type": "$_DFF_P_",
    "cell": "$auto$ff.cc:337:slice$95",
-   "src": "<repo>/tools/synth_area/corpus/counter8_en.sv:3.5",
+   "src": "../../repos/yosys-example/tools/synth_area/corpus/counter8_en.sv:3.5",
    "inputs": {
     "C": 0,
     "D": 33
@@ -615,7 +615,7 @@
    "type": "DFF",
    "dff_type": "$_DFF_P_",
    "cell": "$auto$ff.cc:337:slice$96",
-   "src": "<repo>/tools/synth_area/corpus/counter8_en.sv:3.5",
+   "src": "../../repos/yosys-example/tools/synth_area/corpus/counter8_en.sv:3.5",
    "inputs": {
     "C": 0,
     "D": 30

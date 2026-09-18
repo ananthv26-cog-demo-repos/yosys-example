@@ -709,6 +709,7 @@ Mapping DFF/DLATCH cells in module `\counter8_en':
   38 cells in clk={ }, en={ }, arst={ }, srst={ }
 
 10.2. Extracting gate netlist of module `\counter8_en' to `<abc-temp-dir>/input.blif'..
+ABC: using cached merged SCL: /tmp/yosys-liberty-scl-cache-1000/yosys_merged_04ff3f53.scl (5 files)
 No matching clock domain found. Not extracting any FF cells.
 
 10.2.1. Executed ABC.

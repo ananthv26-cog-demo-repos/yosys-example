@@ -1,0 +1,811 @@
+{
+ "schema_version": 1,
+ "top": "counter8_en",
+ "ports": {
+  "clk": {
+   "direction": "input",
+   "width": 1
+  },
+  "rst": {
+   "direction": "input",
+   "width": 1
+  },
+  "en": {
+   "direction": "input",
+   "width": 1
+  },
+  "count": {
+   "direction": "output",
+   "width": 8
+  }
+ },
+ "cells": [
+  {
+   "id": "cell0000",
+   "type": "A2O1A1Ixp33_ASAP7_75t_R",
+   "yosys_cell": "$abc$267$blif$267$8",
+   "area": 0.08748,
+   "pins": {
+    "A1": {
+     "direction": "input",
+     "net": "count[5]"
+    },
+    "A2": {
+     "direction": "input",
+     "net": "$abc$267$new_n26"
+    },
+    "B": {
+     "direction": "input",
+     "net": "count[6]"
+    },
+    "C": {
+     "direction": "input",
+     "net": "$abc$267$new_n19"
+    },
+    "Y": {
+     "direction": "output",
+     "net": "$abc$267$new_n27",
+     "function": "(!A1 * !B) + (!A2 * !B) + (!C)"
+    }
+   },
+   "src": null
+  },
+  {
+   "id": "cell0001",
+   "type": "AND3x1_ASAP7_75t_R",
+   "yosys_cell": "$abc$267$blif$267$1",
+   "area": 0.08748,
+   "pins": {
+    "A": {
+     "direction": "input",
+     "net": "en"
+    },
+    "B": {
+     "direction": "input",
+     "net": "count[0]"
+    },
+    "C": {
+     "direction": "input",
+     "net": "count[1]"
+    },
+    "Y": {
+     "direction": "output",
+     "net": "$abc$267$new_n20",
+     "function": "(A * B * C)"
+    }
+   },
+   "src": null
+  },
+  {
+   "id": "cell0002",
+   "type": "AND3x1_ASAP7_75t_R",
+   "yosys_cell": "$abc$267$blif$267$7",
+   "area": 0.08748,
+   "pins": {
+    "A": {
+     "direction": "input",
+     "net": "count[3]"
+    },
+    "B": {
+     "direction": "input",
+     "net": "count[4]"
+    },
+    "C": {
+     "direction": "input",
+     "net": "$abc$267$new_n21"
+    },
+    "Y": {
+     "direction": "output",
+     "net": "$abc$267$new_n26",
+     "function": "(A * B * C)"
+    }
+   },
+   "src": null
+  },
+  {
+   "id": "cell0003",
+   "type": "AND4x1_ASAP7_75t_R",
+   "yosys_cell": "$abc$267$blif$267$2",
+   "area": 0.10206,
+   "pins": {
+    "A": {
+     "direction": "input",
+     "net": "en"
+    },
+    "B": {
+     "direction": "input",
+     "net": "count[0]"
+    },
+    "C": {
+     "direction": "input",
+     "net": "count[2]"
+    },
+    "D": {
+     "direction": "input",
+     "net": "count[1]"
+    },
+    "Y": {
+     "direction": "output",
+     "net": "$abc$267$new_n21",
+     "function": "(A * B * C * D)"
+    }
+   },
+   "src": null
+  },
+  {
+   "id": "cell0004",
+   "type": "AND4x1_ASAP7_75t_R",
+   "yosys_cell": "$abc$267$blif$267$10",
+   "area": 0.10206,
+   "pins": {
+    "A": {
+     "direction": "input",
+     "net": "count[6]"
+    },
+    "B": {
+     "direction": "input",
+     "net": "count[7]"
+    },
+    "C": {
+     "direction": "input",
+     "net": "count[5]"
+    },
+    "D": {
+     "direction": "input",
+     "net": "$abc$267$new_n26"
+    },
+    "Y": {
+     "direction": "output",
+     "net": "$abc$267$new_n29",
+     "function": "(A * B * C * D)"
+    }
+   },
+   "src": null
+  },
+  {
+   "id": "cell0005",
+   "type": "AOI21xp33_ASAP7_75t_R",
+   "yosys_cell": "$abc$267$blif$267$4",
+   "area": 0.0729,
+   "pins": {
+    "A1": {
+     "direction": "input",
+     "net": "count[3]"
+    },
+    "A2": {
+     "direction": "input",
+     "net": "$abc$267$new_n21"
+    },
+    "B": {
+     "direction": "input",
+     "net": "$abc$267$new_n22"
+    },
+    "Y": {
+     "direction": "output",
+     "net": "$abc$266$auto$rtlil.cc:3480:MuxGate$241",
+     "function": "(!A1 * !B) + (!A2 * !B)"
+    }
+   },
+   "src": null
+  },
+  {
+   "id": "cell0006",
+   "type": "AOI21xp33_ASAP7_75t_R",
+   "yosys_cell": "$abc$267$blif$267$18",
+   "area": 0.0729,
+   "pins": {
+    "A1": {
+     "direction": "input",
+     "net": "count[5]"
+    },
+    "A2": {
+     "direction": "input",
+     "net": "$abc$267$new_n26"
+    },
+    "B": {
+     "direction": "input",
+     "net": "$abc$267$new_n36"
+    },
+    "Y": {
+     "direction": "output",
+     "net": "$abc$266$auto$rtlil.cc:3480:MuxGate$249",
+     "function": "(!A1 * !B) + (!A2 * !B)"
+    }
+   },
+   "src": null
+  },
+  {
+   "id": "cell0007",
+   "type": "AOI21xp33_ASAP7_75t_R",
+   "yosys_cell": "$abc$267$blif$267$16",
+   "area": 0.0729,
+   "pins": {
+    "A1": {
+     "direction": "input",
+     "net": "en"
+    },
+    "A2": {
+     "direction": "input",
+     "net": "count[0]"
+    },
+    "B": {
+     "direction": "input",
+     "net": "$abc$267$new_n34"
+    },
+    "Y": {
+     "direction": "output",
+     "net": "$abc$266$auto$rtlil.cc:3480:MuxGate$253",
+     "function": "(!A1 * !B) + (!A2 * !B)"
+    }
+   },
+   "src": null
+  },
+  {
+   "id": "cell0008",
+   "type": "AOI21xp33_ASAP7_75t_R",
+   "yosys_cell": "$abc$267$blif$267$13",
+   "area": 0.0729,
+   "pins": {
+    "A1": {
+     "direction": "input",
+     "net": "count[3]"
+    },
+    "A2": {
+     "direction": "input",
+     "net": "$abc$267$new_n21"
+    },
+    "B": {
+     "direction": "input",
+     "net": "count[4]"
+    },
+    "Y": {
+     "direction": "output",
+     "net": "$abc$267$new_n32",
+     "function": "(!A1 * !B) + (!A2 * !B)"
+    }
+   },
+   "src": null
+  },
+  {
+   "id": "cell0009",
+   "type": "AOI21xp33_ASAP7_75t_R",
+   "yosys_cell": "$abc$267$blif$267$19",
+   "area": 0.0729,
+   "pins": {
+    "A1": {
+     "direction": "input",
+     "net": "en"
+    },
+    "A2": {
+     "direction": "input",
+     "net": "count[0]"
+    },
+    "B": {
+     "direction": "input",
+     "net": "count[1]"
+    },
+    "Y": {
+     "direction": "output",
+     "net": "$abc$267$new_n38",
+     "function": "(!A1 * !B) + (!A2 * !B)"
+    }
+   },
+   "src": null
+  },
+  {
+   "id": "cell0010",
+   "type": "AOI31xp33_ASAP7_75t_R",
+   "yosys_cell": "$abc$267$blif$267$9",
+   "area": 0.08748,
+   "pins": {
+    "A1": {
+     "direction": "input",
+     "net": "count[6]"
+    },
+    "A2": {
+     "direction": "input",
+     "net": "count[5]"
+    },
+    "A3": {
+     "direction": "input",
+     "net": "$abc$267$new_n26"
+    },
+    "B": {
+     "direction": "input",
+     "net": "$abc$267$new_n27"
+    },
+    "Y": {
+     "direction": "output",
+     "net": "$abc$266$auto$rtlil.cc:3480:MuxGate$265",
+     "function": "(!A1 * !B) + (!A2 * !B) + (!A3 * !B)"
+    }
+   },
+   "src": null
+  },
+  {
+   "id": "cell0011",
+   "type": "AOI31xp33_ASAP7_75t_R",
+   "yosys_cell": "$abc$267$blif$267$11",
+   "area": 0.08748,
+   "pins": {
+    "A1": {
+     "direction": "input",
+     "net": "count[6]"
+    },
+    "A2": {
+     "direction": "input",
+     "net": "count[5]"
+    },
+    "A3": {
+     "direction": "input",
+     "net": "$abc$267$new_n26"
+    },
+    "B": {
+     "direction": "input",
+     "net": "count[7]"
+    },
+    "Y": {
+     "direction": "output",
+     "net": "$abc$267$new_n30",
+     "function": "(!A1 * !B) + (!A2 * !B) + (!A3 * !B)"
+    }
+   },
+   "src": null
+  },
+  {
+   "id": "cell0012",
+   "type": "DFFHQx4_ASAP7_75t_R",
+   "yosys_cell": "$auto$ff.cc:337:slice$89",
+   "area": 0.3645,
+   "pins": {
+    "CLK": {
+     "direction": "input",
+     "net": "clk"
+    },
+    "D": {
+     "direction": "input",
+     "net": "$abc$266$auto$rtlil.cc:3480:MuxGate$253"
+    },
+    "Q": {
+     "direction": "output",
+     "net": "count[0]",
+     "function": "IQ"
+    }
+   },
+   "src": "<repo>/tools/synth_area/corpus/counter8_en.sv:3.5"
+  },
+  {
+   "id": "cell0013",
+   "type": "DFFHQx4_ASAP7_75t_R",
+   "yosys_cell": "$auto$ff.cc:337:slice$90",
+   "area": 0.3645,
+   "pins": {
+    "CLK": {
+     "direction": "input",
+     "net": "clk"
+    },
+    "D": {
+     "direction": "input",
+     "net": "$abc$266$auto$rtlil.cc:3480:MuxGate$245"
+    },
+    "Q": {
+     "direction": "output",
+     "net": "count[1]",
+     "function": "IQ"
+    }
+   },
+   "src": "<repo>/tools/synth_area/corpus/counter8_en.sv:3.5"
+  },
+  {
+   "id": "cell0014",
+   "type": "DFFHQx4_ASAP7_75t_R",
+   "yosys_cell": "$auto$ff.cc:337:slice$91",
+   "area": 0.3645,
+   "pins": {
+    "CLK": {
+     "direction": "input",
+     "net": "clk"
+    },
+    "D": {
+     "direction": "input",
+     "net": "$abc$266$auto$rtlil.cc:3480:MuxGate$237"
+    },
+    "Q": {
+     "direction": "output",
+     "net": "count[2]",
+     "function": "IQ"
+    }
+   },
+   "src": "<repo>/tools/synth_area/corpus/counter8_en.sv:3.5"
+  },
+  {
+   "id": "cell0015",
+   "type": "DFFHQx4_ASAP7_75t_R",
+   "yosys_cell": "$auto$ff.cc:337:slice$92",
+   "area": 0.3645,
+   "pins": {
+    "CLK": {
+     "direction": "input",
+     "net": "clk"
+    },
+    "D": {
+     "direction": "input",
+     "net": "$abc$266$auto$rtlil.cc:3480:MuxGate$241"
+    },
+    "Q": {
+     "direction": "output",
+     "net": "count[3]",
+     "function": "IQ"
+    }
+   },
+   "src": "<repo>/tools/synth_area/corpus/counter8_en.sv:3.5"
+  },
+  {
+   "id": "cell0016",
+   "type": "DFFHQx4_ASAP7_75t_R",
+   "yosys_cell": "$auto$ff.cc:337:slice$93",
+   "area": 0.3645,
+   "pins": {
+    "CLK": {
+     "direction": "input",
+     "net": "clk"
+    },
+    "D": {
+     "direction": "input",
+     "net": "$abc$266$auto$rtlil.cc:3480:MuxGate$257"
+    },
+    "Q": {
+     "direction": "output",
+     "net": "count[4]",
+     "function": "IQ"
+    }
+   },
+   "src": "<repo>/tools/synth_area/corpus/counter8_en.sv:3.5"
+  },
+  {
+   "id": "cell0017",
+   "type": "DFFHQx4_ASAP7_75t_R",
+   "yosys_cell": "$auto$ff.cc:337:slice$94",
+   "area": 0.3645,
+   "pins": {
+    "CLK": {
+     "direction": "input",
+     "net": "clk"
+    },
+    "D": {
+     "direction": "input",
+     "net": "$abc$266$auto$rtlil.cc:3480:MuxGate$249"
+    },
+    "Q": {
+     "direction": "output",
+     "net": "count[5]",
+     "function": "IQ"
+    }
+   },
+   "src": "<repo>/tools/synth_area/corpus/counter8_en.sv:3.5"
+  },
+  {
+   "id": "cell0018",
+   "type": "DFFHQx4_ASAP7_75t_R",
+   "yosys_cell": "$auto$ff.cc:337:slice$95",
+   "area": 0.3645,
+   "pins": {
+    "CLK": {
+     "direction": "input",
+     "net": "clk"
+    },
+    "D": {
+     "direction": "input",
+     "net": "$abc$266$auto$rtlil.cc:3480:MuxGate$265"
+    },
+    "Q": {
+     "direction": "output",
+     "net": "count[6]",
+     "function": "IQ"
+    }
+   },
+   "src": "<repo>/tools/synth_area/corpus/counter8_en.sv:3.5"
+  },
+  {
+   "id": "cell0019",
+   "type": "DFFHQx4_ASAP7_75t_R",
+   "yosys_cell": "$auto$ff.cc:337:slice$96",
+   "area": 0.3645,
+   "pins": {
+    "CLK": {
+     "direction": "input",
+     "net": "clk"
+    },
+    "D": {
+     "direction": "input",
+     "net": "$abc$266$auto$rtlil.cc:3480:MuxGate$261"
+    },
+    "Q": {
+     "direction": "output",
+     "net": "count[7]",
+     "function": "IQ"
+    }
+   },
+   "src": "<repo>/tools/synth_area/corpus/counter8_en.sv:3.5"
+  },
+  {
+   "id": "cell0020",
+   "type": "INVx1_ASAP7_75t_R",
+   "yosys_cell": "$abc$267$blif$267$0",
+   "area": 0.04374,
+   "pins": {
+    "A": {
+     "direction": "input",
+     "net": "rst"
+    },
+    "Y": {
+     "direction": "output",
+     "net": "$abc$267$new_n19",
+     "function": "!A"
+    }
+   },
+   "src": null
+  },
+  {
+   "id": "cell0021",
+   "type": "NOR2xp33_ASAP7_75t_R",
+   "yosys_cell": "$abc$267$blif$267$5",
+   "area": 0.05832,
+   "pins": {
+    "A": {
+     "direction": "input",
+     "net": "count[2]"
+    },
+    "B": {
+     "direction": "input",
+     "net": "$abc$267$new_n20"
+    },
+    "Y": {
+     "direction": "output",
+     "net": "$abc$267$new_n24",
+     "function": "(!A * !B)"
+    }
+   },
+   "src": null
+  },
+  {
+   "id": "cell0022",
+   "type": "NOR3xp33_ASAP7_75t_R",
+   "yosys_cell": "$abc$267$blif$267$6",
+   "area": 0.0729,
+   "pins": {
+    "A": {
+     "direction": "input",
+     "net": "rst"
+    },
+    "B": {
+     "direction": "input",
+     "net": "$abc$267$new_n21"
+    },
+    "C": {
+     "direction": "input",
+     "net": "$abc$267$new_n24"
+    },
+    "Y": {
+     "direction": "output",
+     "net": "$abc$266$auto$rtlil.cc:3480:MuxGate$237",
+     "function": "(!A * !B * !C)"
+    }
+   },
+   "src": null
+  },
+  {
+   "id": "cell0023",
+   "type": "NOR3xp33_ASAP7_75t_R",
+   "yosys_cell": "$abc$267$blif$267$20",
+   "area": 0.0729,
+   "pins": {
+    "A": {
+     "direction": "input",
+     "net": "rst"
+    },
+    "B": {
+     "direction": "input",
+     "net": "$abc$267$new_n20"
+    },
+    "C": {
+     "direction": "input",
+     "net": "$abc$267$new_n38"
+    },
+    "Y": {
+     "direction": "output",
+     "net": "$abc$266$auto$rtlil.cc:3480:MuxGate$245",
+     "function": "(!A * !B * !C)"
+    }
+   },
+   "src": null
+  },
+  {
+   "id": "cell0024",
+   "type": "NOR3xp33_ASAP7_75t_R",
+   "yosys_cell": "$abc$267$blif$267$14",
+   "area": 0.0729,
+   "pins": {
+    "A": {
+     "direction": "input",
+     "net": "rst"
+    },
+    "B": {
+     "direction": "input",
+     "net": "$abc$267$new_n26"
+    },
+    "C": {
+     "direction": "input",
+     "net": "$abc$267$new_n32"
+    },
+    "Y": {
+     "direction": "output",
+     "net": "$abc$266$auto$rtlil.cc:3480:MuxGate$257",
+     "function": "(!A * !B * !C)"
+    }
+   },
+   "src": null
+  },
+  {
+   "id": "cell0025",
+   "type": "NOR3xp33_ASAP7_75t_R",
+   "yosys_cell": "$abc$267$blif$267$12",
+   "area": 0.0729,
+   "pins": {
+    "A": {
+     "direction": "input",
+     "net": "rst"
+    },
+    "B": {
+     "direction": "input",
+     "net": "$abc$267$new_n29"
+    },
+    "C": {
+     "direction": "input",
+     "net": "$abc$267$new_n30"
+    },
+    "Y": {
+     "direction": "output",
+     "net": "$abc$266$auto$rtlil.cc:3480:MuxGate$261",
+     "function": "(!A * !B * !C)"
+    }
+   },
+   "src": null
+  },
+  {
+   "id": "cell0026",
+   "type": "OAI21xp33_ASAP7_75t_R",
+   "yosys_cell": "$abc$267$blif$267$3",
+   "area": 0.0729,
+   "pins": {
+    "A1": {
+     "direction": "input",
+     "net": "count[3]"
+    },
+    "A2": {
+     "direction": "input",
+     "net": "$abc$267$new_n21"
+    },
+    "B": {
+     "direction": "input",
+     "net": "$abc$267$new_n19"
+    },
+    "Y": {
+     "direction": "output",
+     "net": "$abc$267$new_n22",
+     "function": "(!A1 * !A2) + (!B)"
+    }
+   },
+   "src": null
+  },
+  {
+   "id": "cell0027",
+   "type": "OAI21xp33_ASAP7_75t_R",
+   "yosys_cell": "$abc$267$blif$267$15",
+   "area": 0.0729,
+   "pins": {
+    "A1": {
+     "direction": "input",
+     "net": "en"
+    },
+    "A2": {
+     "direction": "input",
+     "net": "count[0]"
+    },
+    "B": {
+     "direction": "input",
+     "net": "$abc$267$new_n19"
+    },
+    "Y": {
+     "direction": "output",
+     "net": "$abc$267$new_n34",
+     "function": "(!A1 * !A2) + (!B)"
+    }
+   },
+   "src": null
+  },
+  {
+   "id": "cell0028",
+   "type": "OAI21xp33_ASAP7_75t_R",
+   "yosys_cell": "$abc$267$blif$267$17",
+   "area": 0.0729,
+   "pins": {
+    "A1": {
+     "direction": "input",
+     "net": "count[5]"
+    },
+    "A2": {
+     "direction": "input",
+     "net": "$abc$267$new_n26"
+    },
+    "B": {
+     "direction": "input",
+     "net": "$abc$267$new_n19"
+    },
+    "Y": {
+     "direction": "output",
+     "net": "$abc$267$new_n36",
+     "function": "(!A1 * !A2) + (!B)"
+    }
+   },
+   "src": null
+  }
+ ],
+ "summary": {
+  "cells": 29,
+  "area": 4.53438,
+  "by_type": {
+   "DFFHQx4_ASAP7_75t_R": {
+    "count": 8,
+    "area_each": 0.3645,
+    "area": 2.916
+   },
+   "AOI21xp33_ASAP7_75t_R": {
+    "count": 5,
+    "area_each": 0.0729,
+    "area": 0.3645
+   },
+   "NOR3xp33_ASAP7_75t_R": {
+    "count": 4,
+    "area_each": 0.0729,
+    "area": 0.2916
+   },
+   "OAI21xp33_ASAP7_75t_R": {
+    "count": 3,
+    "area_each": 0.0729,
+    "area": 0.2187
+   },
+   "AND3x1_ASAP7_75t_R": {
+    "count": 2,
+    "area_each": 0.08748,
+    "area": 0.17496
+   },
+   "AND4x1_ASAP7_75t_R": {
+    "count": 2,
+    "area_each": 0.10206,
+    "area": 0.20412
+   },
+   "AOI31xp33_ASAP7_75t_R": {
+    "count": 2,
+    "area_each": 0.08748,
+    "area": 0.17496
+   },
+   "A2O1A1Ixp33_ASAP7_75t_R": {
+    "count": 1,
+    "area_each": 0.08748,
+    "area": 0.08748
+   },
+   "INVx1_ASAP7_75t_R": {
+    "count": 1,
+    "area_each": 0.04374,
+    "area": 0.04374
+   },
+   "NOR2xp33_ASAP7_75t_R": {
+    "count": 1,
+    "area_each": 0.05832,
+    "area": 0.05832
+   }
+  },
+  "pins": 110
+ }
+}
