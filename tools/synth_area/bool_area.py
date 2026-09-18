@@ -35,6 +35,7 @@ Numbers are only comparable between runs of the same profile version.
 from __future__ import annotations
 
 import argparse
+import functools
 import json
 import os
 import re
@@ -320,10 +321,35 @@ def equiv_bmc_script(setup: list[str], depth: int, resets: dict[str, bool]) -> s
     ])
 
 
-def abc_executable(yosys: str) -> str:
-    """The ABC binary this yosys will run: `$ABC` when set, else `yosys-abc` next to the resolved yosys
-    executable (yosys locates it from /proc/self/exe, i.e. after following symlinks)."""
-    return os.environ.get("ABC") or str(Path(yosys).resolve().with_name("yosys-abc"))
+ABC_HELP_RE = re.compile(r'instead of "([^"]+)" to execute ABC')
+ABC_BUILTIN = "<yosys-bindir>/yosys-abc"
+
+
+@functools.cache
+def abc_default(yosys: str) -> str | None:
+    """What this yosys's own `help abc` says the `-exe` default is: the literal `<yosys-bindir>/yosys-abc`
+    for a build with the bundled ABC, or the compiled-in path of a build configured with an external ABC
+    (ABCEXTERNAL). None when yosys cannot be run or the text is not recognised."""
+    try:
+        out = subprocess.run([yosys, "-Q", "-T", "-p", "help abc"], capture_output=True, text=True, timeout=60,
+                             check=False)
+    except (OSError, subprocess.SubprocessError):
+        return None
+    m = ABC_HELP_RE.search(out.stdout)
+    return m.group(1) if m else None
+
+
+def abc_executable(yosys: str) -> str | None:
+    """The ABC binary this yosys runs (init_abc_executable_name in kernel/yosys.cc): `yosys-abc` next to
+    the resolved yosys executable (it is found from /proc/self/exe, i.e. after following symlinks) for a
+    build with the bundled ABC; for a build with an external ABC, `$ABC` when set, else the compiled-in
+    path. None if yosys will not say (cannot be run, unrecognised help text)."""
+    default = abc_default(yosys)
+    if default is None:
+        return None
+    if default == ABC_BUILTIN:
+        return str(Path(yosys).resolve().with_name("yosys-abc"))
+    return os.environ.get("ABC") or default
 
 
 def run_yosys(yosys: str, script: str, script_path: Path, log_path: Path, timeout: int) -> tuple[bool, str, float]:

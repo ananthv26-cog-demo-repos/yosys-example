@@ -10,10 +10,11 @@ produced:
                     including file and then in the -I directories, as the frontends do), the profile
                     and its Liberty files
     include_dirs    every file under every -I directory
-    tools           the python interpreter, yosys (slang is linked in), the abc binary yosys runs ($ABC or
-                    its sibling yosys-abc), sv2v, iverilog and vvp, each resolved the way bool_area.py
-                    resolves it today (argv, $YOSYS/$SV2V/$ABC, ./build, PATH), so pointing the
-                    environment at another binary is a miss
+    tools           the python interpreter, yosys (slang is linked in), the abc binary yosys runs (its
+                    sibling yosys-abc, or for a build with an external ABC that path unless $ABC is set,
+                    as yosys's own `help abc` reports), sv2v, iverilog and vvp, each resolved the way
+                    bool_area.py resolves it today (argv, $YOSYS/$SV2V/$ABC, ./build, PATH), so pointing
+                    the environment at another binary is a miss
     yosys_share     every file in the share/ directory that yosys loads its `+/` support files from
                     (techmap.v, simcells.v, ...), since `synth` reads them at run time
     code            every tools/synth_area/*.py module
@@ -33,6 +34,7 @@ import json
 import os
 import re
 import shutil
+import subprocess
 from pathlib import Path
 
 from bool_area import ARTIFACTS, FlowError, abc_executable, liberty_paths, load_profile, owned_files
@@ -110,14 +112,20 @@ def include_files(sources: list[str], include_dirs: list[str]) -> dict[str, str 
 
 
 def yosys_share_dir(yosys: str) -> Path | None:
-    """Where this yosys reads its `+/` support files from: `share/` beside the binary (a build tree), else
-    `../share/yosys/` (an install) -- the same lookup yosys does from /proc/self/exe. None when neither
-    exists (a build with a compiled-in data directory), which keeps the block from being cached."""
+    """Where this yosys reads its `+/` support files from, looked up as init_share_dirname in kernel/yosys.cc
+    does from /proc/self/exe: `share/` beside the binary (a build tree), else `../share/yosys/` (an
+    install), else the compiled-in data directory, which the `yosys-config` beside it reports as
+    `--datdir`. None when none of those is a directory, which keeps the block from being cached."""
     exe = Path(yosys).resolve()
-    for d in (exe.parent / "share", exe.parent.parent / "share" / "yosys"):
-        if d.is_dir():
-            return d
-    return None
+    candidates = [exe.parent / "share", exe.parent.parent / "share" / "yosys"]
+    try:
+        out = subprocess.run([str(exe.with_name("yosys-config")), "--datdir"], capture_output=True, text=True,
+                             timeout=30, check=False)
+        if out.returncode == 0 and out.stdout.strip():
+            candidates.append(Path(out.stdout.strip()))
+    except (OSError, subprocess.SubprocessError):
+        pass
+    return next((d for d in candidates if d.is_dir()), None)
 
 
 @functools.cache

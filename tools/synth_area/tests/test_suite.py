@@ -460,10 +460,15 @@ class CacheFingerprintTests(unittest.TestCase):
             path.chmod(0o755)
             return str(path)
 
+        def fake_yosys(path: Path, abc_default: str) -> str:
+            """A yosys stand-in whose `help abc` names `abc_default` as the -exe default, as the real one does."""
+            return fake(path, f'#!/bin/sh\necho \'{path}\'\n'
+                              f'echo \'        use the specified command instead of "{abc_default}" to execute ABC.\'\n')
+
         with tempfile.TemporaryDirectory(prefix="suite_tools_") as td, \
                 unittest.mock.patch.dict(os.environ, {"PATH": ""}, clear=True):
             a, b = Path(td) / "a", Path(td) / "b"
-            ya, yb = fake(a / "yosys", "#!/bin/sh\necho a\n"), fake(b / "yosys", "#!/bin/sh\necho b\n")
+            ya, yb = fake_yosys(a / "yosys", bool_area.ABC_BUILTIN), fake_yosys(b / "yosys", bool_area.ABC_BUILTIN)
             fake(a / "yosys-abc", "a"), fake(b / "yosys-abc", "b")
             py = sys.executable
             # explicit option, both spellings, last one wins
@@ -478,16 +483,31 @@ class CacheFingerprintTests(unittest.TestCase):
             self.assertTrue(fa["tools"]["yosys"] and fb["tools"]["yosys"])
             self.assertNotEqual(fa["tools"]["yosys"], fb["tools"]["yosys"])
             self.assertNotEqual(fa["tools"]["abc"], fb["tools"]["abc"])
-            # $ABC overrides the sibling; a non-executable $ABC hashes as None (never a hit)
+            # a build with the bundled ABC ignores $ABC (yosys does), and finds its sibling through symlinks
             ext = fake(Path(td) / "ext" / "abc", "ext")
             with unittest.mock.patch.dict(os.environ, {"ABC": ext}):
-                self.assertEqual(bool_area.abc_executable(ya), ext)
-                self.assertEqual(suite_cache.tool_paths(["--yosys", ya], py)["abc"], ext)
-            with unittest.mock.patch.dict(os.environ, {"ABC": str(Path(td) / "nope")}):
-                self.assertIsNone(suite_cache.tool_paths(["--yosys", ya], py)["abc"])
-            # yosys resolves its sibling through symlinks (/proc/self/exe)
+                self.assertEqual(bool_area.abc_executable(ya), str(a / "yosys-abc"))
             (Path(td) / "link").symlink_to(a / "yosys")
             self.assertEqual(bool_area.abc_executable(str(Path(td) / "link")), str(a / "yosys-abc"))
+            # a build with an external ABC (ABCEXTERNAL) runs the compiled-in path, or $ABC when set; a
+            # non-executable one hashes as None (never a hit)
+            ext2 = fake(Path(td) / "ext" / "abc2", "ext2")
+            ye = fake_yosys(Path(td) / "e" / "yosys", ext)
+            fake(Path(td) / "e" / "yosys-abc", "unused sibling")
+            self.assertEqual(bool_area.abc_executable(ye), ext)
+            self.assertEqual(suite_cache.tool_paths(["--yosys", ye], py)["abc"], ext)
+            with unittest.mock.patch.dict(os.environ, {"ABC": ext2}):
+                self.assertEqual(bool_area.abc_executable(ye), ext2)
+                self.assertEqual(suite_cache.tool_paths(["--yosys", ye], py)["abc"], ext2)
+            with unittest.mock.patch.dict(os.environ, {"ABC": str(Path(td) / "nope")}):
+                self.assertIsNone(suite_cache.tool_paths(["--yosys", ye], py)["abc"])
+            # a yosys that will not say (no recognisable help text) -> no abc -> never cached
+            yq = fake(Path(td) / "q" / "yosys", "#!/bin/sh\necho nothing\n")
+            fake(Path(td) / "q" / "yosys-abc", "sibling")
+            self.assertIsNone(bool_area.abc_executable(yq))
+            fq = suite_cache.fingerprint(["--yosys", yq], py, {})
+            self.assertIsNone(fq["tools"]["abc"])
+            self.assertFalse(suite_cache.complete({"fingerprint": fq, "artifacts": {}}))
             # sv2v / iverilog / vvp: $SV2V and PATH as bool_area uses them; absent -> None
             self.assertIsNone(suite_cache.tool_paths([], py)["iverilog"])
             sv = fake(Path(td) / "tools" / "sv2v", "s")
