@@ -35,7 +35,9 @@ Numbers are only comparable between runs of the same profile version.
 from __future__ import annotations
 
 import argparse
+import functools
 import json
+import os
 import re
 import shlex
 import shutil
@@ -93,12 +95,21 @@ SIM_DIR = "sim"
 EQUIV_GLOB = "equiv_*.ys", "equiv_*.log"
 
 
-def purge_outputs(out_dir: Path) -> None:
-    """Remove every file this flow owns so a rerun can never leave a previous run's results behind."""
+def owned_files(out_dir: Path) -> list[Path]:
+    """Every path this flow may write below `out_dir`: the fixed artifacts (whether or not they exist), the
+    sv2v output, the equivalence scripts/logs and every file currently under the simulation directory."""
     owned = [out_dir / v for v in ARTIFACTS.values()] + [out_dir / SV2V_OUT]
     for pattern in EQUIV_GLOB:
-        owned.extend(out_dir.glob(pattern))
-    for p in owned:
+        owned.extend(sorted(out_dir.glob(pattern)))
+    sim_dir = out_dir / SIM_DIR
+    if sim_dir.is_dir() and not sim_dir.is_symlink():
+        owned.extend(p for p in sorted(sim_dir.rglob("*")) if p.is_file() or p.is_symlink())
+    return owned
+
+
+def purge_outputs(out_dir: Path) -> None:
+    """Remove every file this flow owns so a rerun can never leave a previous run's results behind."""
+    for p in owned_files(out_dir):
         if p.is_symlink() or p.is_file():
             p.unlink()
     sim_dir = out_dir / SIM_DIR
@@ -310,6 +321,39 @@ def equiv_bmc_script(setup: list[str], depth: int, resets: dict[str, bool]) -> s
     ])
 
 
+ABC_HELP_RE = re.compile(r'instead of "([^"]+)" to execute ABC')
+ABC_BINDIR = "<yosys-bindir>/"
+ABC_BUILTIN = ABC_BINDIR + "yosys-abc"
+
+
+@functools.cache
+def abc_default(yosys: str) -> str | None:
+    """What this yosys's own `help abc` says the `-exe` default is: the literal `<yosys-bindir>/yosys-abc`
+    (`<yosys-bindir>/<prefix>yosys-abc` for a build with YOSYS_PROGRAM_PREFIX) for a build with the bundled
+    ABC, or the compiled-in path of a build configured with an external ABC (ABCEXTERNAL). None when yosys
+    cannot be run or the text is not recognised."""
+    try:
+        out = subprocess.run([yosys, "-Q", "-T", "-p", "help abc"], capture_output=True, text=True, timeout=60,
+                             check=False)
+    except (OSError, subprocess.SubprocessError):
+        return None
+    m = ABC_HELP_RE.search(out.stdout)
+    return m.group(1) if m else None
+
+
+def abc_executable(yosys: str) -> str | None:
+    """The ABC binary this yosys runs (init_abc_executable_name in kernel/yosys.cc): `<prefix>yosys-abc`
+    next to the resolved yosys executable (it is found from /proc/self/exe, i.e. after following symlinks)
+    for a build with the bundled ABC; for a build with an external ABC, `$ABC` when set, else the
+    compiled-in path. None if yosys will not say (cannot be run, unrecognised help text)."""
+    default = abc_default(yosys)
+    if default is None:
+        return None
+    if default.startswith(ABC_BINDIR):
+        return str(Path(yosys).resolve().with_name(default[len(ABC_BINDIR):]))
+    return os.environ.get("ABC") or default
+
+
 def run_yosys(yosys: str, script: str, script_path: Path, log_path: Path, timeout: int) -> tuple[bool, str, float]:
     script_path.write_text(script)
     if log_path.exists():
@@ -517,7 +561,7 @@ def main(argv: list[str] | None = None) -> int:
     yosys = find_yosys(args.yosys)
     if not yosys or not shutil.which(yosys):
         return fail("tools", "yosys binary not found or not executable (build the repo, set $YOSYS, or pass --yosys)", 2)
-    metrics["tools"] = {"yosys": yosys, "yosys_version": tool_version(yosys, "-V")}
+    metrics["tools"] = {"yosys": yosys, "yosys_version": tool_version(yosys, "-V"), "abc": abc_executable(yosys)}
     frontend = args.frontend or profile["frontend"]["name"]
     sv2v = find_sv2v(args.sv2v)
     if sv2v and not shutil.which(sv2v):
@@ -526,6 +570,7 @@ def main(argv: list[str] | None = None) -> int:
         if args.sv2v or frontend == "sv2v":
             return fail("tools", f"sv2v not executable: {sv2v}", 2)
         sv2v = None
+    metrics["tools"]["sv2v"] = sv2v
     if sv2v:
         metrics["tools"]["sv2v_version"] = tool_version(sv2v, "--version")
 
@@ -715,6 +760,7 @@ def main(argv: list[str] | None = None) -> int:
         except ValueError as e:
             return fail("simulation", str(e))
         iverilog, vvp = shutil.which("iverilog"), shutil.which("vvp")
+        metrics["tools"].update(iverilog=iverilog, vvp=vvp)
         if not (iverilog and vvp):
             metrics["simulation"] = {"status": "skipped", "error": "iverilog/vvp not on PATH"}
             metrics["warnings"].append("simulation skipped: iverilog/vvp not found")

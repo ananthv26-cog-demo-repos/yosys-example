@@ -59,7 +59,7 @@ def block_evidence(result: dict) -> dict:
     """Evidence for one `run_suite.run_block` result, read back from the block's artifacts."""
     out_dir = Path(result["out_dir"])
     ev: dict = {"name": result["name"], "passed": result["passed"], "status": result["status"],
-                "seconds": result["seconds"], "errors": result["errors"]}
+                "seconds": result["seconds"], "cached": bool(result.get("cached")), "errors": result["errors"]}
     artifacts = read_object(out_dir / "run_manifest.json").get("artifacts")
     artifacts = artifacts if isinstance(artifacts, dict) else {}
 
@@ -213,9 +213,12 @@ def build(results: list[dict], baseline: dict | None = None) -> dict:
 
 def render(evidence: dict) -> str:
     mark = {True: "PASS", False: "FAIL", None: "?"}
+    cached = sum(b.get("cached", False) for b in evidence["blocks"])
     lines = ["# Suite evidence", "",
              f"{evidence['criteria_passed']}/{evidence['criteria_total']} criteria pass"
-             + (f", {evidence['criteria_unknown']} not checked" if evidence["criteria_unknown"] else ""), "",
+             + (f", {evidence['criteria_unknown']} not checked" if evidence["criteria_unknown"] else "")
+             + (f"; {cached}/{len(evidence['blocks'])} blocks reused from a previous run with identical inputs "
+                "(see suite_cache.py), not re-derived" if cached else ""), "",
              "| | criterion | measured |", "|---|---|---|"]
     lines += [f"| {mark[c['ok']]} | {c['requirement']} | {c['measured']} |" for c in evidence["criteria"]]
     lines += ["", "## Blocks", "", "| block | layers | cells | area (um2) | equivalence | simulation |",
