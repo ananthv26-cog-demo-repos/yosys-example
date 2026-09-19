@@ -73,6 +73,10 @@ Two checks, both with Yosys' SAT-based `equiv_*` passes on the flattened designs
    with the ASAP7 cells expanded from their Liberty functions. Flop `Q` wires carry a
    `keep` attribute through mapping so registers pair by name; that costs a few inverters
    (a `QN`-only cell followed by an `INV`) and is the price of a wire-for-wire proof.
+   Because every register is paired, `-seq 1` induction is normally enough here, so it is
+   tried first (`--equiv-mapped-seq`, default 1) and only cells it leaves unproven are
+   retried at `--equiv-seq`; `checks.graph_vs_mapped.seq` records the depth that closed the
+   proof and a kept `equiv_graph_vs_mapped_seq1.{ys,log}` marks a retry.
 
 `equiv_status -assert` must report zero unproven cells **and** at least as many `$equiv`
 cells as there are output bits (a guard against the two designs silently not being
@@ -115,6 +119,17 @@ warning, not a mismatch: with uninitialised flops and Liberty-derived cell model
 X-pessimism, and the formal check above already proves those bits functionally equal. This
 is a sample, not a proof — it is kept because it also exercises the Liberty cell models,
 which the formal check does not. `--sim-cycles 0` disables it.
+
+**Scheduling.** The two proofs and the simulation only need the mapped netlist, so once
+synthesis is done `bool_area.py` runs them as three concurrent processes (`--check-jobs`,
+default 3; `1` runs them one after another). Each writes only its own files
+(`equiv_rtl_vs_graph*`, `equiv_graph_vs_mapped*`, `sim/`) and the results are merged in a
+fixed order, so `metrics.json` is byte-identical apart from the timings and an equivalence
+failure is always reported ahead of a simulation mismatch. `timing.checks_seconds` is the
+wall time of that phase; the win is bounded by the slowest of the three (on the 16×32
+FIFO 3.2 s → 2.4 s, on the 64×32 one 31.6 s → 28.0 s, both dominated by the graph-vs-ASAP7
+proof). A `run_suite.py -j8` run already keeps every core busy, so there the gain is
+smaller (49 blocks 17.1 s → 16.1 s) but it does not slow down either.
 
 ## Corpus results (`run_suite.py`, profile `asap7_rvt_tt_v1` v2, one core)
 

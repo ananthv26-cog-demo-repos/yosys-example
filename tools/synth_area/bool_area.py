@@ -22,6 +22,10 @@ Writes into the output directory:
                          tool + profile versions and hashes, wall-clock
     yosys.log            full Yosys log of the synthesis run
     equiv_*.ys/.log      formal equivalence scripts + logs (RTL vs graph, graph vs mapped)
+    sim/                 random differential simulation testbench, netlists, logs
+
+The two equivalence proofs and the simulation are independent of each other and run as
+concurrent processes once the mapped netlist exists (--check-jobs, default all three at once).
 
 Exit status is non-zero when any stage (parse/elaboration, lowering, mapping, graph
 validation, equivalence when enabled, artifact writing) fails; `metrics.json` is still
@@ -45,6 +49,7 @@ import string
 import subprocess
 import sys
 import time
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 from boolean_graph import GRAPH_SCHEMA_VERSION, UnsupportedCell, build_graph, compute_metrics
@@ -92,6 +97,7 @@ ARTIFACTS = {
 }
 SV2V_OUT = "sv2v_out.v"
 SIM_DIR = "sim"
+CHECKS = ("rtl_vs_graph", "graph_vs_mapped", "simulation")  # independent once the mapped netlist exists
 EQUIV_GLOB = "equiv_*.ys", "equiv_*.log"
 
 
@@ -428,6 +434,9 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--slang-arg", action="append", default=[], metavar="ARG", help="extra read_slang option")
     ap.add_argument("--no-equiv", action="store_true", help="skip the formal equivalence checks")
     ap.add_argument("--equiv-seq", type=int, default=5, help="induction / unrolling depth for equiv passes")
+    ap.add_argument("--equiv-mapped-seq", type=int, default=1,
+                    help="induction depth tried first for graph vs mapped, where every register is paired by name "
+                         "and 1 usually suffices; anything left unproven is retried at --equiv-seq (0: skip the short try)")
     ap.add_argument("--equiv-bmc", type=int, default=10,
                     help="cycles for the bounded-from-reset fallback proof when induction fails (>= 2: cycle 1 is "
                          "the reset cycle and is not compared); 0 disables")
@@ -442,10 +451,17 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--yosys", help="yosys binary (default: $YOSYS, ./build/yosys, PATH)")
     ap.add_argument("--sv2v", help="sv2v binary for --frontend sv2v")
     ap.add_argument("--timeout", type=int, default=3600, help="per-yosys-invocation timeout (s)")
+    ap.add_argument("--check-jobs", type=int, default=len(CHECKS),
+                    help=f"how many of the {len(CHECKS)} independent checks ({', '.join(CHECKS)}) run at once "
+                         "after mapping, each its own yosys/iverilog process (1: one after another)")
     ap.add_argument("-q", "--quiet", action="store_true")
     args = ap.parse_args(argv)
+    if args.check_jobs < 1:
+        ap.error("--check-jobs must be at least 1")
     if not IDENT_RE.match(args.top):
         ap.error(f"--top must be a plain module identifier, got {args.top!r}")
+    if args.equiv_seq < 1 or args.equiv_mapped_seq < 0:
+        ap.error("--equiv-seq must be at least 1 and --equiv-mapped-seq at least 0")
     if args.equiv_bmc < 0 or args.equiv_bmc == 1:
         ap.error("--equiv-bmc must be 0 (disabled) or at least 2: cycle 1 is the reset cycle and is skipped, "
                  "so a depth of 1 would compare no outputs")
@@ -690,95 +706,148 @@ def main(argv: list[str] | None = None) -> int:
     mapped["cells_schema_version"] = MAPPED_SCHEMA_VERSION
     mapped["pin_connections"] = cs["pins"]
 
-    # --- 4. formal equivalence: RTL == Boolean graph == mapped netlist ---
-    if args.no_equiv:
-        metrics["equivalence"] = None
-    else:
+    # --- 4+5. independent checks, run concurrently: RTL == graph, graph == mapped netlist, random sim ---
+    # Each worker only touches its own files (equiv_<name>*.ys/.log, sim/) and returns everything it wants
+    # recorded; the main thread merges results in the fixed CHECKS order, so metrics.json, the warnings and
+    # which failure is reported first do not depend on which process finished first.
+    metrics["equivalence"] = None
+    try:
+        _, sim_resets, _, _ = classify_ports(graph["ports"], args.sim_clock, sim_reset_args)
+        reset_warning = None
+    except ValueError as e:  # inferred classification only (e.g. inout ports); explicit ports were validated above
+        sim_resets, reset_warning = dict(sim_reset_args or {}), f"bounded-proof reset classification unavailable: {e}"
+
+    def prove(name: str, setup: list[str], depths: list[int]) -> dict:
+        """One equivalence check: induction at each depth in turn, then the bounded-from-reset fallback.
+        Returns {"status": <check record>, "seconds", "warnings", "fail": (stage, msg) | None}."""
+        secs, warnings = 0.0, []
+        ys, log = out_dir / f"equiv_{name}.ys", out_dir / f"equiv_{name}.log"
+        for i, seq in enumerate(depths):
+            ok, log_text, run_secs = run_yosys(yosys, equiv_induct_script(setup, seq), ys, log, args.timeout)
+            secs += run_secs
+            status = parse_equiv_status(log_text)
+            status["seq"] = seq
+            status["log"] = str(log)
+            if ok or not status["unproven"] or i == len(depths) - 1:
+                break
+            try:  # keep the short attempt's script/log beside the deeper one that replaces it
+                for p in (ys, log):
+                    p.replace(p.with_name(f"equiv_{name}_seq{seq}{p.suffix}"))
+            except OSError as e:
+                return {"status": status, "seconds": secs, "warnings": warnings,
+                        "fail": ("artifacts", f"could not keep equiv_{name} -seq {seq} attempt: {e}")}
+            warnings.append(f"equivalence {name}: {status['unproven']} cells not proven by -seq {seq} "
+                            f"induction in {run_secs} s; retrying at -seq {depths[i + 1]}")
+        status["seconds"] = round(secs, 3)
+        status["status"] = "proven" if ok and status["unproven"] == 0 else "failed"
+        if not ok and status["unproven"] is None:
+            status["error"] = first_error(log_text, "equivalence run failed (see log)")
+        # equiv_make pairs every output bit (plus same-named registers); fewer $equiv cells
+        # than output bits means the two designs were not actually compared
+        if status["status"] == "proven" and (status["equiv_cells"] or 0) < metrics["boolean"]["output_bits"]:
+            status["status"] = "failed"
+            status["error"] = (f"only {status['equiv_cells']} $equiv cells for "
+                               f"{metrics['boolean']['output_bits']} output bits")
+        if status["status"] == "failed" and status["unproven"] and args.equiv_bmc > 0 and not sim_resets:
+            # nothing to anchor the bounded proof on: an all-x start would compare nothing
+            status["error"] = (f"{status['unproven']} cells not provable by induction and no reset port is known "
+                               "for the bounded fallback (pass --sim-reset PORT[:low])")
+        elif status["status"] == "failed" and status["unproven"] and args.equiv_bmc > 0:
+            # induction left cells unproven: fall back to a bounded proof anchored at reset
+            ok, log_text, bmc_secs = run_yosys(yosys, equiv_bmc_script(setup, args.equiv_bmc, sim_resets),
+                                               out_dir / f"equiv_{name}_bmc.ys", out_dir / f"equiv_{name}_bmc.log",
+                                               args.timeout)
+            status["bmc"] = {"depth": args.equiv_bmc, "resets": sorted(sim_resets), "seconds": bmc_secs,
+                             "log": str(out_dir / f"equiv_{name}_bmc.log"),
+                             "status": "proven" if ok and "SUCCESS" in log_text else "failed"}
+            secs += bmc_secs
+            if status["bmc"]["status"] == "proven":
+                status["status"] = "bounded"
+                warnings.append(f"equivalence {name}: {status['unproven']} cells not provable by induction; "
+                                f"bounded proof over {args.equiv_bmc} cycles from reset instead")
+            else:
+                status["error"] = first_error(log_text, "bounded model check found a mismatch or failed (see log)")
+        return {"status": status, "seconds": secs, "warnings": warnings, "fail": None}
+
+    def simulate(iverilog: str, vvp: str) -> dict:
+        t0 = time.time()
+        sim = run_diff_sim(
+            top=args.top, ports=graph["ports"], rtl_sources=sources, includes=[str(Path(i).resolve()) for i in args.include],
+            defines=list(args.define), mapped_json=out["mapped_json"], libs=libs, yosys=yosys, sv2v=sv2v,
+            iverilog=iverilog, vvp=vvp, work=out_dir / SIM_DIR, cycles=args.sim_cycles, seed=args.seed,
+            timeout=args.timeout, clocks=args.sim_clock, resets=sim_reset_args,
+        )
+        sim["method"] = "iverilog random differential simulation, RTL (via sv2v) vs mapped netlist + Liberty-derived cell models"
+        return {"sim": sim, "seconds": round(time.time() - t0, 3)}
+
+    work: dict[str, tuple] = {}  # check name -> (callable, args), in CHECKS order
+    if not args.no_equiv:
         setups = {
             "rtl_vs_graph": rtl_vs_graph_setup(read_cmd, args.top, out["generic_json"]),
             "graph_vs_mapped": graph_vs_mapped_setup(args.top, out["generic_json"], out["mapped_json"], libs),
         }
-        try:
-            _, sim_resets, _, _ = classify_ports(graph["ports"], args.sim_clock, sim_reset_args)
-        except ValueError as e:  # inferred classification only (e.g. inout ports); explicit ports were validated above
-            sim_resets = dict(sim_reset_args or {})
-            metrics["warnings"].append(f"bounded-proof reset classification unavailable: {e}")
-        eq: dict = {"status": "proven",
-                    "method": f"yosys equiv_make + equiv_simple/equiv_induct -seq {args.equiv_seq}; "
-                              f"fallback: miter + sat -seq {args.equiv_bmc} from reset",
-                    "checks": {}}
+        # graph vs mapped tries the short induction first; only cells it leaves unproven justify the deeper one
+        depths = {"rtl_vs_graph": [args.equiv_seq],
+                  "graph_vs_mapped": list(dict.fromkeys(d for d in (args.equiv_mapped_seq, args.equiv_seq) if d))}
         for name, setup in setups.items():
-            ok, log_text, secs = run_yosys(yosys, equiv_induct_script(setup, args.equiv_seq), out_dir / f"equiv_{name}.ys",
-                                           out_dir / f"equiv_{name}.log", args.timeout)
-            status = parse_equiv_status(log_text)
-            status["seconds"] = secs
-            status["log"] = str(out_dir / f"equiv_{name}.log")
-            status["status"] = "proven" if ok and status["unproven"] == 0 else "failed"
-            if not ok and status["unproven"] is None:
-                status["error"] = first_error(log_text, "equivalence run failed (see log)")
-            # equiv_make pairs every output bit (plus same-named registers); fewer $equiv cells
-            # than output bits means the two designs were not actually compared
-            if status["status"] == "proven" and (status["equiv_cells"] or 0) < metrics["boolean"]["output_bits"]:
-                status["status"] = "failed"
-                status["error"] = (f"only {status['equiv_cells']} $equiv cells for "
-                                   f"{metrics['boolean']['output_bits']} output bits")
-            if status["status"] == "failed" and status["unproven"] and args.equiv_bmc > 0 and not sim_resets:
-                # nothing to anchor the bounded proof on: an all-x start would compare nothing
-                status["error"] = (f"{status['unproven']} cells not provable by induction and no reset port is known "
-                                   "for the bounded fallback (pass --sim-reset PORT[:low])")
-            elif status["status"] == "failed" and status["unproven"] and args.equiv_bmc > 0:
-                # induction left cells unproven: fall back to a bounded proof anchored at reset
-                ok, log_text, bmc_secs = run_yosys(yosys, equiv_bmc_script(setup, args.equiv_bmc, sim_resets),
-                                                   out_dir / f"equiv_{name}_bmc.ys", out_dir / f"equiv_{name}_bmc.log",
-                                                   args.timeout)
-                status["bmc"] = {"depth": args.equiv_bmc, "resets": sorted(sim_resets), "seconds": bmc_secs,
-                                 "log": str(out_dir / f"equiv_{name}_bmc.log"),
-                                 "status": "proven" if ok and "SUCCESS" in log_text else "failed"}
-                secs += bmc_secs
-                if status["bmc"]["status"] == "proven":
-                    status["status"] = "bounded"
-                    metrics["warnings"].append(
-                        f"equivalence {name}: {status['unproven']} cells not provable by induction; "
-                        f"bounded proof over {args.equiv_bmc} cycles from reset instead")
-                else:
-                    status["error"] = first_error(log_text, "bounded model check found a mismatch or failed (see log)")
-            eq["checks"][name] = status
-            metrics["timing"][f"equiv_{name}_seconds"] = secs
-            if status["status"] == "failed":
-                eq["status"] = "failed"
-            elif status["status"] == "bounded" and eq["status"] == "proven":
-                eq["status"] = "bounded"
-        metrics["equivalence"] = eq
-        if eq["status"] == "failed":
-            bad = [n for n, c in eq["checks"].items() if c["status"] == "failed"]
-            return fail("equivalence", f"equivalence not proven: {', '.join(bad)} (see equiv_*.log)")
-
-    # --- 5. random differential simulation RTL vs mapped netlist (sample, not proof) ---
+            work[name] = (prove, (name, setup, depths[name]))
+    sim_preflight: str | None = None  # a simulation that cannot be set up is reported after the proofs, as before
     if args.sim_cycles > 0:
         try:  # port classification is decided by the design, not by which simulators this machine has
             classify_ports(graph["ports"], args.sim_clock, sim_reset_args)
         except ValueError as e:
-            return fail("simulation", str(e))
-        iverilog, vvp = shutil.which("iverilog"), shutil.which("vvp")
-        metrics["tools"].update(iverilog=iverilog, vvp=vvp)
-        if not (iverilog and vvp):
-            metrics["simulation"] = {"status": "skipped", "error": "iverilog/vvp not on PATH"}
-            metrics["warnings"].append("simulation skipped: iverilog/vvp not found")
+            sim_preflight = str(e)
         else:
-            t0 = time.time()
-            sim = run_diff_sim(
-                top=args.top, ports=graph["ports"], rtl_sources=sources, includes=[str(Path(i).resolve()) for i in args.include],
-                defines=list(args.define), mapped_json=out["mapped_json"], libs=libs, yosys=yosys, sv2v=sv2v,
-                iverilog=iverilog, vvp=vvp, work=out_dir / SIM_DIR, cycles=args.sim_cycles, seed=args.seed,
-                timeout=args.timeout, clocks=args.sim_clock, resets=sim_reset_args,
-            )
-            sim["method"] = "iverilog random differential simulation, RTL (via sv2v) vs mapped netlist + Liberty-derived cell models"
-            metrics["timing"]["sim_seconds"] = round(time.time() - t0, 3)
-            metrics["simulation"] = sim
-            if sim.get("gate_x_bits"):
-                metrics["warnings"].append(f"simulation: {sim['gate_x_bits']} gate-level X bits where RTL was known (X-pessimism)")
-            if sim["status"] != "match":
-                return fail("simulation", f"RTL vs mapped simulation {sim['status']}: {sim.get('error') or sim.get('first_mismatches', [''])[0]}")
+            iverilog, vvp = shutil.which("iverilog"), shutil.which("vvp")
+            metrics["tools"].update(iverilog=iverilog, vvp=vvp)
+            if not (iverilog and vvp):
+                metrics["simulation"] = {"status": "skipped", "error": "iverilog/vvp not on PATH"}
+                metrics["warnings"].append("simulation skipped: iverilog/vvp not found")
+            else:
+                work["simulation"] = (simulate, (iverilog, vvp))
+
+    t_checks = time.time()
+    with ThreadPoolExecutor(max_workers=min(args.check_jobs, len(work) or 1)) as pool:  # threads only wait on processes
+        futures = {name: pool.submit(fn, *fn_args) for name, (fn, fn_args) in work.items()}
+    results = {name: f.result() for name, f in futures.items()}
+    metrics["timing"]["checks_seconds"] = round(time.time() - t_checks, 3)
+    metrics["timing"]["check_jobs"] = min(args.check_jobs, len(work)) if work else 0
+
+    if not args.no_equiv:
+        if reset_warning:
+            metrics["warnings"].append(reset_warning)
+        eq: dict = {"status": "proven",
+                    "method": f"yosys equiv_make + equiv_simple/equiv_induct -seq {args.equiv_seq} "
+                              f"(graph vs mapped: -seq {args.equiv_mapped_seq} first); "
+                              f"fallback: miter + sat -seq {args.equiv_bmc} from reset",
+                    "checks": {}}
+        for name in CHECKS:
+            if name not in setups:
+                continue
+            r = results[name]
+            eq["checks"][name] = r["status"]
+            metrics["timing"][f"equiv_{name}_seconds"] = r["seconds"]
+            metrics["warnings"].extend(r["warnings"])
+            if r["fail"]:
+                metrics["equivalence"] = eq
+                return fail(*r["fail"])
+            if r["status"]["status"] == "failed":
+                eq["status"] = "failed"
+            elif r["status"]["status"] == "bounded" and eq["status"] == "proven":
+                eq["status"] = "bounded"
+        metrics["equivalence"] = eq
+    if "simulation" in results:
+        metrics["timing"]["sim_seconds"] = results["simulation"]["seconds"]
+        metrics["simulation"] = sim = results["simulation"]["sim"]
+        if sim.get("gate_x_bits"):
+            metrics["warnings"].append(f"simulation: {sim['gate_x_bits']} gate-level X bits where RTL was known (X-pessimism)")
+    if not args.no_equiv and eq["status"] == "failed":
+        bad = [n for n, c in eq["checks"].items() if c["status"] == "failed"]
+        return fail("equivalence", f"equivalence not proven: {', '.join(bad)} (see equiv_*.log)")
+    if sim_preflight:
+        return fail("simulation", sim_preflight)
+    if "simulation" in results and sim["status"] != "match":
+        return fail("simulation", f"RTL vs mapped simulation {sim['status']}: {sim.get('error') or sim.get('first_mismatches', [''])[0]}")
 
     metrics["status"] = "ok"
     metrics["stage"] = "done"
