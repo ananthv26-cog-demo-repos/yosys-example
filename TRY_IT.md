@@ -6,7 +6,7 @@ Everything in this fork lives under [`tools/synth_area/`](tools/synth_area/); th
 
 1. `word_level.json` — the multi-bit operations the RTL describes (`ADD width=8`, `MUX`, `NE`, `REG`, memories), with operand widths, signedness and the source line of each;
 2. `sequential_overlay.json` — every register: clock and edge, reset kind/polarity/value, enable, init, the RTL name of each bit;
-3. `boolean_graph.json` — the logic as NOT/AND/NAND/OR/NOR/XOR/XNOR/MUX gates and flip-flops, with the longest flop-to-flop gate chain (depth) and fanout;
+3. `boolean_graph.json` — the logic as NOT/AND/NAND/OR/NOR/XOR/XNOR/MUX gates and flip-flops, with the longest gate chain (depth) overall and per path class (`reg2reg`, `in2reg`, `reg2out`, `in2out`, each with its endpoints) and fanout;
 4. `mapped_cells.json` — the ASAP7 (open 7 nm, RVT/TT) cells that logic becomes, each with its Liberty area, function and pin-to-net connections; total area in `metrics.json → mapped_cell_area`;
 5. a SAT proof that the gate graph and the mapped netlist compute exactly what the RTL computes (`equivalence.status = proven`), plus a 200-cycle random simulation of RTL vs netlist as a second opinion.
 

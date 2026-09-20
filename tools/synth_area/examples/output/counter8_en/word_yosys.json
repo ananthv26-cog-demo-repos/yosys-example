@@ -4,7 +4,7 @@
     "counter8_en": {
       "attributes": {
         "top": "00000000000000000000000000000001",
-        "src": "<repo>/tools/synth_area/corpus/counter8_en.sv:2.8"
+        "src": "../../repos/yosys-example/tools/synth_area/corpus/counter8_en.sv:2.8"
       },
       "ports": {
         "clk": {
@@ -36,7 +36,7 @@
             "Y_WIDTH": "00000000000000000000000000001000"
           },
           "attributes": {
-            "src": "<repo>/tools/synth_area/corpus/counter8_en.sv:5.31-5.43"
+            "src": "../../repos/yosys-example/tools/synth_area/corpus/counter8_en.sv:5.31-5.43"
           },
           "port_directions": {
             "A": "input",
@@ -60,7 +60,7 @@
             "WIDTH": "00000000000000000000000000001000"
           },
           "attributes": {
-            "src": "<repo>/tools/synth_area/corpus/counter8_en.sv:3.5"
+            "src": "../../repos/yosys-example/tools/synth_area/corpus/counter8_en.sv:3.5"
           },
           "port_directions": {
             "CLK": "input",
@@ -107,7 +107,7 @@
             "WIDTH": "00000000000000000000000000001000"
           },
           "attributes": {
-            "src": "<repo>/tools/synth_area/corpus/counter8_en.sv:5.22-5.44|<repo>/tools/synth_area/corpus/counter8_en.sv:5.14-5.44"
+            "src": "../../repos/yosys-example/tools/synth_area/corpus/counter8_en.sv:5.22-5.44|../../repos/yosys-example/tools/synth_area/corpus/counter8_en.sv:5.14-5.44"
           },
           "port_directions": {
             "A": "input",
@@ -130,7 +130,7 @@
           },
           "attributes": {
             "full_case": "00000000000000000000000000000001",
-            "src": "<repo>/tools/synth_area/corpus/counter8_en.sv:4.22-4.34|<repo>/tools/synth_area/corpus/counter8_en.sv:4.9-5.44"
+            "src": "../../repos/yosys-example/tools/synth_area/corpus/counter8_en.sv:4.22-4.34|../../repos/yosys-example/tools/synth_area/corpus/counter8_en.sv:4.9-5.44"
           },
           "port_directions": {
             "A": "input",

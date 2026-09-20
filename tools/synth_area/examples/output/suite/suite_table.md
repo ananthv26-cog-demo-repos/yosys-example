@@ -1,51 +1,51 @@
-| block | status | equiv | sim | gate_total | dff | edge_total | max_depth | max_fanout | mapped_cell_total | mapped_cell_area | checks | s |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| adder8 | PASS | proven | match | 37 | 0 | 83 | 15 | 2 | 32 | 3.22218 | - | 2.295 |
-| alu4 | PASS | proven | match | 95 | 0 | 192 | 13 | 7 | 60 | 5.0301 | - | 3.189 |
-| and2 | PASS | proven | match | 1 | 0 | 3 | 1 | 1 | 1 | 0.08748 | 4/4 | 3.499 |
-| comparator8 | PASS | proven | match | 49 | 0 | 93 | 11 | 2 | 26 | 1.86624 | - | 2.854 |
-| counter4 | PASS | proven | match | 11 | 4 | 34 | 4 | 4 | 13 | 2.187 | 1/1 | 2.345 |
-| counter8_en | PASS | proven | match | 30 | 8 | 84 | 9 | 8 | 29 | 4.53438 | 1/1 | 2.401 |
-| dec2to4 | PASS | proven | match | 5 | 0 | 13 | 2 | 4 | 5 | 0.33534 | 3/3 | 2.224 |
-| dff | PASS | proven | match | 0 | 1 | 3 | 0 | 1 | 1 | 0.3645 | 4/4 | 2.086 |
-| dff_async_rst | PASS | proven | match | 0 | 1 | 4 | 0 | 1 | 2 | 0.42282 | 3/3 | 2.973 |
-| dff_sync_rst | PASS | proven | match | 2 | 1 | 6 | 2 | 1 | 3 | 0.46656 | 2/2 | 2.735 |
-| fifo_d2_w4 | PASS | proven | match | 33 | 12 | 108 | 6 | 5 | 64 | 8.019 | - | 2.8 |
-| fifo_fwft_d4_w8 | PASS | proven | match | 94 | 39 | 334 | 8 | 18 | 184 | 24.5673 | - | 4.017 |
-| fifo_shift_d4_w8 | PASS | bounded | match | 92 | 35 | 317 | 10 | 25 | 185 | 23.02182 | - | 4.923 |
-| fifo_almost_flags_d8_w8 | PASS | proven | match | 179 | 74 | 646 | 10 | 31 | 357 | 47.2392 | 1/1 | 5.064 |
-| fifo_bypass_d4_w8 | PASS | proven | match | 104 | 39 | 364 | 7 | 18 | 223 | 27.702 | 1/1 | 3.388 |
-| fifo_clr_d4_w8 | PASS | proven | match | 109 | 39 | 364 | 11 | 18 | 210 | 25.52958 | 1/1 | 4.347 |
-| fifo_enum_state_d4_w8 | PASS | bounded | match | 104 | 39 | 351 | 10 | 19 | 193 | 24.72768 | 1/1 | 4.757 |
-| fifo_err_flags_d4_w8 | PASS | proven | match | 103 | 41 | 358 | 8 | 18 | 194 | 25.77744 | 1/1 | 3.47 |
-| fifo_generate_d4_w8 | PASS | proven | match | 140 | 39 | 393 | 8 | 9 | 171 | 23.88204 | 1/1 | 3.353 |
-| fifo_gray_ptr_d8_w8 | PASS | proven | match | 179 | 78 | 654 | 8 | 31 | 354 | 49.01796 | 1/1 | 4.011 |
-| fifo_last_d4_w8 | PASS | proven | match | 115 | 46 | 403 | 9 | 20 | 224 | 29.72862 | 1/1 | 3.884 |
-| fifo_onehot_d4_w8 | PASS | proven | match | 121 | 43 | 386 | 8 | 10 | 183 | 25.13592 | 1/1 | 4.242 |
-| fifo_pipe_d3_w8 | PASS | bounded | match | 40 | 27 | 167 | 6 | 8 | 105 | 15.07572 | 1/1 | 3.682 |
-| fifo_ptr_wrap_d8_w8 | PASS | proven | match | 230 | 72 | 698 | 9 | 20 | 317 | 44.27946 | 1/1 | 3.644 |
-| fifo_regout_d4_w8 | PASS | proven | match | 103 | 48 | 379 | 8 | 18 | 204 | 28.73718 | 1/1 | 5.36 |
-| fifo_sync_rst_d4_w8 | PASS | proven | match | 104 | 41 | 352 | 9 | 16 | 195 | 25.90866 | 1/1 | 2.858 |
-| fsm_traffic | PASS | proven | match | 25 | 5 | 63 | 5 | 5 | 21 | 3.00348 | - | 2.416 |
-| full_adder | PASS | proven | match | 5 | 0 | 12 | 3 | 2 | 3 | 0.39366 | 3/3 | 2.255 |
-| gray_counter4 | PASS | proven | match | 17 | 4 | 44 | 4 | 5 | 16 | 2.53692 | 1/1 | 2.273 |
-| half_adder | PASS | proven | match | 2 | 0 | 6 | 1 | 2 | 2 | 0.2187 | 3/3 | 2.273 |
-| inv | PASS | proven | match | 1 | 0 | 2 | 1 | 1 | 1 | 0.04374 | 4/4 | 2.328 |
-| lfsr8 | PASS | proven | match | 14 | 8 | 51 | 4 | 8 | 26 | 4.03866 | 1/1 | 2.542 |
-| mux2 | PASS | proven | match | 1 | 0 | 4 | 1 | 1 | 3 | 0.17496 | 4/4 | 3.779 |
-| mux4 | PASS | proven | match | 3 | 0 | 10 | 2 | 2 | 6 | 0.42282 | 4/4 | 2.317 |
-| or2 | PASS | proven | match | 1 | 0 | 3 | 1 | 1 | 1 | 0.08748 | 4/4 | 2.807 |
-| parity8 | PASS | proven | match | 7 | 0 | 15 | 3 | 1 | 7 | 0.91854 | 3/3 | 2.429 |
-| priority_enc8 | PASS | proven | match | 20 | 0 | 42 | 5 | 3 | 11 | 0.78732 | - | 2.538 |
-| reg8_en | PASS | proven | match | 8 | 8 | 48 | 1 | 8 | 32 | 4.31568 | 4/4 | 3.096 |
-| shift_reg8 | PASS | proven | match | 0 | 8 | 17 | 0 | 1 | 8 | 2.916 | 4/4 | 2.362 |
-| skid_buffer | PASS | proven | match | 14 | 9 | 63 | 5 | 8 | 38 | 5.01552 | - | 2.705 |
-| sync_fifo_d16_w32 | PASS | proven | match | 1261 | 525 | 4519 | 14 | 170 | 2400 | 322.45128 | - | 12.273 |
-| sync_fifo_d16_w8 | PASS | proven | match | 391 | 141 | 1306 | 14 | 46 | 660 | 88.3548 | - | 6.596 |
-| sync_fifo_d4_w8 | PASS | proven | match | 95 | 39 | 341 | 7 | 18 | 192 | 24.5673 | - | 3.459 |
-| sync_fifo_d8_w8 | PASS | proven | match | 184 | 74 | 655 | 11 | 33 | 350 | 46.90386 | - | 4.127 |
-| xor2 | PASS | proven | match | 1 | 0 | 3 | 1 | 1 | 1 | 0.13122 | 4/4 | 2.31 |
-| sync_fifo | PASS | proven | match | 1275 | 525 | 4540 | 14 | 170 | 2383 | 323.07822 | - | 13.318 |
-| async_fifo | PASS | proven | match | 392 | 168 | 1380 | 12 | 49 | 757 | 101.85588 | - | 3.618 |
-| struct_fifo | PASS | proven | match | 392 | 186 | 1517 | 12 | 89 | 876 | 115.24032 | - | 5.455 |
-| if_fifo | PASS | proven | match | 150 | 71 | 575 | 8 | 34 | 329 | 43.87122 | - | 3.555 |
+| block | status | equiv | sim | gate_total | dff | edge_total | max_depth | depth_reg2reg | depth_in2reg | depth_reg2out | depth_in2out | max_fanout | mapped_cell_total | mapped_cell_area | checks | s |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| adder8 | PASS | proven | match | 37 | 0 | 83 | 15 | - | - | - | 15 | 2 | 32 | 3.22218 | - | 2.37 |
+| alu4 | PASS | proven | match | 95 | 0 | 192 | 13 | - | - | - | 13 | 7 | 60 | 5.0301 | - | 2.378 |
+| and2 | PASS | proven | match | 1 | 0 | 3 | 1 | - | - | - | 1 | 1 | 1 | 0.08748 | 4/4 | 2.244 |
+| comparator8 | PASS | proven | match | 49 | 0 | 93 | 11 | - | - | - | 11 | 2 | 26 | 1.86624 | - | 2.328 |
+| counter4 | PASS | proven | match | 11 | 4 | 34 | 4 | 4 | 2 | 0 | - | 4 | 13 | 2.187 | 1/1 | 2.329 |
+| counter8_en | PASS | proven | match | 30 | 8 | 84 | 9 | 9 | 9 | 0 | - | 8 | 29 | 4.53438 | 1/1 | 2.352 |
+| dec2to4 | PASS | proven | match | 5 | 0 | 13 | 2 | - | - | - | 2 | 4 | 5 | 0.33534 | 3/3 | 2.206 |
+| dff | PASS | proven | match | 0 | 1 | 3 | 0 | - | 0 | 0 | - | 1 | 1 | 0.3645 | 4/4 | 2.009 |
+| dff_async_rst | PASS | proven | match | 0 | 1 | 4 | 0 | - | 0 | 0 | - | 1 | 2 | 0.42282 | 3/3 | 2.017 |
+| dff_sync_rst | PASS | proven | match | 2 | 1 | 6 | 2 | - | 2 | 0 | - | 1 | 3 | 0.46656 | 2/2 | 1.864 |
+| fifo_d2_w4 | PASS | proven | match | 33 | 12 | 108 | 6 | 6 | 5 | 2 | - | 5 | 64 | 8.019 | - | 2.094 |
+| fifo_fwft_d4_w8 | PASS | proven | match | 94 | 39 | 334 | 8 | 8 | 6 | 2 | - | 18 | 184 | 24.5673 | - | 2.753 |
+| fifo_shift_d4_w8 | PASS | bounded | match | 92 | 35 | 317 | 10 | 10 | 9 | 3 | - | 25 | 185 | 23.02182 | - | 3.334 |
+| fifo_almost_flags_d8_w8 | PASS | proven | match | 179 | 74 | 646 | 10 | 10 | 8 | 4 | - | 31 | 357 | 47.2392 | 1/1 | 2.559 |
+| fifo_bypass_d4_w8 | PASS | proven | match | 104 | 39 | 364 | 7 | 7 | 7 | 3 | 1 | 18 | 223 | 27.702 | 1/1 | 2.466 |
+| fifo_clr_d4_w8 | PASS | proven | match | 109 | 39 | 364 | 11 | 11 | 9 | 3 | - | 18 | 210 | 25.52958 | 1/1 | 2.262 |
+| fifo_enum_state_d4_w8 | PASS | bounded | match | 104 | 39 | 351 | 10 | 10 | 9 | 2 | - | 19 | 193 | 24.72768 | 1/1 | 3.698 |
+| fifo_err_flags_d4_w8 | PASS | proven | match | 103 | 41 | 358 | 8 | 8 | 7 | 3 | - | 18 | 194 | 25.77744 | 1/1 | 2.294 |
+| fifo_generate_d4_w8 | PASS | proven | match | 140 | 39 | 393 | 8 | 8 | 7 | 7 | - | 9 | 171 | 23.88204 | 1/1 | 2.324 |
+| fifo_gray_ptr_d8_w8 | PASS | proven | match | 179 | 78 | 654 | 8 | 8 | 5 | 4 | - | 31 | 354 | 49.01796 | 1/1 | 3.628 |
+| fifo_last_d4_w8 | PASS | proven | match | 115 | 46 | 403 | 9 | 9 | 8 | 3 | - | 20 | 224 | 29.72862 | 1/1 | 2.438 |
+| fifo_onehot_d4_w8 | PASS | proven | match | 121 | 43 | 386 | 8 | 8 | 7 | 4 | - | 10 | 183 | 25.13592 | 1/1 | 2.425 |
+| fifo_pipe_d3_w8 | PASS | bounded | match | 40 | 27 | 167 | 6 | 5 | 6 | 3 | 4 | 8 | 105 | 15.07572 | 1/1 | 2.204 |
+| fifo_ptr_wrap_d8_w8 | PASS | proven | match | 230 | 72 | 698 | 9 | 9 | 5 | 7 | - | 20 | 317 | 44.27946 | 1/1 | 2.554 |
+| fifo_regout_d4_w8 | PASS | proven | match | 103 | 48 | 379 | 8 | 8 | 7 | 3 | - | 18 | 204 | 28.73718 | 1/1 | 2.264 |
+| fifo_sync_rst_d4_w8 | PASS | proven | match | 104 | 41 | 352 | 9 | 9 | 8 | 3 | - | 16 | 195 | 25.90866 | 1/1 | 2.248 |
+| fsm_traffic | PASS | proven | match | 25 | 5 | 63 | 5 | 5 | 4 | 0 | - | 5 | 21 | 3.00348 | - | 1.994 |
+| full_adder | PASS | proven | match | 5 | 0 | 12 | 3 | - | - | - | 3 | 2 | 3 | 0.39366 | 3/3 | 1.769 |
+| gray_counter4 | PASS | proven | match | 17 | 4 | 44 | 4 | 4 | 3 | 1 | - | 5 | 16 | 2.53692 | 1/1 | 1.863 |
+| half_adder | PASS | proven | match | 2 | 0 | 6 | 1 | - | - | - | 1 | 2 | 2 | 0.2187 | 3/3 | 1.775 |
+| inv | PASS | proven | match | 1 | 0 | 2 | 1 | - | - | - | 1 | 1 | 1 | 0.04374 | 4/4 | 1.821 |
+| lfsr8 | PASS | proven | match | 14 | 8 | 51 | 4 | 4 | 3 | 0 | - | 8 | 26 | 4.03866 | 1/1 | 1.896 |
+| mux2 | PASS | proven | match | 1 | 0 | 4 | 1 | - | - | - | 1 | 1 | 3 | 0.17496 | 4/4 | 1.805 |
+| mux4 | PASS | proven | match | 3 | 0 | 10 | 2 | - | - | - | 2 | 2 | 6 | 0.42282 | 4/4 | 2.023 |
+| or2 | PASS | proven | match | 1 | 0 | 3 | 1 | - | - | - | 1 | 1 | 1 | 0.08748 | 4/4 | 1.881 |
+| parity8 | PASS | proven | match | 7 | 0 | 15 | 3 | - | - | - | 3 | 1 | 7 | 0.91854 | 3/3 | 1.94 |
+| priority_enc8 | PASS | proven | match | 20 | 0 | 42 | 5 | - | - | - | 5 | 3 | 11 | 0.78732 | - | 1.936 |
+| reg8_en | PASS | proven | match | 8 | 8 | 48 | 1 | 1 | 1 | 0 | - | 8 | 32 | 4.31568 | 4/4 | 2.0 |
+| shift_reg8 | PASS | proven | match | 0 | 8 | 17 | 0 | 0 | 0 | 0 | - | 1 | 8 | 2.916 | 4/4 | 1.92 |
+| skid_buffer | PASS | proven | match | 14 | 9 | 63 | 5 | 4 | 5 | 1 | 2 | 8 | 38 | 5.01552 | - | 2.491 |
+| sync_fifo_d16_w32 | PASS | proven | match | 1261 | 525 | 4519 | 14 | 14 | 11 | 7 | - | 170 | 2400 | 322.45128 | - | 5.149 |
+| sync_fifo_d16_w8 | PASS | proven | match | 391 | 141 | 1306 | 14 | 14 | 11 | 7 | - | 46 | 660 | 88.3548 | - | 2.945 |
+| sync_fifo_d4_w8 | PASS | proven | match | 95 | 39 | 341 | 7 | 7 | 5 | 3 | - | 18 | 192 | 24.5673 | - | 2.323 |
+| sync_fifo_d8_w8 | PASS | proven | match | 184 | 74 | 655 | 11 | 11 | 9 | 4 | - | 33 | 350 | 46.90386 | - | 2.468 |
+| xor2 | PASS | proven | match | 1 | 0 | 3 | 1 | - | - | - | 1 | 1 | 1 | 0.13122 | 4/4 | 2.23 |
+| sync_fifo | PASS | proven | match | 1275 | 525 | 4540 | 14 | 14 | 11 | 7 | - | 170 | 2383 | 323.07822 | - | 4.96 |
+| async_fifo | PASS | proven | match | 392 | 168 | 1380 | 12 | 12 | 11 | 7 | - | 49 | 757 | 101.85588 | - | 3.438 |
+| struct_fifo | PASS | proven | match | 392 | 186 | 1517 | 12 | 12 | 9 | 5 | - | 89 | 876 | 115.24032 | - | 2.733 |
+| if_fifo | PASS | proven | match | 150 | 71 | 575 | 8 | 8 | 6 | 2 | - | 34 | 329 | 43.87122 | - | 2.794 |

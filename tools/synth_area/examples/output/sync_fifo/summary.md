@@ -1,6 +1,6 @@
 # sync_fifo — design-layer summary
 
-- status: **ok** (stage `done`), wall 10.499 s
+- status: **ok** (stage `done`), wall 4.173 s
 - profile: `asap7_rvt_tt_v1` v2 (`53f00dd357a3`), 5 pinned Liberty files
 - frontend: `slang`; yosys: Yosys 0.69+ (git sha1 150c32b03, Release, GNU /usr/bin/g++-11 11.4.0) [github.com/ananthv26-cog-demo-repos/yosys-example at main]
 
@@ -24,6 +24,13 @@ enable bits 13, init bits 0
 
 1275 gates (AND 120, MUX 899, NAND 194, NOR 16, NOT 11, OR 21, XNOR 9, XOR 5), 525 DFF, 4540 edges
 depth 14, max fanout 170, avg fanout 2.1797
+
+| path class | depth | from | to |
+|---|---|---|---|
+| reg2reg | 14 | `count_o[4]` | `count_o[4]` |
+| in2reg | 11 | `pop_i` | `count_o[4]` |
+| reg2out | 7 | `rd_ptr_q[1]` | `data_o[1]` |
+| in2out | none | | |
 
 ## Mapped (`mapped_cells.json`)
 
@@ -72,7 +79,7 @@ depth 14, max fanout 170, avg fanout 2.1797
 
 ## Verification
 
-- equivalence **proven** — rtl_vs_graph: proven (560/560 pairs, 0.352 s); graph_vs_mapped: proven (559/559 pairs, 7.13 s)
+- equivalence **proven** — rtl_vs_graph: proven (560/560 pairs, 0.279 s); graph_vs_mapped: proven (559/559 pairs, 2.33 s)
 - simulation **match** — 200 cycles, 1372 bits compared, 0 mismatches
 
 ## Warnings

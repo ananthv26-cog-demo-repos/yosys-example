@@ -18,8 +18,13 @@ Port and wire bits are named with their HDL index (`data[4]` for the low bit of
 Edges are (driver node -> sink node, sink pin). `max_depth` is the longest chain of
 combinational gates from a graph source (input, constant, DFF Q) to a data sink (output
 port or DFF D pin); logic feeding clock or asynchronous set/reset pins is not counted.
-A combinational loop makes depth undefined: `combinational_loop` is true and `max_depth`
-is null.
+`depth_by_path` splits the same paths by endpoint class, as static timing does:
+`reg2reg` (DFF Q -> DFF D, internal), `in2reg` (input port -> DFF D), `reg2out`
+(DFF Q -> output port) and `in2out` (input port -> output port, purely combinational
+through the block). Each entry is the longest path of its class with its `from`/`to`
+endpoint names, or null when the block has no path of that class; paths fed only by
+constants belong to no class. A combinational loop makes depth undefined:
+`combinational_loop` is true and `max_depth` / `depth_by_path` are null.
 `max_fanout` / `avg_fanout` count data sink pins per driving node; DFF clock pins and
 asynchronous set/reset pins are reported separately (`clock_fanout`, `control_fanout`).
 """
@@ -243,6 +248,60 @@ def build_graph(data: dict, top: str | None, dff_types: set[str] | None = None) 
     }
 
 
+PATH_CLASSES = ("reg2reg", "in2reg", "reg2out", "in2out")
+
+
+def path_class_depths(nodes: list[dict], order: list[int]) -> dict[str, dict | None]:
+    """Longest path per endpoint class. `order` is a topological order of the register-cut graph.
+
+    Two DPs run side by side: the deepest chain reaching each gate from any INPUT node and from
+    any DFF Q. Sinks then classify: a DFF `D` pin closes `in2reg` / `reg2reg`, an output port
+    closes `in2out` / `reg2out`. A gate fed only by constants is reached by neither DP and
+    contributes to no class. Ties keep the first sink in node order.
+    """
+    # per node: (depth, start node id) of the deepest chain from an input / from a register
+    from_in: dict[int, tuple[int, int]] = {}
+    from_reg: dict[int, tuple[int, int]] = {}
+    for nid in order:
+        n = nodes[nid]
+        if n["kind"] == "INPUT":
+            from_in[nid] = (0, nid)
+        elif n["kind"] == "DFF":
+            from_reg[nid] = (0, nid)
+        elif n["kind"] == "GATE":
+            for table in (from_in, from_reg):
+                best = None
+                for pin in sorted(n["inputs"]):
+                    hit = table.get(n["inputs"][pin])
+                    if hit is not None and (best is None or hit[0] > best[0]):
+                        best = hit
+                if best is not None:
+                    table[nid] = (best[0] + 1, best[1])
+
+    def label(nid: int) -> str:
+        n = nodes[nid]
+        return n.get("name") or n.get("cell") or f"node{nid}"
+
+    best_by_class: dict[str, tuple[int, int, int] | None] = {c: None for c in PATH_CLASSES}
+    data_sink_pin = {"OUTPUT": ("A", "in2out", "reg2out"), "DFF": (DFF_DATA_PIN, "in2reg", "reg2reg")}
+    for n in nodes:
+        spec = data_sink_pin.get(n["kind"])
+        if spec is None or spec[0] not in n["inputs"]:
+            continue
+        drv = n["inputs"][spec[0]]
+        for table, cls in ((from_in, spec[1]), (from_reg, spec[2])):
+            hit = table.get(drv)
+            if hit is None:
+                continue
+            cur = best_by_class[cls]
+            if cur is None or hit[0] > cur[0]:
+                best_by_class[cls] = (hit[0], hit[1], n["id"])
+    return {
+        cls: None if v is None else {"depth": v[0], "from": label(v[1]), "to": label(v[2])}
+        for cls, v in best_by_class.items()
+    }
+
+
 def compute_metrics(graph: dict) -> dict:
     nodes = graph["nodes"]
     edges = graph["edges"]
@@ -307,6 +366,7 @@ def compute_metrics(graph: dict) -> dict:
     ]
     # nodes inside a loop never enter `order`, so their depth would silently read as 0
     max_depth = None if comb_loop else max(sink_depths, default=0)
+    depth_by_path = None if comb_loop else path_class_depths(nodes, order)
 
     m: dict = {k.lower(): gate_counts.get(k, 0) for k in GATE_INPUT_PINS}
     m["dff"] = by_kind.get("DFF", 0)
@@ -314,6 +374,7 @@ def compute_metrics(graph: dict) -> dict:
     m["node_total"] = len(nodes)
     m["edge_total"] = len(edges)
     m["max_depth"] = max_depth
+    m["depth_by_path"] = depth_by_path
     m["max_fanout"] = max(fanouts, default=0)
     m["avg_fanout"] = round(sum(fanouts) / len(fanouts), 4) if fanouts else 0.0
     m["clock_fanout"] = clocks
