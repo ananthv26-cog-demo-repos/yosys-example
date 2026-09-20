@@ -49,7 +49,8 @@ import suite_cache
 import suite_evidence
 from bool_area import purge_outputs
 
-TABLE_COLS = ("gate_total", "dff", "edge_total", "max_depth", "max_fanout", "mapped_cell_total", "mapped_cell_area")
+TABLE_COLS = ("gate_total", "dff", "edge_total", "max_depth", "depth_reg2reg", "depth_in2reg", "depth_reg2out",
+              "depth_in2out", "max_fanout", "mapped_cell_total", "mapped_cell_area")
 
 
 def metrics_schema_error(metrics: object) -> str | None:
@@ -162,7 +163,8 @@ def markdown_table(results: list[dict]) -> str:
     for r in results:
         checks = f"{sum(c['passed'] for c in r['checks'])}/{len(r['checks'])}" if r["checks"] else "-"
         cells = [r["name"], "PASS" if r["passed"] else f"FAIL({r['stage']})", str(r["equivalence"]), str(r["simulation"]),
-                 *[str(r["summary"][c]) for c in TABLE_COLS], checks, "cached" if r.get("cached") else str(r["seconds"])]
+                 *["-" if r["summary"][c] is None else str(r["summary"][c]) for c in TABLE_COLS], checks,
+                 "cached" if r.get("cached") else str(r["seconds"])]
         lines.append("| " + " | ".join(cells) + " |")
     return "\n".join(lines) + "\n"
 

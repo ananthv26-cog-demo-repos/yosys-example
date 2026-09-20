@@ -14,9 +14,14 @@
    "<out>"
   ],
   "python": "3.12.13",
+  "python_executable": "<python3>",
   "yosys": "<repo>/build/yosys",
   "yosys_version": "Yosys 0.69+ (git sha1 150c32b03, Release, GNU /usr/bin/g++-11 11.4.0) [github.com/ananthv26-cog-demo-repos/yosys-example at main]",
-  "sv2v_version": "sv2v v0.0.13"
+  "abc": "<repo>/build/yosys-abc",
+  "sv2v": "<sv2v>",
+  "sv2v_version": "sv2v v0.0.13",
+  "iverilog": "/usr/bin/iverilog",
+  "vvp": "/usr/bin/vvp"
  },
  "sources": [
   {
@@ -142,8 +147,8 @@
   "metrics": {
    "path": "<out>/metrics.json",
    "exists": true,
-   "bytes": 7587,
-   "sha256": "cd31cad704391f969256dee969738dce1d072d1bfcaf3e2a65d478aacb56782b"
+   "bytes": 8312,
+   "sha256": "f240b3f4cd06e577442d9487cd0153752c7634025a630c47719e2ac94a4c7a09"
   },
   "netlist": {
    "path": "<out>/mapped_netlist.v",
@@ -178,8 +183,8 @@
   "summary": {
    "path": "<out>/summary.md",
    "exists": true,
-   "bytes": 1979,
-   "sha256": "cf6fd742827e9fdb30d8245cce6f0cdc0ff62236c8a894962fdd2513627fefad"
+   "bytes": 2174,
+   "sha256": "18d55e6218eff3de17a4f4d6de405068386b52593d1e267706e62f9efa7fa748"
   },
   "word": {
    "path": "<out>/word_level.json",
@@ -207,11 +212,13 @@
   }
  },
  "timing": {
-  "word_seconds": 0.008,
-  "synth_seconds": 1.013,
-  "equiv_rtl_vs_graph_seconds": 0.012,
-  "equiv_graph_vs_mapped_seconds": 0.288,
-  "sim_seconds": 0.309
+  "word_seconds": 0.007,
+  "synth_seconds": 0.864,
+  "checks_seconds": 0.26,
+  "check_jobs": 3,
+  "equiv_rtl_vs_graph_seconds": 0.011,
+  "equiv_graph_vs_mapped_seconds": 0.239,
+  "sim_seconds": 0.259
  },
  "errors": []
 }

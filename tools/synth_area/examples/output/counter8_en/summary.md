@@ -1,6 +1,6 @@
 # counter8_en — design-layer summary
 
-- status: **ok** (stage `done`), wall 2.187 s
+- status: **ok** (stage `done`), wall 1.566 s
 - profile: `asap7_rvt_tt_v1` v2 (`53f00dd357a3`), 5 pinned Liberty files
 - frontend: `slang`; yosys: Yosys 0.69+ (git sha1 150c32b03, Release, GNU /usr/bin/g++-11 11.4.0) [github.com/ananthv26-cog-demo-repos/yosys-example at main]
 
@@ -25,6 +25,13 @@ enable bits 8, init bits 0
 30 gates (AND 7, NAND 1, NOR 15, OR 6, XOR 1), 8 DFF, 84 edges
 depth 9, max fanout 8, avg fanout 1.8537
 
+| path class | depth | from | to |
+|---|---|---|---|
+| reg2reg | 9 | `count[0]` | `count[6]` |
+| in2reg | 9 | `en` | `count[6]` |
+| reg2out | 0 | `count[0]` | `count[0]` |
+| in2out | none | | |
+
 ## Mapped (`mapped_cells.json`)
 
 29 cells (8 flops), area **4.53438 um^2** (sequential 2.916)
@@ -44,7 +51,7 @@ depth 9, max fanout 8, avg fanout 1.8537
 
 ## Verification
 
-- equivalence **proven** — rtl_vs_graph: proven (8/8 pairs, 0.012 s); graph_vs_mapped: proven (8/8 pairs, 0.288 s)
+- equivalence **proven** — rtl_vs_graph: proven (8/8 pairs, 0.011 s); graph_vs_mapped: proven (8/8 pairs, 0.239 s)
 - simulation **match** — 200 cycles, 1568 bits compared, 0 mismatches
 
 ## Warnings

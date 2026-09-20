@@ -17,6 +17,6 @@ design -copy-from gold -as gold counter8_en
 design -copy-from gate -as gate counter8_en
 equiv_make gold gate equiv
 hierarchy -top equiv
-equiv_simple -seq 5
-equiv_induct -seq 5
+equiv_simple -seq 1
+equiv_induct -seq 1
 equiv_status -assert

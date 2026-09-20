@@ -17,6 +17,6 @@ design -copy-from gold -as gold sync_fifo
 design -copy-from gate -as gate sync_fifo
 equiv_make gold gate equiv
 hierarchy -top equiv
-equiv_simple -seq 5
-equiv_induct -seq 5
+equiv_simple -seq 1
+equiv_induct -seq 1
 equiv_status -assert

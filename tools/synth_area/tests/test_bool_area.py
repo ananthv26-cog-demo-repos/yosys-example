@@ -88,6 +88,20 @@ class BoolAreaFlowTests(unittest.TestCase):
         self.assertEqual(len(g["edges"]), b["edge_total"])
         self.assertTrue(all(e["from"] in ids and e["to"] in ids for e in g["edges"]))
         self.assertEqual(sum(n["kind"] == "DFF" for n in g["nodes"]), s["dff"])
+        # per-class depth: all outputs are registered so there is no in2out path; the aggregate is the
+        # max over the classes, and the flat summary + summary.md carry the same numbers
+        paths = b["depth_by_path"]
+        self.assertEqual(set(paths), {"reg2reg", "in2reg", "reg2out", "in2out"})
+        self.assertIsNone(paths["in2out"])
+        present = {c: p for c, p in paths.items() if p is not None}
+        self.assertEqual(set(present), {"reg2reg", "in2reg", "reg2out"})
+        self.assertEqual(max(p["depth"] for p in present.values()), b["max_depth"])
+        self.assertTrue(all(p["from"] and p["to"] for p in present.values()), paths)
+        self.assertEqual({c: s[f"depth_{c}"] for c in paths}, {c: p and p["depth"] for c, p in paths.items()})
+        summary_md = (out / "summary.md").read_text()
+        r2r = paths["reg2reg"]
+        self.assertIn(f"| reg2reg | {r2r['depth']} | `{r2r['from']}` | `{r2r['to']}` |", summary_md)
+        self.assertIn("| in2out | none | | |", summary_md)
         # provenance
         self.assertEqual(m["profile"]["name"], "asap7_rvt_tt_v1")
         self.assertEqual(len(m["profile"]["liberty"]), 5)

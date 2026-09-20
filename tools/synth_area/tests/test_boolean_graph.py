@@ -41,6 +41,8 @@ class GraphUnitTests(unittest.TestCase):
         m = boolean_graph.compute_metrics(g)
         self.assertEqual((m["and"], m["not"], m["gate_total"], m["dff"]), (1, 1, 2, 0))
         self.assertEqual(m["max_depth"], 2)
+        self.assertEqual(m["depth_by_path"], {"reg2reg": None, "in2reg": None, "reg2out": None,
+                                              "in2out": {"depth": 2, "from": "a", "to": "y"}})
         self.assertEqual(m["node_total"], len(g["nodes"]))
         self.assertEqual(m["edge_total"], 4)  # a->AND, b->AND, AND->NOT, NOT->y
         self.assertEqual(sorted(e["pin"] for e in g["edges"]), ["A", "A", "A", "B"])
@@ -60,6 +62,9 @@ class GraphUnitTests(unittest.TestCase):
         g = boolean_graph.build_graph(data, "top", {"$_DFF_P_"})
         m = boolean_graph.compute_metrics(g)
         self.assertEqual((m["dff"], m["not"], m["max_depth"]), (1, 1, 1))
+        # clk only reaches the C pin, so no input starts a data path; no netnames -> the flop is named by its cell
+        self.assertEqual(m["depth_by_path"], {"reg2reg": {"depth": 1, "from": "ff", "to": "ff"}, "in2reg": None,
+                                              "reg2out": {"depth": 0, "from": "ff", "to": "q"}, "in2out": None})
         self.assertFalse(m["combinational_loop"])
         self.assertEqual(m["clock_fanout"], {"clk": 1})
         self.assertEqual(m["max_fanout"], 2)  # q drives NOT and the output port; the clock edge is not counted
@@ -169,6 +174,49 @@ class GraphUnitTests(unittest.TestCase):
         m = boolean_graph.compute_metrics(boolean_graph.build_graph(data, "top", {"$_DFF_P_"}))
         self.assertTrue(m["combinational_loop"])
         self.assertIsNone(m["max_depth"])
+        self.assertIsNone(m["depth_by_path"])
+
+    def test_depth_by_path_classifies_endpoints(self) -> None:
+        # in2reg: a -> n1 -> n2 -> ff1.D (2)      reg2reg: ff1.Q -> n3 -> ff2.D (1)
+        # reg2out: ff2.Q -> n4 -> y (1)           in2out: b -> z (0, wire-through)
+        # ff1.D also sees ff2.Q through n2 (reg2reg 1, not deeper than the n3 path); c -> n4 gives in2out 1 to y
+        data = fake_yosys_json(
+            cells={
+                "n1": {"type": "$_NOT_", "connections": {"A": [2], "Y": [10]}},
+                "n2": {"type": "$_AND_", "connections": {"A": [10], "B": [21], "Y": [11]}},
+                "ff1": {"type": "$_DFF_P_", "connections": {"C": [5], "D": [11], "Q": [20]}},
+                "n3": {"type": "$_NOT_", "connections": {"A": [20], "Y": [12]}},
+                "ff2": {"type": "$_DFF_P_", "connections": {"C": [5], "D": [12], "Q": [21]}},
+                "n4": {"type": "$_OR_", "connections": {"A": [21], "B": [4], "Y": [13]}},
+            },
+            ports={"a": {"direction": "input", "bits": [2]}, "b": {"direction": "input", "bits": [3]},
+                   "c": {"direction": "input", "bits": [4]}, "clk": {"direction": "input", "bits": [5]},
+                   "y": {"direction": "output", "bits": [13]}, "z": {"direction": "output", "bits": [3]}},
+            netnames={"r1": {"bits": [20], "hide_name": 0}, "r2": {"bits": [21], "hide_name": 0}},
+        )
+        m = boolean_graph.compute_metrics(boolean_graph.build_graph(data, "top", {"$_DFF_P_"}))
+        self.assertEqual(m["max_depth"], 2)
+        self.assertEqual(m["depth_by_path"], {
+            "reg2reg": {"depth": 1, "from": "r2", "to": "r1"},
+            "in2reg": {"depth": 2, "from": "a", "to": "r1"},
+            "reg2out": {"depth": 1, "from": "r2", "to": "y"},
+            "in2out": {"depth": 1, "from": "c", "to": "y"},
+        })
+        self.assertEqual(max(p["depth"] for p in m["depth_by_path"].values()), m["max_depth"])
+
+    def test_depth_by_path_ignores_constant_only_and_clock_paths(self) -> None:
+        # y = ~1'b0 (constants start no class); clk -> NOT -> ff.C is clock logic, ff.D from a constant
+        data = fake_yosys_json(
+            cells={
+                "k": {"type": "$_NOT_", "connections": {"A": ["0"], "Y": [10]}},
+                "ci": {"type": "$_NOT_", "connections": {"A": [2], "Y": [11]}},
+                "ff": {"type": "$_DFF_P_", "connections": {"C": [11], "D": ["1"], "Q": [12]}},
+            },
+            ports={"clk": {"direction": "input", "bits": [2]}, "y": {"direction": "output", "bits": [10]}},
+        )
+        m = boolean_graph.compute_metrics(boolean_graph.build_graph(data, "top", {"$_DFF_P_"}))
+        self.assertEqual(m["max_depth"], 1)  # aggregate still counts the constant-fed NOT into y
+        self.assertEqual(m["depth_by_path"], {c: None for c in boolean_graph.PATH_CLASSES})
 
     def test_multiple_drivers_rejected_not_last_one_wins(self) -> None:
         data = fake_yosys_json(

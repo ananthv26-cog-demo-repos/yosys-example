@@ -52,7 +52,13 @@ import time
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
-from boolean_graph import GRAPH_SCHEMA_VERSION, UnsupportedCell, build_graph, compute_metrics
+from boolean_graph import (
+    GRAPH_SCHEMA_VERSION,
+    PATH_CLASSES,
+    UnsupportedCell,
+    build_graph,
+    compute_metrics,
+)
 from diff_sim import classify_ports, run_diff_sim
 from mapped_cells import MAPPED_SCHEMA_VERSION, build_cells, cell_types, load_liberty
 from run_report import build_manifest, render_summary, sha256_file
@@ -404,6 +410,9 @@ def flat_summary(boolean: dict, mapped: dict) -> dict:
     s["mapped_cells_by_type"] = mapped["cells_by_type"]
     s["edge_total"] = boolean["edge_total"]
     s["max_depth"] = boolean["max_depth"]
+    for cls in PATH_CLASSES:
+        p = (boolean["depth_by_path"] or {}).get(cls)
+        s[f"depth_{cls}"] = None if p is None else p["depth"]
     s["max_fanout"] = boolean["max_fanout"]
     s["avg_fanout"] = boolean["avg_fanout"]
     s["mapped_cell_area"] = mapped["area"]

@@ -119,6 +119,11 @@ def render_summary(metrics: dict) -> str:
         lines += ["", "## Boolean (`boolean_graph.json`)", "",
                   f"{b['gate_total']} gates ({counts(b.get('gates_by_type'))}), {b['dff']} DFF, {b['edge_total']} edges",
                   f"depth {b['max_depth']}, max fanout {b['max_fanout']}, avg fanout {b['avg_fanout']}"]
+        paths = b.get("depth_by_path")
+        if paths is not None:
+            lines += ["", "| path class | depth | from | to |", "|---|---|---|---|"]
+            for cls, p in paths.items():
+                lines.append(f"| {cls} | " + ("none | | |" if p is None else f"{p['depth']} | `{p['from']}` | `{p['to']}` |"))
     mp = m.get("mapped")
     if mp:
         lines += ["", "## Mapped (`mapped_cells.json`)", "",

@@ -29,6 +29,10 @@
     },
     "edge_total": 84,
     "max_depth": 9,
+    "depth_reg2reg": 9,
+    "depth_in2reg": 9,
+    "depth_reg2out": 0,
+    "depth_in2out": null,
     "max_fanout": 8,
     "avg_fanout": 1.8537,
     "mapped_cell_area": 4.53438,
@@ -90,7 +94,11 @@
   "tools": {
     "yosys": "<repo>/build/yosys",
     "yosys_version": "Yosys 0.69+ (git sha1 150c32b03, Release, GNU /usr/bin/g++-11 11.4.0) [github.com/ananthv26-cog-demo-repos/yosys-example at main]",
-    "sv2v_version": "sv2v v0.0.13"
+    "abc": "<repo>/build/yosys-abc",
+    "sv2v": "<sv2v>",
+    "sv2v_version": "sv2v v0.0.13",
+    "iverilog": "/usr/bin/iverilog",
+    "vvp": "/usr/bin/vvp"
   },
   "frontend": {
     "name": "slang",
@@ -116,6 +124,24 @@
     "node_total": 49,
     "edge_total": 84,
     "max_depth": 9,
+    "depth_by_path": {
+      "reg2reg": {
+        "depth": 9,
+        "from": "count[0]",
+        "to": "count[6]"
+      },
+      "in2reg": {
+        "depth": 9,
+        "from": "en",
+        "to": "count[6]"
+      },
+      "reg2out": {
+        "depth": 0,
+        "from": "count[0]",
+        "to": "count[0]"
+      },
+      "in2out": null
+    },
     "max_fanout": 8,
     "avg_fanout": 1.8537,
     "clock_fanout": {
@@ -170,22 +196,24 @@
   },
   "equivalence": {
     "status": "proven",
-    "method": "yosys equiv_make + equiv_simple/equiv_induct -seq 5; fallback: miter + sat -seq 10 from reset",
+    "method": "yosys equiv_make + equiv_simple/equiv_induct -seq 5 (graph vs mapped: -seq 1 first); fallback: miter + sat -seq 10 from reset",
     "checks": {
       "rtl_vs_graph": {
         "equiv_cells": 8,
         "proven": 8,
         "unproven": 0,
-        "seconds": 0.012,
+        "seq": 5,
         "log": "<out>/equiv_rtl_vs_graph.log",
+        "seconds": 0.011,
         "status": "proven"
       },
       "graph_vs_mapped": {
         "equiv_cells": 8,
         "proven": 8,
         "unproven": 0,
-        "seconds": 0.288,
+        "seq": 1,
         "log": "<out>/equiv_graph_vs_mapped.log",
+        "seconds": 0.239,
         "status": "proven"
       }
     }
@@ -225,18 +253,20 @@
     "log": "<out>/yosys.log"
   },
   "timing": {
-    "word_seconds": 0.008,
-    "synth_seconds": 1.013,
-    "equiv_rtl_vs_graph_seconds": 0.012,
-    "equiv_graph_vs_mapped_seconds": 0.288,
-    "sim_seconds": 0.309
+    "word_seconds": 0.007,
+    "synth_seconds": 0.864,
+    "checks_seconds": 0.26,
+    "check_jobs": 3,
+    "equiv_rtl_vs_graph_seconds": 0.011,
+    "equiv_graph_vs_mapped_seconds": 0.239,
+    "sim_seconds": 0.259
   },
   "warnings": [
     "ABC: Warning: The network is combinational (run \"fraig\" or \"fraig_sweep\").",
     "ABC: Warning: Detected 2 multi-output cells (for example, \"FAx1_ASAP7_75t_R\")."
   ],
   "errors": [],
-  "wall_seconds": 2.187,
+  "wall_seconds": 1.566,
   "word_level": {
     "schema_version": 1,
     "operations": 5,
