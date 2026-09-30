@@ -117,7 +117,10 @@ the first report; `--json` for machines. A candidate gets no delta (and a
 than the baseline, or either report's Liberty area is only a lower bound because
 some cell types (black boxes, unmapped cells, cells declared without `area`, or
 a library with no `area` at all) are not counted (`--allow-partial` overrides the
-last one). A library whose cells legitimately carry `area : 0` is complete, not
+last one). `--max-regression PCT` turns it into a CI gate: exit 1 if any
+comparable candidate's area (transistor estimate without a library) is more than
+PCT percent above the baseline; exactly PCT and improvements pass, and
+not-comparable candidates are not gated. A library whose cells legitimately carry `area : 0` is complete, not
 partial — the runner asks yosys' own Liberty reader whether any cell has an
 `area` attribute rather than inferring it from a zero total. The frontend rule
 matters: the frontends elaborate some constructs

@@ -245,6 +245,69 @@ class SynthAreaTests(unittest.TestCase):
         self.assertTrue(all(r["delta_pct_vs_baseline"] is None for r in rows[1:]))
 
 
+def fake_report(area: float | None = None, transistors: int = 1000, frontend: str = "slang") -> dict:
+    return {
+        "status": "ok", "top": "t", "frontend_used": frontend, "liberty": None if area is None else "x.lib",
+        "stats": {"num_cells": 1, "num_flops": 0, "area": area, "estimated_transistors": transistors},
+    }
+
+
+class CompareGateTests(unittest.TestCase):
+    """compare_reports.py --max-regression on synthetic reports; never reaches Yosys."""
+
+    def setUp(self) -> None:
+        self._td = tempfile.TemporaryDirectory(prefix="synth_area_test_")
+        self.tmp = Path(self._td.name)
+
+    def tearDown(self) -> None:
+        self._td.cleanup()
+
+    def compare(self, reps: list[dict], *flags: str) -> subprocess.CompletedProcess:
+        paths = []
+        for i, rep in enumerate(reps):
+            paths.append(self.tmp / f"r{i}.json")
+            paths[-1].write_text(json.dumps(rep))
+        return subprocess.run([sys.executable, str(TOOL / "compare_reports.py"), *flags, *map(str, paths)],
+                              capture_output=True, text=True, check=False)
+
+    def test_no_flag_never_fails(self) -> None:
+        for flags in ((), ("--json",)):
+            proc = self.compare([fake_report(100.0), fake_report(1000.0)], *flags)
+            self.assertEqual(proc.returncode, 0, proc.stderr)
+            self.assertEqual(proc.stderr, "")
+
+    def test_exactly_limit_passes(self) -> None:
+        for base, cand in ((100.0, 105.0), (0.7, 0.735), (2000, 2100)):
+            area = [fake_report(base), fake_report(cand)]
+            self.assertEqual(self.compare(area, "--max-regression", "5").returncode, 0, (base, cand))
+            tr = [fake_report(transistors=base), fake_report(transistors=cand)]
+            self.assertEqual(self.compare(tr, "--max-regression", "5").returncode, 0, (base, cand))
+        self.assertEqual(self.compare([fake_report(0.7), fake_report(0.77)], "--max-regression", "10").returncode, 0)
+
+    def test_over_limit_fails(self) -> None:
+        proc = self.compare([fake_report(100.0), fake_report(99.0), fake_report(105.01)], "--max-regression", "5")
+        self.assertEqual(proc.returncode, 1)
+        self.assertIn("r2.json: area regressed +5.01%", proc.stderr)
+        self.assertNotIn("r1.json", proc.stderr)
+        proc = self.compare([fake_report(transistors=1000), fake_report(transistors=1001)], "--json",
+                            "--max-regression", "0")
+        self.assertEqual(proc.returncode, 1)
+        self.assertEqual(json.loads(proc.stdout)[1]["delta_pct_vs_baseline"], 0.1)
+        self.assertIn("transistors regressed", proc.stderr)
+
+    def test_improvements_and_incomparable_pass(self) -> None:
+        reps = [fake_report(100.0), fake_report(10.0), fake_report(500.0, frontend="sv2v"),
+                fake_report(transistors=99999), {"status": "failed", "stats": {}}]
+        proc = self.compare(reps, "--max-regression", "0")
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        self.assertNotIn("regressed", proc.stderr)
+
+    def test_rejects_bad_limit(self) -> None:
+        for bad in ("-1", "abc", "nan"):
+            proc = self.compare([fake_report(100.0), fake_report(100.0)], "--max-regression", bad)
+            self.assertEqual(proc.returncode, 2, bad)
+
+
 class InvocationTests(unittest.TestCase):
     """Argument and tool-lookup handling; these never reach Yosys and run on an unbuilt checkout."""
 

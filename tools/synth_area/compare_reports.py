@@ -7,6 +7,8 @@ Compare synth_area JSON reports side by side (baseline first).
 Prints cells / flops / area (or transistor estimate) and the delta vs. the
 baseline, so an optimizer loop can read "did this change make the block
 smaller" from one line. --json emits the same as machine-readable output.
+--max-regression PCT makes it a CI gate: exit 1 if any comparable candidate's
+metric grew by more than PCT percent over the baseline.
 """
 
 from __future__ import annotations
@@ -14,6 +16,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+from fractions import Fraction
 from pathlib import Path
 
 
@@ -47,25 +50,46 @@ def incomparable(base: dict, rep: dict, allow_partial: bool) -> str | None:
     return None
 
 
+def percent(text: str) -> Fraction:
+    try:
+        pct = Fraction(text)
+    except (ValueError, ZeroDivisionError):
+        raise argparse.ArgumentTypeError(f"not a number: {text!r}") from None
+    if pct < 0:
+        raise argparse.ArgumentTypeError(f"must be >= 0: {text!r}")
+    return pct
+
+
+def regressed(base_val: float, val: float, max_pct: Fraction) -> bool:
+    """True if `val` exceeds `base_val` by more than `max_pct` percent, in exact decimal arithmetic."""
+    base, cand = Fraction(repr(base_val)), Fraction(repr(val))
+    return (cand - base) * 100 > max_pct * base
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("reports", nargs="+")
     ap.add_argument("--json", action="store_true")
     ap.add_argument("--allow-partial", action="store_true",
                     help="compute deltas even when some cells had no area/transistor model")
+    ap.add_argument("--max-regression", type=percent, metavar="PCT",
+                    help="exit 1 if any comparable candidate's metric is more than PCT percent above the baseline")
     args = ap.parse_args()
 
     reps = [json.loads(Path(p).read_text()) for p in args.reports]
     base = reps[0]
     base_name, base_val = metric(base)
     rows = []
-    for path, rep in zip(args.reports, reps):
+    regressions = []
+    for i, (path, rep) in enumerate(zip(args.reports, reps)):
         name, val = metric(rep)
         s = rep.get("stats", {})
         why = incomparable(base, rep, args.allow_partial)
         delta = None
         if why is None and val is not None:
             delta = (val - base_val) / base_val * 100.0
+            if i > 0 and args.max_regression is not None and regressed(base_val, val, args.max_regression):
+                regressions.append((path, delta))
         elif why and not args.json:
             print(f"compare_reports: {path}: not comparable to baseline ({why})", file=sys.stderr)
         rows.append({
@@ -82,9 +106,14 @@ def main() -> int:
             "seconds": rep.get("wall_seconds"),
         })
 
+    for path, delta in regressions:
+        print(f"compare_reports: {path}: {base_name} regressed {delta:+.2f}% vs baseline "
+              f"(limit {float(args.max_regression):g}%)", file=sys.stderr)
+    status = 1 if regressions else 0
+
     if args.json:
         print(json.dumps(rows, indent=2))
-        return 0
+        return status
 
     hdr = f"{'report':40s} {'status':7s} {'cells':>7s} {'flops':>6s} {base_name:>14s} {'delta%':>8s} {'sec':>6s}"
     print(hdr)
@@ -94,7 +123,7 @@ def main() -> int:
         d = "-" if r["delta_pct_vs_baseline"] is None else f"{r['delta_pct_vs_baseline']:+.2f}"
         print(f"{Path(r['report']).name[:40]:40s} {r['status']!s:7s} {r['cells']!s:>7s} "
               f"{r['flops']!s:>6s} {v:>14s} {d:>8s} {r['seconds']!s:>6s}")
-    return 0
+    return status
 
 
 if __name__ == "__main__":
