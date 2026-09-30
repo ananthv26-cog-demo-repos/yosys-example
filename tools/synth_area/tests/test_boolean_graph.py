@@ -218,6 +218,45 @@ class GraphUnitTests(unittest.TestCase):
         self.assertEqual(m["max_depth"], 1)  # aggregate still counts the constant-fed NOT into y
         self.assertEqual(m["depth_by_path"], {c: None for c in boolean_graph.PATH_CLASSES})
 
+    def test_dead_gates_count_logic_reaching_no_sink(self) -> None:
+        # live: a -> n1 -> ff.D, ff.Q -> n2 -> y, clk -> c1 -> ff.C, rst_n -> r1 -> ff.R (control logic is live)
+        # dead: a -> d1 -> d2, where d2 drives nothing, so d1 is dead too
+        data = fake_yosys_json(
+            cells={
+                "n1": {"type": "$_NOT_", "connections": {"A": [2], "Y": [10]}},
+                "ff": {"type": "$_DFF_PN0_", "connections": {"C": [13], "D": [10], "R": [14], "Q": [11]}},
+                "n2": {"type": "$_NOT_", "connections": {"A": [11], "Y": [12]}},
+                "d1": {"type": "$_AND_", "connections": {"A": [2], "B": [2], "Y": [20]}},
+                "d2": {"type": "$_NOT_", "connections": {"A": [20], "Y": [21]}},
+                "c1": {"type": "$_NOT_", "connections": {"A": [3], "Y": [13]}},
+                "r1": {"type": "$_NOT_", "connections": {"A": [4], "Y": [14]}},
+            },
+            ports={"a": {"direction": "input", "bits": [2]}, "clk": {"direction": "input", "bits": [3]},
+                   "rst_n": {"direction": "input", "bits": [4]}, "y": {"direction": "output", "bits": [12]}},
+        )
+        m = boolean_graph.compute_metrics(boolean_graph.build_graph(data, "top", {"$_DFF_PN0_"}))
+        self.assertEqual((m["gate_total"], m["dead_gates"]), (6, 2))
+        self.assertEqual(m["dead_gates_by_type"], {"AND": 1, "NOT": 1})
+        # once d2 feeds the live n1 path, the whole d1 -> d2 chain is live
+        data["modules"]["top"]["cells"]["n1"] = {"type": "$_AND_", "connections": {"A": [2], "B": [21], "Y": [10]}}
+        m = boolean_graph.compute_metrics(boolean_graph.build_graph(data, "top", {"$_DFF_PN0_"}))
+        self.assertEqual((m["dead_gates"], m["dead_gates_by_type"]), (0, {}))
+
+    def test_dead_gates_null_under_combinational_loop(self) -> None:
+        # a loop leaves liveness undefined like depth, whether or not a sink reads it
+        data = fake_yosys_json(
+            cells={"a1": {"type": "$_AND_", "connections": {"A": [2], "B": [5], "Y": [4]}},
+                   "n1": {"type": "$_NOT_", "connections": {"A": [4], "Y": [5]}}},
+            ports={"a": {"direction": "input", "bits": [2]}, "y": {"direction": "output", "bits": [2]}},
+        )
+        for y_bit in (2, 4):  # y a wire-through of a (loop unread), then y read from the loop
+            data["modules"]["top"]["ports"]["y"]["bits"] = [y_bit]
+            m = boolean_graph.compute_metrics(boolean_graph.build_graph(data, "top", set()))
+            self.assertTrue(m["combinational_loop"])
+            self.assertIsNone(m["max_depth"])
+            self.assertIsNone(m["dead_gates"])
+            self.assertIsNone(m["dead_gates_by_type"])
+
     def test_multiple_drivers_rejected_not_last_one_wins(self) -> None:
         data = fake_yosys_json(
             cells={"n1": {"type": "$_NOT_", "connections": {"A": [2], "Y": [4]},

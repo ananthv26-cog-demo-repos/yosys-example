@@ -27,6 +27,9 @@ constants belong to no class. A combinational loop makes depth undefined:
 `combinational_loop` is true and `max_depth` / `depth_by_path` are null.
 `max_fanout` / `avg_fanout` count data sink pins per driving node; DFF clock pins and
 asynchronous set/reset pins are reported separately (`clock_fanout`, `control_fanout`).
+`dead_gates` counts gates whose output reaches no output port and no DFF pin (data, clock or
+set/reset) through other gates, split by gate type in `dead_gates_by_type`; both are null
+under a combinational loop.
 """
 
 from __future__ import annotations
@@ -364,6 +367,17 @@ def compute_metrics(graph: dict) -> dict:
         for n in nodes
         if (pin := data_sink_pin.get(n["kind"])) is not None and pin in n["inputs"]
     ]
+    # dead logic: gates with no path through other gates to an output port or any DFF pin
+    # (clock and set/reset logic is control, not dead). Walk back from each sink's drivers.
+    live: set[int] = set()
+    stack = [d for n in nodes if n["kind"] in ("OUTPUT", "DFF") for d in n["inputs"].values()]
+    while stack:
+        nid = stack.pop()
+        if nid in live or nodes[nid]["kind"] != "GATE":
+            continue
+        live.add(nid)
+        stack.extend(nodes[nid]["inputs"].values())
+    dead_counts = Counter(n["type"] for n in nodes if n["kind"] == "GATE" and n["id"] not in live)
     # nodes inside a loop never enter `order`, so their depth would silently read as 0
     max_depth = None if comb_loop else max(sink_depths, default=0)
     depth_by_path = None if comb_loop else path_class_depths(nodes, order)
@@ -373,6 +387,9 @@ def compute_metrics(graph: dict) -> dict:
     m["gate_total"] = sum(gate_counts.values())
     m["node_total"] = len(nodes)
     m["edge_total"] = len(edges)
+    # like depth, liveness is left undefined under a combinational loop
+    m["dead_gates"] = None if comb_loop else sum(dead_counts.values())
+    m["dead_gates_by_type"] = None if comb_loop else dict(sorted(dead_counts.items()))
     m["max_depth"] = max_depth
     m["depth_by_path"] = depth_by_path
     m["max_fanout"] = max(fanouts, default=0)
