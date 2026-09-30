@@ -117,11 +117,7 @@ the first report; `--json` for machines. A candidate gets no delta (and a
 than the baseline, or either report's Liberty area is only a lower bound because
 some cell types (black boxes, unmapped cells, cells declared without `area`, or
 a library with no `area` at all) are not counted (`--allow-partial` overrides the
-last one). `--max-regression PCT` turns it into a CI gate: exit 1 if any
-candidate's area (transistor estimate without a library) is more than PCT
-percent above the baseline (exactly PCT and improvements pass), and exit 3 if any
-candidate is not comparable to the baseline, naming the report and reason on
-stderr (also with `--json`). A library whose cells legitimately carry `area : 0` is complete, not
+last one). A library whose cells legitimately carry `area : 0` is complete, not
 partial — the runner asks yosys' own Liberty reader whether any cell has an
 `area` attribute rather than inferring it from a zero total. The frontend rule
 matters: the frontends elaborate some constructs
@@ -129,6 +125,14 @@ differently and the resulting gate counts can differ substantially for the same
 RTL (e.g. `cc_fifo` from pulp-platform/common_cells: 1079 cells via slang vs
 1779 via sv2v). Slang is the default because it passes the most constructs and
 gives the smaller netlists in our samples.
+
+`--max-regression PCT` turns the comparison into a CI gate: exit 1 if any
+candidate's area (transistor estimate without a library) is more than PCT
+percent above the baseline (exactly PCT and improvements pass), and exit 3 if any
+candidate is not comparable to the baseline, naming the report and reason on
+stderr (also with `--json`); argparse errors keep exit 2. With `--json` each row
+carries `"regressed"`: true/false against the limit, or null when the row is not
+comparable or no `--max-regression` was given.
 
 ## Slurm
 

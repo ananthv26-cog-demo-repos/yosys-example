@@ -295,6 +295,18 @@ class CompareGateTests(unittest.TestCase):
         self.assertEqual(json.loads(proc.stdout)[1]["delta_pct_vs_baseline"], 0.1)
         self.assertIn("transistors regressed", proc.stderr)
 
+    def test_json_regressed_field(self) -> None:
+        reps = [fake_report(100.0), fake_report(105.0), fake_report(105.01), fake_report(90.0),
+                fake_report(500.0, frontend="sv2v")]
+        rows = json.loads(self.compare(reps, "--json").stdout)
+        self.assertEqual([r["regressed"] for r in rows], [None] * 5)
+        proc = self.compare(reps, "--json", "--max-regression", "5")
+        self.assertEqual(proc.returncode, 3)
+        self.assertEqual([r["regressed"] for r in json.loads(proc.stdout)], [False, False, True, False, None])
+        proc = self.compare(reps[:4], "--json", "--max-regression", "5")
+        self.assertEqual(proc.returncode, 1)
+        self.assertEqual([r["regressed"] for r in json.loads(proc.stdout)], [False, False, True, False])
+
     def test_improvements_pass(self) -> None:
         proc = self.compare([fake_report(100.0), fake_report(10.0), fake_report(99.99)], "--max-regression", "0")
         self.assertEqual(proc.returncode, 0, proc.stderr)

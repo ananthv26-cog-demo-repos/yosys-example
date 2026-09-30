@@ -94,10 +94,13 @@ def main() -> int:
         s = rep.get("stats", {})
         why = incomparable(base, rep, args.allow_partial)
         delta = None
+        worse = None
         if why is None and val is not None:
             delta = (val - base_val) / base_val * 100.0
-            if i > 0 and gate and regressed(base_val, val, args.max_regression):
-                regressions.append((path, delta))
+            if gate:
+                worse = regressed(base_val, val, args.max_regression)
+                if i > 0 and worse:
+                    regressions.append((path, delta))
         elif gate and i > 0 and why is None:
             why = f"{name} is missing"
         if why and (gate or not args.json):
@@ -115,6 +118,7 @@ def main() -> int:
             "value": val,
             "delta_pct_vs_baseline": None if delta is None else round(delta, 2),
             "not_comparable": why,
+            "regressed": worse,
             "seconds": rep.get("wall_seconds"),
         })
 
