@@ -7,8 +7,9 @@ Compare synth_area JSON reports side by side (baseline first).
 Prints cells / flops / area (or transistor estimate) and the delta vs. the
 baseline, so an optimizer loop can read "did this change make the block
 smaller" from one line. --json emits the same as machine-readable output.
---max-regression PCT makes it a CI gate: exit 1 if any comparable candidate's
-metric grew by more than PCT percent over the baseline.
+--max-regression PCT makes it a CI gate: exit 1 if any candidate's metric grew
+by more than PCT percent over the baseline, exit 2 if any candidate is not
+comparable to the baseline (failed, different frontend/liberty/metric, ...).
 """
 
 from __future__ import annotations
@@ -77,14 +78,17 @@ def main() -> int:
     ap.add_argument("--allow-partial", action="store_true",
                     help="compute deltas even when some cells had no area/transistor model")
     ap.add_argument("--max-regression", type=percent, metavar="PCT",
-                    help="exit 1 if any comparable candidate's metric is more than PCT percent above the baseline")
+                    help="exit 1 if any candidate's metric is more than PCT percent above the baseline, "
+                         "2 if any candidate is not comparable to the baseline")
     args = ap.parse_args()
 
     reps = [json.loads(Path(p).read_text()) for p in args.reports]
     base = reps[0]
     base_name, base_val = metric(base)
+    gate = args.max_regression is not None
     rows = []
     regressions = []
+    ungated = []
     for i, (path, rep) in enumerate(zip(args.reports, reps)):
         name, val = metric(rep)
         s = rep.get("stats", {})
@@ -92,10 +96,14 @@ def main() -> int:
         delta = None
         if why is None and val is not None:
             delta = (val - base_val) / base_val * 100.0
-            if i > 0 and args.max_regression is not None and regressed(base_val, val, args.max_regression):
+            if i > 0 and gate and regressed(base_val, val, args.max_regression):
                 regressions.append((path, delta))
-        elif why and not args.json:
+        elif why and (gate or not args.json):
             print(f"compare_reports: {path}: not comparable to baseline ({why})", file=sys.stderr)
+        if i > 0 and gate and delta is None:
+            ungated.append(path)
+            if why is None:
+                print(f"compare_reports: {path}: not comparable to baseline ({name} is missing)", file=sys.stderr)
         rows.append({
             "report": path,
             "status": rep.get("status"),
@@ -113,7 +121,7 @@ def main() -> int:
     for path, delta in regressions:
         print(f"compare_reports: {path}: {base_name} regressed {delta:+.2f}% vs baseline "
               f"(limit {float(args.max_regression):g}%)", file=sys.stderr)
-    status = 1 if regressions else 0
+    status = 2 if ungated else 1 if regressions else 0
 
     if args.json:
         print(json.dumps(rows, indent=2))
