@@ -57,6 +57,10 @@ def percent(text: str) -> Fraction:
         raise argparse.ArgumentTypeError(f"not a number: {text!r}") from None
     if pct < 0:
         raise argparse.ArgumentTypeError(f"must be >= 0: {text!r}")
+    try:
+        float(pct)
+    except OverflowError:
+        raise argparse.ArgumentTypeError(f"too large: {text!r}") from None
     return pct
 
 

@@ -303,7 +303,7 @@ class CompareGateTests(unittest.TestCase):
         self.assertNotIn("regressed", proc.stderr)
 
     def test_rejects_bad_limit(self) -> None:
-        for bad in ("-1", "abc", "nan"):
+        for bad in ("-1", "abc", "nan", "1e400"):
             proc = self.compare([fake_report(100.0), fake_report(100.0)], "--max-regression", bad)
             self.assertEqual(proc.returncode, 2, bad)
 
