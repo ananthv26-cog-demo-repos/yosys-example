@@ -126,6 +126,14 @@ RTL (e.g. `cc_fifo` from pulp-platform/common_cells: 1079 cells via slang vs
 1779 via sv2v). Slang is the default because it passes the most constructs and
 gives the smaller netlists in our samples.
 
+`--max-regression PCT` turns the comparison into a CI gate: exit 1 if any
+candidate's area (transistor estimate without a library) is more than PCT
+percent above the baseline (exactly PCT and improvements pass), and exit 3 if any
+candidate is not comparable to the baseline, naming the report and reason on
+stderr (also with `--json`); argparse errors keep exit 2. With `--json` each row
+carries `"regressed"`: true/false against the limit, or null when the row is not
+comparable or no `--max-regression` was given.
+
 ## Slurm
 
 `slurm_synth_area.sh` submits one run with `sbatch --wrap` (arguments are passed

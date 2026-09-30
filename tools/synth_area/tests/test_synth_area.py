@@ -245,6 +245,123 @@ class SynthAreaTests(unittest.TestCase):
         self.assertTrue(all(r["delta_pct_vs_baseline"] is None for r in rows[1:]))
 
 
+def fake_report(area: float | None = None, transistors: int = 1000, frontend: str = "slang") -> dict:
+    return {
+        "status": "ok", "top": "t", "frontend_used": frontend, "liberty": None if area is None else "x.lib",
+        "stats": {"num_cells": 1, "num_flops": 0, "area": area, "estimated_transistors": transistors},
+    }
+
+
+class CompareGateTests(unittest.TestCase):
+    """compare_reports.py --max-regression on synthetic reports; never reaches Yosys."""
+
+    def setUp(self) -> None:
+        self._td = tempfile.TemporaryDirectory(prefix="synth_area_test_")
+        self.tmp = Path(self._td.name)
+
+    def tearDown(self) -> None:
+        self._td.cleanup()
+
+    def compare(self, reps: list[dict], *flags: str) -> subprocess.CompletedProcess:
+        paths = []
+        for i, rep in enumerate(reps):
+            paths.append(self.tmp / f"r{i}.json")
+            paths[-1].write_text(json.dumps(rep))
+        return subprocess.run([sys.executable, str(TOOL / "compare_reports.py"), *flags, *map(str, paths)],
+                              capture_output=True, text=True, check=False)
+
+    def test_no_flag_never_fails(self) -> None:
+        for flags in ((), ("--json",)):
+            proc = self.compare([fake_report(100.0), fake_report(1000.0)], *flags)
+            self.assertEqual(proc.returncode, 0, proc.stderr)
+            self.assertEqual(proc.stderr, "")
+
+    def test_exactly_limit_passes(self) -> None:
+        for base, cand in ((100.0, 105.0), (0.7, 0.735), (2000, 2100)):
+            area = [fake_report(base), fake_report(cand)]
+            self.assertEqual(self.compare(area, "--max-regression", "5").returncode, 0, (base, cand))
+            tr = [fake_report(transistors=base), fake_report(transistors=cand)]
+            self.assertEqual(self.compare(tr, "--max-regression", "5").returncode, 0, (base, cand))
+        self.assertEqual(self.compare([fake_report(0.7), fake_report(0.77)], "--max-regression", "10").returncode, 0)
+
+    def test_over_limit_fails(self) -> None:
+        proc = self.compare([fake_report(100.0), fake_report(99.0), fake_report(105.01)], "--max-regression", "5")
+        self.assertEqual(proc.returncode, 1)
+        self.assertIn("r2.json: area regressed +5.01%", proc.stderr)
+        self.assertNotIn("r1.json", proc.stderr)
+        proc = self.compare([fake_report(transistors=1000), fake_report(transistors=1001)], "--json",
+                            "--max-regression", "0")
+        self.assertEqual(proc.returncode, 1)
+        self.assertEqual(json.loads(proc.stdout)[1]["delta_pct_vs_baseline"], 0.1)
+        self.assertIn("transistors regressed", proc.stderr)
+
+    def test_json_regressed_field(self) -> None:
+        reps = [fake_report(100.0), fake_report(105.0), fake_report(105.01), fake_report(90.0),
+                fake_report(500.0, frontend="sv2v")]
+        rows = json.loads(self.compare(reps, "--json").stdout)
+        self.assertEqual([r["regressed"] for r in rows], [None] * 5)
+        proc = self.compare(reps, "--json", "--max-regression", "5")
+        self.assertEqual(proc.returncode, 3)
+        self.assertEqual([r["regressed"] for r in json.loads(proc.stdout)], [False, False, True, False, None])
+        proc = self.compare(reps[:4], "--json", "--max-regression", "5")
+        self.assertEqual(proc.returncode, 1)
+        self.assertEqual([r["regressed"] for r in json.loads(proc.stdout)], [False, False, True, False])
+
+    def test_improvements_pass(self) -> None:
+        proc = self.compare([fake_report(100.0), fake_report(10.0), fake_report(99.99)], "--max-regression", "0")
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        self.assertEqual(proc.stderr, "")
+
+    def test_incomparable_candidates_fail_with_3(self) -> None:
+        missing = fake_report()
+        del missing["stats"]["estimated_transistors"]
+        cases = (
+            (fake_report(500.0, frontend="sv2v"), "different frontend"),
+            ({**fake_report(90.0), "liberty": "other.lib"}, "different liberty"),
+            (fake_report(transistors=900), "different metric"),
+            ({"status": "failed", "stats": {}}, "failed"),
+            ({**fake_report(90.0), "stats": {**fake_report(90.0)["stats"], "area_is_lower_bound": True}}, "partial"),
+        )
+        for cand, why in cases:
+            for flags in ((), ("--json",)):
+                proc = self.compare([fake_report(100.0), fake_report(99.0), cand], *flags, "--max-regression", "5")
+                self.assertEqual(proc.returncode, 3, (why, flags, proc.stderr))
+                self.assertIn(f"r2.json: not comparable to baseline ({why}", proc.stderr)
+                self.assertNotIn("r1.json", proc.stderr)
+                if flags:
+                    self.assertEqual(len(json.loads(proc.stdout)), 3)
+        proc = self.compare([fake_report(), missing], "--json", "--max-regression", "5")
+        self.assertEqual(proc.returncode, 3)
+        self.assertIn("r1.json: not comparable to baseline (transistors is missing)", proc.stderr)
+        self.assertEqual(json.loads(proc.stdout)[1]["not_comparable"], "transistors is missing")
+        # a bad baseline makes every candidate incomparable, and wins over a regression elsewhere
+        proc = self.compare([{"status": "failed", "stats": {}}, fake_report(100.0)], "--max-regression", "5")
+        self.assertEqual(proc.returncode, 3)
+        self.assertIn("r1.json: not comparable to baseline (baseline failed)", proc.stderr)
+        proc = self.compare([fake_report(100.0), fake_report(200.0), fake_report(1.0, frontend="sv2v")], "--json",
+                            "--max-regression", "5")
+        self.assertEqual(proc.returncode, 3)
+        self.assertIn("r1.json: area regressed", proc.stderr)
+        self.assertIn("r2.json: not comparable", proc.stderr)
+        # --allow-partial still makes partial area comparable
+        partial = {**fake_report(90.0), "stats": {**fake_report(90.0)["stats"], "area_is_lower_bound": True}}
+        proc = self.compare([fake_report(100.0), partial], "--allow-partial", "--max-regression", "5")
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+
+    def test_no_flag_incomparable_unchanged(self) -> None:
+        reps = [fake_report(100.0), fake_report(500.0, frontend="sv2v")]
+        proc = self.compare(reps)
+        self.assertEqual(proc.returncode, 0)
+        self.assertIn("not comparable", proc.stderr)
+        proc = self.compare(reps, "--json")
+        self.assertEqual((proc.returncode, proc.stderr), (0, ""))
+
+    def test_rejects_bad_limit(self) -> None:
+        for bad in ("-1", "abc", "nan", "1e400"):
+            proc = self.compare([fake_report(100.0), fake_report(100.0)], "--max-regression", bad)
+            self.assertEqual(proc.returncode, 2, bad)
+
+
 class InvocationTests(unittest.TestCase):
     """Argument and tool-lookup handling; these never reach Yosys and run on an unbuilt checkout."""
 
