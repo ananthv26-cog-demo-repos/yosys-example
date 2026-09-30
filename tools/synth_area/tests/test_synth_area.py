@@ -300,7 +300,7 @@ class CompareGateTests(unittest.TestCase):
         self.assertEqual(proc.returncode, 0, proc.stderr)
         self.assertEqual(proc.stderr, "")
 
-    def test_incomparable_candidates_fail_with_2(self) -> None:
+    def test_incomparable_candidates_fail_with_3(self) -> None:
         missing = fake_report()
         del missing["stats"]["estimated_transistors"]
         cases = (
@@ -313,22 +313,22 @@ class CompareGateTests(unittest.TestCase):
         for cand, why in cases:
             for flags in ((), ("--json",)):
                 proc = self.compare([fake_report(100.0), fake_report(99.0), cand], *flags, "--max-regression", "5")
-                self.assertEqual(proc.returncode, 2, (why, flags, proc.stderr))
+                self.assertEqual(proc.returncode, 3, (why, flags, proc.stderr))
                 self.assertIn(f"r2.json: not comparable to baseline ({why}", proc.stderr)
                 self.assertNotIn("r1.json", proc.stderr)
                 if flags:
                     self.assertEqual(len(json.loads(proc.stdout)), 3)
         proc = self.compare([fake_report(), missing], "--json", "--max-regression", "5")
-        self.assertEqual(proc.returncode, 2)
+        self.assertEqual(proc.returncode, 3)
         self.assertIn("r1.json: not comparable to baseline (transistors is missing)", proc.stderr)
         self.assertEqual(json.loads(proc.stdout)[1]["not_comparable"], "transistors is missing")
         # a bad baseline makes every candidate incomparable, and wins over a regression elsewhere
         proc = self.compare([{"status": "failed", "stats": {}}, fake_report(100.0)], "--max-regression", "5")
-        self.assertEqual(proc.returncode, 2)
+        self.assertEqual(proc.returncode, 3)
         self.assertIn("r1.json: not comparable to baseline (baseline failed)", proc.stderr)
         proc = self.compare([fake_report(100.0), fake_report(200.0), fake_report(1.0, frontend="sv2v")], "--json",
                             "--max-regression", "5")
-        self.assertEqual(proc.returncode, 2)
+        self.assertEqual(proc.returncode, 3)
         self.assertIn("r1.json: area regressed", proc.stderr)
         self.assertIn("r2.json: not comparable", proc.stderr)
         # --allow-partial still makes partial area comparable

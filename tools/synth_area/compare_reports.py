@@ -8,7 +8,7 @@ Prints cells / flops / area (or transistor estimate) and the delta vs. the
 baseline, so an optimizer loop can read "did this change make the block
 smaller" from one line. --json emits the same as machine-readable output.
 --max-regression PCT makes it a CI gate: exit 1 if any candidate's metric grew
-by more than PCT percent over the baseline, exit 2 if any candidate is not
+by more than PCT percent over the baseline, exit 3 if any candidate is not
 comparable to the baseline (failed, different frontend/liberty/metric, ...).
 """
 
@@ -79,7 +79,7 @@ def main() -> int:
                     help="compute deltas even when some cells had no area/transistor model")
     ap.add_argument("--max-regression", type=percent, metavar="PCT",
                     help="exit 1 if any candidate's metric is more than PCT percent above the baseline, "
-                         "2 if any candidate is not comparable to the baseline")
+                         "3 if any candidate is not comparable to the baseline")
     args = ap.parse_args()
 
     reps = [json.loads(Path(p).read_text()) for p in args.reports]
@@ -121,7 +121,7 @@ def main() -> int:
     for path, delta in regressions:
         print(f"compare_reports: {path}: {base_name} regressed {delta:+.2f}% vs baseline "
               f"(limit {float(args.max_regression):g}%)", file=sys.stderr)
-    status = 2 if ungated else 1 if regressions else 0
+    status = 3 if ungated else 1 if regressions else 0
 
     if args.json:
         print(json.dumps(rows, indent=2))
