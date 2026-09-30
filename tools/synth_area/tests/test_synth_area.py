@@ -318,9 +318,10 @@ class CompareGateTests(unittest.TestCase):
                 self.assertNotIn("r1.json", proc.stderr)
                 if flags:
                     self.assertEqual(len(json.loads(proc.stdout)), 3)
-        proc = self.compare([fake_report(), missing], "--max-regression", "5")
+        proc = self.compare([fake_report(), missing], "--json", "--max-regression", "5")
         self.assertEqual(proc.returncode, 2)
         self.assertIn("r1.json: not comparable to baseline (transistors is missing)", proc.stderr)
+        self.assertEqual(json.loads(proc.stdout)[1]["not_comparable"], "transistors is missing")
         # a bad baseline makes every candidate incomparable, and wins over a regression elsewhere
         proc = self.compare([{"status": "failed", "stats": {}}, fake_report(100.0)], "--max-regression", "5")
         self.assertEqual(proc.returncode, 2)

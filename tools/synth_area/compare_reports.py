@@ -98,12 +98,12 @@ def main() -> int:
             delta = (val - base_val) / base_val * 100.0
             if i > 0 and gate and regressed(base_val, val, args.max_regression):
                 regressions.append((path, delta))
-        elif why and (gate or not args.json):
+        elif gate and i > 0 and why is None:
+            why = f"{name} is missing"
+        if why and (gate or not args.json):
             print(f"compare_reports: {path}: not comparable to baseline ({why})", file=sys.stderr)
         if i > 0 and gate and delta is None:
             ungated.append(path)
-            if why is None:
-                print(f"compare_reports: {path}: not comparable to baseline ({name} is missing)", file=sys.stderr)
         rows.append({
             "report": path,
             "status": rep.get("status"),
