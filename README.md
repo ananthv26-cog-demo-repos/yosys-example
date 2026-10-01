@@ -302,3 +302,5 @@ DOCS (e.g.)
 This will build/rebuild yosys as necessary before generating the website
 documentation from the yosys help commands.  To build for pdf instead of html,
 use the `docs-latexpdf` target.
+
+Area reports are in tools/synth_area.
