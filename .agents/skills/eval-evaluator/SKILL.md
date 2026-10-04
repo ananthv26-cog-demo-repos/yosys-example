@@ -5,7 +5,9 @@ description: Turn a merged pull request into the start of an eval. Pulls the PR,
 
 # eval-evaluator
 
-You run inside the engineer's clone of the repository. You write into one eval folder,
+You run inside the engineer's clone of the repository, so every script below is named by its installed path.
+`$SKILLS` is the folder that holds `eval-evaluator/` and `eval-builder/`, the parent of this file (for example
+`~/.agents/skills` or `~/.claude/skills`), set it once, `SKILLS=<that folder>`. You write into one eval folder,
 `$EVAL_HOME` (default `~/evals`), one subfolder per PR named `<repo>-pr-<number>`.
 Everything you write there will later be zipped and sent to Cognition, so never copy raw
 transcripts, tokens or environment values into it. Scripts live next to this file in `scripts/`.
@@ -16,7 +18,7 @@ decides, you recommend and record.
 ## Step 1, pull the PR
 
 ```
-python3 scripts/pr_info.py <number> [--repo-path .] [--evals $EVAL_HOME]
+python3 $SKILLS/eval-evaluator/scripts/pr_info.py <number> [--repo-path .] [--evals $EVAL_HOME]
 ```
 
 It needs `gh` logged in. It writes `pr.json` and prints a worksheet. Read the worksheet and
@@ -56,8 +58,12 @@ This question is the first of three gates. Wait for the answer, then record it i
 engineer's own words
 
 ```
-python3 ../eval-builder/scripts/gate.py --task-dir DIR --gate suitability --by "<name>" --said "<their words>"
+python3 $SKILLS/eval-builder/scripts/gate.py --task-dir DIR --gate suitability --by "<name>" --said "<their words>"
 ```
+
+`--by` is who approved. If the sentence was yours, a draft they accepted, add
+`--said-by "<your name>"`, and if you ran the command rather than the engineer add
+`--recorded-by "<your name>"`. Never record your words as theirs.
 
 An instruction given once at the start, "evaluate, build and freeze it", is not a yes at
 this gate. Ask here, and the builder asks again before freezing. `freeze.py` refuses a
@@ -66,7 +72,7 @@ task that lacks the recorded gates.
 ## Step 3, find the session
 
 ```
-python3 scripts/find_session.py --task-dir $EVAL_HOME/<task-id>
+python3 $SKILLS/eval-evaluator/scripts/find_session.py --task-dir $EVAL_HOME/<task-id>
 ```
 
 It searches only the known stores for this OS, keeps sessions whose working directory is
@@ -83,7 +89,7 @@ Show the engineer the list and ask "Which of these is yours, or none?"
 
 - Nothing found, rerun with `--widen-days 2`. Claude Code deletes transcripts after
   30 days by default, Codex and Devin CLI keep theirs, say so if the PR is old.
-- The PR body links a Devin cloud session, there is no local log. Ask for `DEVIN_API_KEY`
+- The PR body links a Devin cloud session and no local store matched it. Ask for `DEVIN_API_KEY`
   and `DEVIN_ORG_ID` in the environment and use `--devin-cloud <url>` in step 4.
 - Cursor or another tool with no supported store, ask the engineer to export the chat to a
   file and use `--manual FILE` in step 4.
@@ -95,11 +101,14 @@ Show the engineer the list and ask "Which of these is yours, or none?"
 Exactly one of
 
 ```
-python3 scripts/pick_session.py --task-dir DIR --pick N
-python3 scripts/pick_session.py --task-dir DIR --manual exported-chat.md
-python3 scripts/pick_session.py --task-dir DIR --devin-cloud https://app.devin.ai/sessions/<id>
-python3 scripts/pick_session.py --task-dir DIR --pr-fallback
+python3 $SKILLS/eval-evaluator/scripts/pick_session.py --task-dir DIR --pick N
+python3 $SKILLS/eval-evaluator/scripts/pick_session.py --task-dir DIR --manual exported-chat.md
+python3 $SKILLS/eval-evaluator/scripts/pick_session.py --task-dir DIR --devin-cloud https://app.devin.ai/sessions/<id>
+python3 $SKILLS/eval-evaluator/scripts/pick_session.py --task-dir DIR --pr-fallback
 ```
+
+Add `--selected-by agent` when the engineer asked you to choose for them,
+`session-source.json` records who picked the source.
 
 It parses only the picked session, keeps the human turns, drops assistant text and tool
 output, drops turns that repeat an earlier turn word for word (the Devin CLI store can
@@ -134,7 +143,7 @@ file edited after the yes it recorded). This is not a new question unless the ve
 changed at step 5, in which case ask again.
 
 ```
-python3 ../eval-builder/scripts/gate.py --task-dir DIR --gate suitability --by "<name>" --said "<their words from step 2>"
+python3 $SKILLS/eval-builder/scripts/gate.py --task-dir DIR --gate suitability --by "<name>" --said "<their words from step 2>"
 ```
 
 Tell the engineer the

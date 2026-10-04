@@ -26,10 +26,14 @@ would have typed it to an agent on day one, in their words, one message. Rules
 - Include a section `## Context` holding everything the original session fetched from
   outside the repo, pasted in full by the engineer in eval-evaluator step 5. Ticket text,
   stack traces, schema, sample rows. Nothing from after the PR was opened.
-- If the hidden test from step 3 calls something the PR introduced, a function, parameter,
-  CLI flag, config key or exact message, add a section `## Interface` that lists each such
-  name in backticks with its signature or default, one line each, and nothing about how it
-  works. That is the only place the prompt names anything the PR chose. Come back and add
+- If the hidden test from step 3 uses anything the PR introduced, a function or method name,
+  a parameter or keyword, a CLI flag, a config key, a header name, a string key, an exact
+  message or any other exact value an attempt could only match by chance, add a section
+  `## Interface` that lists each such name in backticks with its signature or default, one
+  line each, and nothing about how it works. The leak check applies the same rule to every
+  word, a standard header name counts as new when this repository did not use it before, so
+  list it or let the test accept any name. That is the only place the prompt names anything
+  the PR chose. Come back and add
   it after step 3.
 - If the ask came from `--pr-fallback`, say so in one line at the top of the file so
   Cognition knows the prompt was reconstructed.
@@ -39,6 +43,10 @@ Ask the engineer to edit it until it reads like what they actually asked. Then
 ```
 python3 scripts/leak_check.py --task-dir DIR
 ```
+
+Before step 2 there is no `setup.json`, so this first run checks the prompt text only and
+says so. Run it again after `prove.py setup` for the checks against the diff, and once more
+when the hidden test exists.
 
 It flags the PR number, branch, shas, PR and issue URLs, files the PR created, hidden test
 references, solution phrases, identifiers the diff introduced and six word overlaps with
@@ -116,11 +124,19 @@ accept them?" Wait for the answer and record it
 python3 scripts/gate.py --task-dir DIR --gate proof --by "<name>" --said "<their words>"
 ```
 
+`--by` is who approved. When the sentence was yours, a draft you offered and they accepted,
+add `--said-by "<your name>"`. When you ran the command instead of the engineer add
+`--recorded-by "<your name>"`, the default records the agent. The record must never put
+your words in their mouth, this applies to all three gates.
+
 ## Step 4, the grading criteria
 
 Copy `templates/criteria.md` to `criteria.md` and fill it from the diff and the review
 comments on the PR. Blocking items are the requirements in the user's words, each naming
-the plausible wrong answer it rules out. Advisory items do not block. List accepted
+the plausible wrong answer it rules out and ending with its source, `Source, the ask` or
+`Source, existing behaviour`, freeze refuses a blocking line without one. A fact that exists
+only in the PR, the name it chose, a file it added, how it did it, is never blocking, it goes
+under Advisory or Not required. Advisory items do not block. List accepted
 alternatives that differ from the real PR but should pass, and what the real PR did that
 an attempt need not do. The engineer edits in place.
 
@@ -163,14 +179,17 @@ under `lint_acknowledged` in `approval.json`, hashed so an edit to that list or 
 the freeze is refused, and `evals check` shows them.
 Write the reason in the engineer's words, never add the marker on your own. On success it
 writes `approval.json` with the engineer's name, the time, `build_path` (local or
-devin-cloud, detected from the environment or set with `--build-path`), the build host and
-OS, and the SHA-256 of every contract file. `build_path` is metadata for the results table
-only.
+devin-cloud, detected from the environment or set with `--build-path`) and the SHA-256 of
+every contract file. `build_path` is metadata for the results table only, nothing else about
+the build machine is recorded, the OS and Python of the setup proof stay in `setup.json`.
 
 The same engineer owns this eval from here, runs the attempts on their laptop and grades
 them. Tell them the eval is frozen and that `evals prove <task>` then `evals run <task>`
-come next, one line. When you built it in a Devin cloud session, zip the task folder
-without `build-machine.json` and attach it, or commit it to the team's task repository.
+come next, one line. When you built it in a Devin cloud session, run
+`python3 scripts/zip_task.py --task-dir <task>` from this skill's folder and attach the zip,
+or commit the folder to the team's task repository. The script refuses to zip while
+`build-machine.json` or `candidates.json` is still in the folder, both name this machine's
+folders and sessions and stay behind, delete them first.
 
 ## What you never do
 
@@ -183,4 +202,4 @@ without `build-machine.json` and attach it, or commit it to the team's task repo
   freeze again with the engineer.
 - Record a gate the engineer did not answer at that gate, or pass `--one-shot` on your own.
 - Write a path from this machine into any file that ships. `build-machine.json` is the one
-  place for the clone path and it stays behind.
+  place for the clone path, `candidates.json` names sessions on this machine, both stay behind.

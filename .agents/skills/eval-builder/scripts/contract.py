@@ -76,9 +76,9 @@ PRIVATE_HOSTS = ("localhost", "localhost.localdomain", "0.0.0.0", "::1")
 ONE_MACHINE_SUFFIXES = (".localhost", ".local", ".localdomain", ".home.arpa",
                         ".nip.io", ".sslip.io", ".xip.io", ".localtest.me", ".lvh.me", ".vcap.me", ".traefik.me")
 PROXY_MARKERS = ("git-manager", "/proxy/")
-# Set only by the package's own test suite so a toy repository can be a file:// url. No customer command
-# sets it, every normal command refuses a file:// repo_url.
-SELFTEST_FILE_URL = "EVAL_SELFTEST_FILE_REPO_URL"
+# EVAL_ALLOW_FILE_REPO_URL=1 lets a file:// repo_url through for a repository that has no remote. Such a
+# task can only be rerun on the machine that built it and pack says so. Nothing sets it by default.
+ALLOW_FILE_URL = "EVAL_ALLOW_FILE_REPO_URL"
 
 # A frozen file that names a folder on the build machine is a leak of the engineer's disk layout and
 # a path no other machine has. Placeholders (<repo>, <task>, $EVAL_HOME) are how the builder says it.
@@ -110,7 +110,7 @@ def repo_url_problem(url):
         return "repo_url is missing"
     u = urlsplit(url)
     if u.scheme == "file":
-        if os.environ.get(SELFTEST_FILE_URL) == "1":
+        if os.environ.get(ALLOW_FILE_URL) == "1":
             return None
         return "repo_url is a file:// path on one machine, use the https url of the repository"
     if u.scheme != "https":
@@ -246,6 +246,12 @@ def machine_path_problems(task, allowed=()):
     return out
 
 
+# Every key approval.json may carry. build_path (local or devin-cloud) is the only note about the build machine,
+# the OS and Python of the setup proof live in setup.json where evals doctor <task> reads them.
+APPROVAL_KEYS = frozenset(("engineer", "approved_at", "build_path", "lint_acknowledged", "lint_acknowledged_sha256",
+                           "approves", "runs_and_grades", "gates", "one_shot", "sha256"))
+
+
 def check_folder(task, need_approval=True):
     """Problems with a task folder, empty list when it meets the contract."""
     task = Path(task)
@@ -315,6 +321,10 @@ def check_folder(task, need_approval=True):
                 problems.append(err)
             if not saved.get("engineer"):
                 problems.append("approval.json has no engineer")
+            extra = sorted(set(saved) - APPROVAL_KEYS)
+            if extra:
+                problems.append("approval.json carries " + ", ".join(extra) + ", the contract allows only " + ", ".join(sorted(APPROVAL_KEYS))
+                                + ", build_path is the only note about the build machine, freeze again")
             missing = sorted(set(frozen_files(task)) - set(saved.get("sha256") or {}))
             if missing:
                 problems.append("approval.json does not hash " + ", ".join(missing))

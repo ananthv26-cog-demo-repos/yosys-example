@@ -51,6 +51,7 @@ def repo_with(pr, setup):
 WORD = re.compile(r"[A-Za-z_][A-Za-z0-9_]{3,}")
 IDENT = re.compile(r"[A-Za-z_][A-Za-z0-9_]{2,}")
 DASHED = re.compile(r"[A-Za-z][A-Za-z0-9_]*(?:-[A-Za-z0-9_]+)+")
+STANDALONE = re.compile(r"(?<![\w-])[A-Za-z_][A-Za-z0-9_]{2,}(?![\w-])")
 IDENT_DEF = re.compile(r"\b(?:def|class|fn|func|function|const|let|var|type|interface|struct|enum|pub fn|export (?:default )?(?:function|class|const))\s+([A-Za-z_][A-Za-z0-9_]{3,})")
 COMMON = set("self this that with from into return async await const value values result results error errors data list item items type types test tests file files name names true false null none".split())
 INTERFACE = re.compile(r"^##[ \t]+Interface[ \t]*$(.*?)(?=^##[ \t]|\Z)", re.M | re.S | re.I)
@@ -69,8 +70,9 @@ def ngrams(ws, n=6):
 
 
 def names(text):
-    return set(IDENT.findall(text)) | set(DASHED.findall(text))
-
+    """Identifiers and dashed names. A dashed name (X-Robots-Private) is one name, its pieces (Robots, Private) are names
+    of their own only where the text also uses them on their own."""
+    return set(STANDALONE.findall(text)) | set(DASHED.findall(text))
 
 def split_interface(prompt):
     """The body of the ## Interface section, and the prompt without it."""
@@ -132,26 +134,37 @@ def main():
     task = Path(a.task_dir)
     pr = json.loads((task / "pr.json").read_text())
     pr["repo_path"] = build_machine(task).get("repo_path") or pr.get("repo_path")
-    setup = json.loads((task / "setup.json").read_text())
+    # setup.json is written by base_commit.py (step 2). Before that only the prompt text can be checked, the
+    # diff based checks need the base and merge commits it names.
+    setup_path = task / "setup.json"
+    setup = json.loads(setup_path.read_text()) if setup_path.is_file() else None
     prompt = (task / "prompt.md").read_text()
     low = prompt.lower()
     interface, rest = split_interface(prompt)
-    repo = repo_with(pr, setup)
-
-    diff = subprocess.run(["git", "diff", "--no-color", "--no-ext-diff", "--src-prefix=a/", "--dst-prefix=b/", setup["base_sha"], setup["merge_sha"]],
-                          cwd=repo, text=True, capture_output=True).stdout
-    by_file = added_by_file(diff)
-    added = [line for lines in by_file.values() for line in lines]
-    new_files = re.findall(r"^\+\+\+ b/(.+)$", diff, re.M)
-    deleted = set(re.findall(r"^--- a/(.+)$", diff, re.M))
-    created = [f for f in new_files if f not in deleted]
+    by_file, added, created = {}, [], []
+    if setup:
+        repo = repo_with(pr, setup)
+        diff = subprocess.run(["git", "diff", "--no-color", "--no-ext-diff", "--src-prefix=a/", "--dst-prefix=b/", setup["base_sha"], setup["merge_sha"]],
+                              cwd=repo, text=True, capture_output=True).stdout
+        by_file = added_by_file(diff)
+        added = [line for lines in by_file.values() for line in lines]
+        new_files = re.findall(r"^\+\+\+ b/(.+)$", diff, re.M)
+        deleted = set(re.findall(r"^--- a/(.+)$", diff, re.M))
+        created = [f for f in new_files if f not in deleted]
 
     hard, soft = [], []
     if re.search(rf"(?<![\d])#?{pr['number']}(?![\d])", prompt) and re.search(rf"(pr|pull|#)\s*{pr['number']}\b", low):
         hard.append(f"mentions the PR number {pr['number']}")
-    if pr["head_ref"].lower() in low:
-        hard.append(f"mentions the branch name {pr['head_ref']}")
-    for sha in [setup["base_sha"], setup["merge_sha"], setup.get("head_sha") or ""] + (pr.get("commit_shas") or []):
+    ref = pr["head_ref"].lower()
+    if ref in low:
+        pr_text = ((pr.get("title") or "") + " " + (pr.get("body") or "")).lower()
+        plain_word = re.fullmatch(r"[a-z]+", ref) and re.search(rf"\b{ref}\b", pr_text)
+        if plain_word:
+            soft.append(f"mentions the branch name {pr['head_ref']}, a plain word that the PR title or body also uses, keep it only if the interface needs that word")
+        else:
+            hard.append(f"mentions the branch name {pr['head_ref']}")
+    shas = [setup["base_sha"], setup["merge_sha"], setup.get("head_sha") or ""] if setup else [pr.get("merge_sha") or "", pr.get("head_sha") or ""]
+    for sha in shas + (pr.get("commit_shas") or []):
         if sha and sha[:7].lower() in low:
             hard.append(f"mentions commit {sha[:12]}")
     if re.search(r"github\.com/[^\s]+/(pull|issues)/\d+", low):
@@ -182,7 +195,7 @@ def main():
 
     code = hidden_test_code(task)
     check = None
-    if code:
+    if code and setup:
         used = set().union(*map(names, code.values()))
         ticked = set().union(*map(names, re.findall(r"`([^`\n]+)`", interface)))
         new = introduced(repo, setup["base_sha"], by_file, used | ticked)
@@ -202,9 +215,11 @@ def main():
         print(f"SOFT  {s}")
     if not hard and not soft:
         print("no leaks flagged")
-    if check is None:
+    if setup is None:
+        print("setup.json is not written yet, so only the prompt text was checked, the diff based checks run once base_commit.py has run (step 2), freeze.py also runs them")
+    elif check is None:
         print("no hidden test yet, so the names it needs were not checked, run this again after step 3, freeze.py also runs it")
-    (task / "leak-check.json").write_text(json.dumps({"hard": hard, "soft": soft, "interface": check}, indent=2))
+    (task / "leak-check.json").write_text(json.dumps({"hard": hard, "soft": soft, "interface": check, "diff_checked": setup is not None}, indent=2))
     sys.exit(1 if hard else 0)
 
 
