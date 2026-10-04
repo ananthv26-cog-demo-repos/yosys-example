@@ -22,7 +22,6 @@ import datetime as dt
 import hashlib
 import json
 import os
-import platform
 import posixpath
 import re
 import subprocess
@@ -921,13 +920,40 @@ def lint_hidden_test(task):
     return hits, acks
 
 
+SOURCE = re.compile(r"\bSource,\s*(.+?)\.?\s*$", re.I)
+
+
+def criteria_lint(task):
+    """Every blocking line in criteria.md must say where it comes from, the ask or existing behaviour. A source that names
+    only the PR (its diff, its branch, how it did it) is not a source the engineer asked for, so it cannot block."""
+    p = task / "criteria.md"
+    if not p.is_file():
+        return []
+    out, blocking = [], False
+    for n, line in enumerate(p.read_text().splitlines(), 1):
+        if line.startswith("## "):
+            blocking = line.lower().startswith("## blocking")
+            continue
+        if not blocking or not re.match(r"\s*(-\s*\[.\]|[-*]|\d+\.)\s+\S", line):
+            continue
+        m = SOURCE.search(line)
+        if not m:
+            out.append(f"criteria.md:{n} is blocking but names no source, end it with  Source, the ask  or  Source, existing behaviour")
+            continue
+        src = m.group(1).lower()
+        if re.search(r"\b(pr|pull request|diff|branch|commit|patch)\b", src) and not re.search(r"\b(ask|request|existing|behaviou?r|docs?|documentation|issue|ticket)\b", src):
+            out.append(f"criteria.md:{n} is blocking with a source that names only the PR ({m.group(1)[:60]}), a PR only fact goes under Advisory or Not required")
+    return out
+
+
 def detect_build_path(flag):
-    """local or devin-cloud, plus what decided it. The signals are the DEVIN_DIR variable and /opt/.devin, present on Devin machines."""
+    """local or devin-cloud. The flag decides, else devin-cloud when the process runs on a Devin machine.
+    Only the value is recorded, nothing about how it was decided, approval.json ships."""
     if flag:
-        return flag, "--build-path flag"
+        return flag
     if os.environ.get("DEVIN_DIR") or Path("/opt/.devin").exists():
-        return "devin-cloud", "DEVIN_DIR or /opt/.devin present in the environment"
-    return "local", "default, no Devin machine signal in the environment"
+        return "devin-cloud"
+    return "local"
 
 
 def reject(task, reasons):
@@ -944,6 +970,8 @@ def main():
                     help="where this task was built, metadata only. Default devin-cloud when the environment looks like a Devin machine, else local")
     ap.add_argument("--engineer")
     ap.add_argument("--one-shot", metavar="REASON", help="freeze without the three recorded gates. The reason goes in approval.json")
+    ap.add_argument("--said-by", help="who wrote the --one-shot reason sentence, default the engineer. Give the agent's name when it paraphrased or summarised")
+    ap.add_argument("--recorded-by", help="who ran this command, default agent. The engineer gives their own name when they run it by hand")
     ap.add_argument("--verify", action="store_true")
     a = ap.parse_args()
     task = Path(a.task_dir)
@@ -977,42 +1005,43 @@ def main():
     if a.one_shot:
         if not a.one_shot.strip():
             sys.exit("--one-shot needs a reason")
-        gates["one_shot"] = {"reason": a.one_shot.strip(), "by": a.engineer, "at": dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds")}
+        gates["one_shot"] = {"reason": a.one_shot.strip(), "by": a.engineer, "said_by": (a.said_by or a.engineer).strip(),
+                             "recorded_by": (a.recorded_by or "agent").strip(), "at": dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds")}
         gates_path.write_text(json.dumps(gates, indent=2) + "\n")
         print("one shot freeze, the three gates were not asked for one by one, recorded in approval.json")
+    # every reason in one pass, so a refusal lists the gate to record again and the lint line together
     gate_issues = gates_problems(task)
     if gate_issues:
-        reject(task, gate_issues + ["ask the engineer at each gate and record the yes with gate.py, or pass --one-shot REASON"])
+        gate_issues.append("ask the engineer at that gate and record the answer with gate.py, or pass --one-shot REASON when they asked not to be asked gate by gate")
     problems = check_folder(task, need_approval=False)
-    if problems:
-        reject(task, problems)
-    lint, lint_acks = lint_hidden_test(task)
-    if lint:
-        problems.append("the hidden test looks at implementation details, not behaviour\n    " + "\n    ".join(lint))
-    leak = subprocess.run([sys.executable, str(LEAK_CHECK), "--task-dir", str(task)], text=True, capture_output=True)
-    print(leak.stdout, end="")
-    if leak.returncode and "HARD " in leak.stdout:
-        problems.append("the leak check has hard flags on the final prompt and hidden test, they are listed above")
-    elif leak.returncode:
-        problems.append("the leak check could not run, " + (leak.stderr.strip().splitlines() or ["it printed no error"])[-1])
-    if problems:
-        reject(task, problems)
+    lint_acks = []
+    if not problems:
+        crit = criteria_lint(task)
+        if crit:
+            problems.append("blocking criteria without a source the engineer stands behind\n    " + "\n    ".join(crit))
+        lint, lint_acks = lint_hidden_test(task)
+        if lint:
+            problems.append("the hidden test looks at implementation details, not behaviour\n    " + "\n    ".join(lint))
+        leak = subprocess.run([sys.executable, str(LEAK_CHECK), "--task-dir", str(task)], text=True, capture_output=True)
+        print(leak.stdout, end="")
+        if leak.returncode and "HARD " in leak.stdout:
+            problems.append("the leak check has hard flags on the final prompt and hidden test, they are listed above")
+        elif leak.returncode:
+            problems.append("the leak check could not run, " + (leak.stderr.strip().splitlines() or ["it printed no error"])[-1])
+    if gate_issues or problems:
+        reject(task, gate_issues + problems)
     (task / "rejected.json").unlink(missing_ok=True)
 
-    setup_proof = json.loads((task / "setup.json").read_text()).get("setup_proof") or {}
-    build_path, detected = detect_build_path(a.build_path)
+    build_path = detect_build_path(a.build_path)
     data = {
         "engineer": a.engineer,
         "approved_at": dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds"),
         "build_path": build_path,
-        "build_path_detected_from": detected,
         "lint_acknowledged": lint_acks,
         "lint_acknowledged_sha256": ack_digest(lint_acks),
-        "build_host": setup_proof.get("host") or platform.node(),
-        "build_os": setup_proof.get("os") or platform.platform(),
         "approves": "prompt, base commit and setup, hidden test, grading criteria, isolation rules",
         "runs_and_grades": a.engineer,
-        "gates": {g: {k: (gates.get("gates") or {}).get(g, {}).get(k) for k in ("approved_by", "at")} for g in GATES},
+        "gates": {g: {k: (gates.get("gates") or {}).get(g, {}).get(k) for k in ("approved_by", "said_by", "recorded_by", "at")} for g in GATES},
         "one_shot": gates.get("one_shot"),
         "sha256": hashes(task),
     }

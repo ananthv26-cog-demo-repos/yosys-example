@@ -19,6 +19,7 @@ import os
 import re
 import sqlite3
 import sys
+import urllib.parse
 import urllib.request
 from pathlib import Path
 
@@ -206,10 +207,22 @@ def from_opencode(c):
     return turns, sha256_rows(rows)
 
 
+def api_base(raw=None):
+    """DEVIN_API_BASE as a URL Python's TLS check accepts. Whitespace and trailing slashes go, and so does a trailing dot on the
+    host, curl tolerates  api.example.com.  while urllib refuses the certificate for it. Unset means the public API."""
+    raw = (raw if raw is not None else os.environ.get("DEVIN_API_BASE") or "https://api.devin.ai").strip().rstrip("/")
+    if "://" not in raw:
+        raw = "https://" + raw
+    u = urllib.parse.urlsplit(raw)
+    host = (u.hostname or "").rstrip(".")
+    netloc = host + (f":{u.port}" if u.port else "")
+    return urllib.parse.urlunsplit((u.scheme, netloc, u.path.rstrip("/"), "", ""))
+
+
 def from_devin_cloud(url_or_id):
     key = os.environ.get("DEVIN_API_KEY")
     org = os.environ.get("DEVIN_ORG_ID")
-    base = os.environ.get("DEVIN_API_BASE", "https://api.devin.ai").rstrip("/")
+    base = api_base()
     if not key or not org:
         sys.exit("Set DEVIN_API_KEY and DEVIN_ORG_ID (your own key, the org id from the Devin settings page).")
     sid = re.search(r"sessions/([0-9a-f-]+)", url_or_id)
@@ -254,6 +267,9 @@ def turn_spread(turns):
     return (max(times) - min(times)).total_seconds()
 
 
+SELECTED_BY = "engineer"  # who chose this source, set from --selected-by
+
+
 def write(task, source, turns, sha, extra, count_redactions=True):
     turns, dropped = dedupe(turns)
     spread = turn_spread(turns)
@@ -274,7 +290,7 @@ def write(task, source, turns, sha, extra, count_redactions=True):
     (task / "session-excerpt.md").write_text("\n".join(lines))
     meta = {"source": source, "prompt_source": PROMPT_SOURCE.get(source, "session_human_turns"), "sha256": sha, "turns": len(turns),
             "duplicate_turns_dropped": dropped, "redactions": total,
-            "selected_by": "engineer", "picked_at": dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds")}
+            "selected_by": SELECTED_BY, "picked_at": dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds")}
     if same_time:
         meta["turn_times"] = f"the store gives every turn the same time, to within a minute of {same_time}"
     meta.update(extra)
@@ -292,7 +308,11 @@ def main():
     g.add_argument("--manual")
     g.add_argument("--devin-cloud")
     g.add_argument("--pr-fallback", action="store_true")
+    ap.add_argument("--selected-by", default="engineer", choices=["engineer", "agent"],
+                    help="who chose this source. agent when the engineer asked not to be asked and the agent picked, recorded in session-source.json")
     a = ap.parse_args()
+    global SELECTED_BY
+    SELECTED_BY = a.selected_by
     task = Path(a.task_dir)
     pr = json.loads((task / "pr.json").read_text())
 

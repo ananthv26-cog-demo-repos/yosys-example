@@ -31,7 +31,11 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from contract import build_machine  # noqa: E402
 
-SHELL = ["bash", "-lc"] if os.name != "nt" else ["bash", "-c"]
+# bash -c, not -l. A login shell re-reads the profile, and on macOS path_helper then puts /usr/bin ahead of
+# whatever the engineer put first on PATH, so the python they installed was not the one setup ran with.
+# The PATH the engineer sees is the PATH setup gets, on the build machine and on every laptop alike.
+SHELL = ["bash", "-c"]
+SUBMODULE_NOTED = []
 
 
 def portable(text, task, *checkouts):
@@ -60,8 +64,9 @@ def fresh_checkout(repo, sha, dest):
     ar.wait()
     if ar.returncode or tar.returncode:
         sys.exit(f"could not export {sha} from {repo}")
-    if (dest / ".gitmodules").exists():
-        print("  WARNING repo has submodules, git archive does not include them, add a setup command that fetches what the test needs")
+    if (dest / ".gitmodules").exists() and not SUBMODULE_NOTED:
+        SUBMODULE_NOTED.append(sha)
+        print("  note, the repository has submodules and git archive leaves them out of the fresh tree. Nothing to do unless setup or the hidden test needs one, then add a setup command that fetches it")
     g = lambda *args: subprocess.run(["git", "-c", "user.name=eval", "-c", "user.email=eval@local", "-c", "commit.gpgsign=false", *args], cwd=dest, check=True, capture_output=True)
     g("init", "-q")
     g("add", "-A")
@@ -125,7 +130,7 @@ def cmd_setup(a):
     setup["setup_proof"] = {
         "ok": ok, "exit_codes": codes, "seconds": round(time.time() - t0, 1),
         "ran_at": dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds"),
-        "host": platform.node(), "os": platform.platform(),
+        "host": platform.node(), "os": platform.platform(), "python": platform.python_version(), "shell": "bash -c",
     }
     (task / "setup.json").write_text(json.dumps(setup, indent=2))
     if not a.keep:

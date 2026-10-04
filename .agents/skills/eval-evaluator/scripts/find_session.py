@@ -413,10 +413,10 @@ def main():
     w_start = pr["window_start_unix"] - a.widen_days * 86400
     w_end = pr["window_end_unix"] + a.widen_days * 86400
 
+    cloud = None
     if "app.devin.ai/sessions/" in (pr.get("body") or "") or "devinenterprise.com/sessions/" in (pr.get("body") or ""):
         m = re.search(r"https://[\w.-]+/sessions/([0-9a-f]+)", pr["body"])
-        print(f"PR body links a Devin cloud session ({m.group(0) if m else '?'}). There is no local log.")
-        print("Run  pick_session.py --task-dir ... --devin-cloud <that url>  to pull its messages through the v3 API.")
+        cloud = m.group(0) if m else "?"
 
     print("Searching stores")
     found, aside, filtered = [], [], {"outside window": 0}
@@ -438,6 +438,15 @@ def main():
         print(f"  {reader.__name__[5:]:11s} {n} sessions in this repo")
     found.sort(key=lambda c: (-c["score"], -(c.get("last") or 0)))
     top = found[:a.limit]
+    if cloud:
+        # Devin's PR tool appends a session link to every PR it opens, also to PRs whose work was done in a local
+        # harness, so the link is a lead and not proof that there is no local log. The stores were searched first.
+        if top:
+            print(f"\nPR body also links a Devin cloud session ({cloud}). The local sessions above are candidates too, ask the engineer "
+                  "which one is theirs. If none is, run  pick_session.py --task-dir ... --devin-cloud <that url>  to pull the cloud session's messages through the v3 API.")
+        else:
+            print(f"\nNo local session matched and the PR body links a Devin cloud session ({cloud}). "
+                  "Run  pick_session.py --task-dir ... --devin-cloud <that url>  to pull its messages through the v3 API.")
 
     print(f"\n{len(found)} sessions overlap the PR window ({fmt(w_start)} to {fmt(w_end)}), {filtered['outside window']} in this repo were outside it.")
     for x in aside:
