@@ -114,10 +114,10 @@ tools/synth_area/compare_reports.py baseline.json candidate.json [...]
 prints cells / flops / area (or transistor estimate) and the % delta against
 the first report; `--json` for machines. A candidate gets no delta (and a
 `not_comparable` reason) when it failed, used a different frontend or library
-than the baseline, or either report's Liberty area is only a lower bound because
-some cell types (black boxes, unmapped cells, cells declared without `area`, or
-a library with no `area` at all) are not counted (`--allow-partial` overrides the
-last one). A library whose cells legitimately carry `area : 0` is complete, not
+than the baseline, or, when area is compared, either report's Liberty area is only
+a lower bound because some cell types (black boxes, unmapped cells, cells declared
+without `area`, or a library with no `area` at all) are not counted
+(`--allow-partial` overrides the last one). A library whose cells legitimately carry `area : 0` is complete, not
 partial — the runner asks yosys' own Liberty reader whether any cell has an
 `area` attribute rather than inferring it from a zero total. The frontend rule
 matters: the frontends elaborate some constructs
@@ -126,13 +126,30 @@ RTL (e.g. `cc_fifo` from pulp-platform/common_cells: 1079 cells via slang vs
 1779 via sv2v). Slang is the default because it passes the most constructs and
 gives the smaller netlists in our samples.
 
+`--metric` picks the number the delta and the gates below use: `auto` (the
+default) is the Liberty area when the reports have one and the transistor
+estimate otherwise; `area` / `transistors` force one of those, and `cells` /
+`flops` take the cell or flop count, so a gate can still run when no Liberty area
+is available. Partial area blocks only an `area` comparison (the counts are exact
+either way), but cells and flops still need the same frontend and library. The
+chosen name appears where area/transistors does today: the table header, the
+`--json` `metric` field and the stderr messages.
+
 `--max-regression PCT` turns the comparison into a CI gate: exit 1 if any
-candidate's area (transistor estimate without a library) is more than PCT
-percent above the baseline (exactly PCT and improvements pass), and exit 3 if any
-candidate is not comparable to the baseline, naming the report and reason on
-stderr (also with `--json`); argparse errors keep exit 2. With `--json` each row
-carries `"regressed"`: true/false against the limit, or null when the row is not
-comparable or no `--max-regression` was given.
+candidate's metric is more than PCT percent above the baseline (exactly PCT and
+improvements pass), and exit 3 if any candidate is not comparable to the
+baseline, naming the report and reason on stderr (also with `--json`); argparse
+errors keep exit 2. With `--json` each row carries `"regressed"`: true/false
+against the limit, or null when the row is not comparable or no
+`--max-regression` was given.
+
+`--min-improvement PCT` gates the other way: exit 4 if no candidate's metric is
+at least PCT percent below the baseline (exactly PCT counts as improved), naming
+the best candidate on stderr. The baseline is not a candidate, so a lone baseline
+exits 4. With both gates a regression (1) wins over a missing improvement (4), and
+a candidate not comparable to the baseline (3) wins over both;
+`--min-improvement` on its own also exits 3 for such a candidate. It leaves the
+`--json` rows unchanged.
 
 ## Slurm
 
