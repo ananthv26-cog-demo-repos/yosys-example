@@ -27,6 +27,10 @@ constants belong to no class. A combinational loop makes depth undefined:
 `combinational_loop` is true and `max_depth` / `depth_by_path` are null.
 `max_fanout` / `avg_fanout` count data sink pins per driving node; DFF clock pins and
 asynchronous set/reset pins are reported separately (`clock_fanout`, `control_fanout`).
+`fanout_histogram` maps each data fanout count that occurs to the number of driving nodes
+with that fanout, and `high_fanout_nodes` lists the driving nodes (inputs, constants, gates,
+DFF Q outputs) whose data fanout is at least `--high-fanout N` (default 32) as
+{name, kind, fanout}, widest first; both are present (empty) when nothing qualifies.
 `dead_gates` counts gates whose output reaches no output port and no DFF pin (data, clock or
 set/reset) through other gates, split by gate type in `dead_gates_by_type`; both are null
 under a combinational loop.
@@ -69,6 +73,7 @@ DFF_PREFIX = "$_DFF_"
 DFF_OUTPUT_PIN = "Q"
 DFF_DATA_PIN = "D"
 DFF_CLOCK_PIN = "C"
+DEFAULT_HIGH_FANOUT = 32
 CONST_KIND = {"0": "CONST0", "1": "CONST1", "x": "CONSTX", "z": "CONSTX"}
 
 
@@ -305,7 +310,7 @@ def path_class_depths(nodes: list[dict], order: list[int]) -> dict[str, dict | N
     }
 
 
-def compute_metrics(graph: dict) -> dict:
+def compute_metrics(graph: dict, high_fanout: int = DEFAULT_HIGH_FANOUT) -> dict:
     nodes = graph["nodes"]
     edges = graph["edges"]
     by_kind = Counter(n["kind"] for n in nodes)
@@ -323,6 +328,19 @@ def compute_metrics(graph: dict) -> dict:
     fanout = Counter(e["from"] for e in data_edges)
     drivers = [n["id"] for n in nodes if n["kind"] in ("INPUT", "GATE", "DFF") or n["kind"].startswith("CONST")]
     fanouts = [fanout.get(d, 0) for d in drivers]
+    histogram = Counter(fanouts)
+
+    def driver_label(nid: int) -> str:
+        n = id2node[nid]
+        return n.get("name") or n.get("cell") or n.get("port") or f"node{nid}"
+
+    def driver_kind(nid: int) -> str:
+        n = id2node[nid]
+        return n["type"] if n["kind"] == "GATE" else n["kind"]
+
+    high = [{"name": driver_label(d), "kind": driver_kind(d), "fanout": fanout.get(d, 0)}
+            for d in drivers if fanout.get(d, 0) >= high_fanout]
+    high.sort(key=lambda h: (-h["fanout"], h["name"]))
 
     def fanout_by_driver(pred) -> dict[str, int]:
         c = Counter(e["from"] for e in edges if pred(dff_pin(e)))
@@ -394,6 +412,8 @@ def compute_metrics(graph: dict) -> dict:
     m["depth_by_path"] = depth_by_path
     m["max_fanout"] = max(fanouts, default=0)
     m["avg_fanout"] = round(sum(fanouts) / len(fanouts), 4) if fanouts else 0.0
+    m["fanout_histogram"] = {str(k): histogram[k] for k in sorted(histogram)}
+    m["high_fanout_nodes"] = high
     m["clock_fanout"] = clocks
     m["control_fanout"] = controls
     m["input_bits"] = by_kind.get("INPUT", 0)
@@ -415,6 +435,8 @@ def main(argv: list[str] | None = None) -> int:
                     help=f"synthesis profile whose dff_types allowlist to enforce (default: {DEFAULT_PROFILE})")
     ap.add_argument("--dff-type", action="append", metavar="CELL",
                     help="accept this $_DFF_* cell type instead of the profile's list (repeatable)")
+    ap.add_argument("--high-fanout", type=int, default=DEFAULT_HIGH_FANOUT, metavar="N",
+                    help=f"list driving nodes with data fanout >= N in high_fanout_nodes (default: {DEFAULT_HIGH_FANOUT})")
     args = ap.parse_args(argv)
     try:
         dff_types = set(args.dff_type) if args.dff_type else load_profile_dff_types(args.profile)
@@ -422,7 +444,7 @@ def main(argv: list[str] | None = None) -> int:
     except (OSError, ValueError, KeyError) as e:
         print(f"[boolean_graph] error: {e}", file=sys.stderr)
         return 1
-    metrics = compute_metrics(graph)
+    metrics = compute_metrics(graph, args.high_fanout)
     try:
         Path(args.out).write_text(json.dumps(graph, indent=1, sort_keys=False) + "\n")
         if args.metrics:

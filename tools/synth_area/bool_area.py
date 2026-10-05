@@ -53,6 +53,7 @@ from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 from boolean_graph import (
+    DEFAULT_HIGH_FANOUT,
     GRAPH_SCHEMA_VERSION,
     PATH_CLASSES,
     UnsupportedCell,
@@ -415,6 +416,7 @@ def flat_summary(boolean: dict, mapped: dict) -> dict:
         s[f"depth_{cls}"] = None if p is None else p["depth"]
     s["max_fanout"] = boolean["max_fanout"]
     s["avg_fanout"] = boolean["avg_fanout"]
+    s["high_fanout_count"] = len(boolean["high_fanout_nodes"])
     s["mapped_cell_area"] = mapped["area"]
     s["area_unit"] = mapped["area_unit"]
     return s
@@ -441,6 +443,8 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("-D", "--define", action="append", default=[], help="preprocessor define NAME[=VALUE]")
     ap.add_argument("--frontend", choices=FRONTENDS, help="override the profile's frontend (recorded in metrics)")
     ap.add_argument("--slang-arg", action="append", default=[], metavar="ARG", help="extra read_slang option")
+    ap.add_argument("--high-fanout", type=int, default=DEFAULT_HIGH_FANOUT, metavar="N",
+                    help=f"data fanout at which a driving node is listed in high_fanout_nodes (default: {DEFAULT_HIGH_FANOUT})")
     ap.add_argument("--no-equiv", action="store_true", help="skip the formal equivalence checks")
     ap.add_argument("--equiv-seq", type=int, default=5, help="induction / unrolling depth for equiv passes")
     ap.add_argument("--equiv-mapped-seq", type=int, default=1,
@@ -672,7 +676,7 @@ def main(argv: list[str] | None = None) -> int:
     try:
         graph = build_graph(json.loads(out["generic_json"].read_text()), args.top, set(profile["dff_types"]))
         out["graph"].write_text(json.dumps(graph, indent=1) + "\n")
-        metrics["boolean"] = compute_metrics(graph)
+        metrics["boolean"] = compute_metrics(graph, args.high_fanout)
         metrics["boolean"]["graph_schema_version"] = GRAPH_SCHEMA_VERSION
     except UnsupportedCell as e:
         return fail("graph", str(e))

@@ -108,6 +108,80 @@ class GraphUnitTests(unittest.TestCase):
         self.assertEqual(m["control_fanout"], {"rst_n": 3})
         self.assertEqual(m["edge_total"], 10)
 
+    def test_fanout_histogram_and_high_fanout_nodes(self) -> None:
+        # a drives 3 NOTs + 2 D pins (5), ff.Q drives 2 NOTs (2), 1'b1 drives 1 D pin (1), each gate drives 1 or 0
+        cells = {f"n{i}": {"type": "$_NOT_", "connections": {"A": [2], "Y": [10 + i]}} for i in range(3)}
+        cells |= {f"m{i}": {"type": "$_NOT_", "connections": {"A": [20], "Y": [30 + i]}} for i in range(2)}
+        cells |= {"ff": {"type": "$_DFF_P_", "connections": {"C": [3], "D": [2], "Q": [20]}},
+                  "ff2": {"type": "$_DFF_P_", "connections": {"C": [3], "D": [2], "Q": [21]}},
+                  "ff3": {"type": "$_DFF_P_", "connections": {"C": [3], "D": ["1"], "Q": [22]}}}
+        data = fake_yosys_json(
+            cells=cells,
+            ports={"a": {"direction": "input", "bits": [2]}, "clk": {"direction": "input", "bits": [3]},
+                   "y": {"direction": "output", "bits": [10]}, "z": {"direction": "output", "bits": [30]}},
+            netnames={"q": {"bits": [20], "hide_name": 0}},
+        )
+        g = boolean_graph.build_graph(data, "top", {"$_DFF_P_"})
+        m = boolean_graph.compute_metrics(g, high_fanout=2)
+        self.assertEqual(m["max_fanout"], 5)
+        # drivers: a=5, clk=0, q=2, ff2=0, ff3=0, const1=1, n0=1 (y), n1=0, n2=0, m0=1 (z), m1=0
+        self.assertEqual(m["fanout_histogram"], {"0": 6, "1": 3, "2": 1, "5": 1})
+        self.assertEqual(sum(m["fanout_histogram"].values()), 11)
+        self.assertEqual(m["high_fanout_nodes"], [{"name": "a", "kind": "INPUT", "fanout": 5},
+                                                  {"name": "q", "kind": "DFF", "fanout": 2}])
+        # ties sort by name; gates report their type as kind, constants their CONST kind
+        m = boolean_graph.compute_metrics(g, high_fanout=1)
+        (const_id,) = [n["id"] for n in g["nodes"] if n["kind"] == "CONST1"]
+        self.assertEqual([(h["name"], h["kind"], h["fanout"]) for h in m["high_fanout_nodes"]],
+                         [("a", "INPUT", 5), ("q", "DFF", 2), ("m0", "NOT", 1), ("n0", "NOT", 1),
+                          (f"node{const_id}", "CONST1", 1)])
+        # the default threshold (32) lists nothing, but both fields are still present
+        m = boolean_graph.compute_metrics(g)
+        self.assertEqual(m["high_fanout_nodes"], [])
+        self.assertEqual(m["fanout_histogram"], {"0": 6, "1": 3, "2": 1, "5": 1})
+        self.assertEqual(boolean_graph.DEFAULT_HIGH_FANOUT, 32)
+
+    def test_high_fanout_ignores_clock_and_reset_pins(self) -> None:
+        # clk fans out to 40 C pins and rst_n to 40 R pins; every data fanout is 1
+        n = 40
+        cells = {f"ff{i}": {"type": "$_DFF_PN0_", "connections": {"C": [2], "D": [100 + i], "R": [3], "Q": [200 + i]}}
+                 for i in range(n)}
+        ports = {"clk": {"direction": "input", "bits": [2]}, "rst_n": {"direction": "input", "bits": [3]},
+                 "d": {"direction": "input", "bits": list(range(100, 100 + n))},
+                 "q": {"direction": "output", "bits": list(range(200, 200 + n))}}
+        m = boolean_graph.compute_metrics(boolean_graph.build_graph(fake_yosys_json(cells, ports), "top", {"$_DFF_PN0_"}))
+        self.assertEqual(m["clock_fanout"], {"clk": n})
+        self.assertEqual(m["control_fanout"], {"rst_n": n})
+        self.assertEqual(m["max_fanout"], 1)
+        self.assertEqual(m["high_fanout_nodes"], [])
+        self.assertEqual(m["fanout_histogram"], {"0": 2, "1": 2 * n})  # clk and rst_n have no data sinks
+        # the same net on D pins is data fanout and does show up
+        for c in cells.values():
+            c["connections"]["D"] = [2]
+        m = boolean_graph.compute_metrics(boolean_graph.build_graph(fake_yosys_json(cells, ports), "top", {"$_DFF_PN0_"}))
+        self.assertEqual(m["high_fanout_nodes"], [{"name": "clk", "kind": "INPUT", "fanout": n}])
+        self.assertEqual(m["fanout_histogram"], {"0": n + 1, "1": n, str(n): 1})
+
+    def test_empty_graph_has_empty_fanout_fields(self) -> None:
+        m = boolean_graph.compute_metrics(boolean_graph.build_graph(fake_yosys_json({}, {}), "top", set()))
+        self.assertEqual((m["max_fanout"], m["avg_fanout"]), (0, 0.0))
+        self.assertEqual(m["fanout_histogram"], {})
+        self.assertEqual(m["high_fanout_nodes"], [])
+
+    def test_cli_high_fanout_flag(self) -> None:
+        cells = {f"n{i}": {"type": "$_NOT_", "connections": {"A": [2], "Y": [10 + i]}} for i in range(3)}
+        data = fake_yosys_json(cells, {"a": {"direction": "input", "bits": [2]}, "y": {"direction": "output", "bits": [10]}})
+        with tempfile.TemporaryDirectory() as td:
+            src, out, metrics = Path(td) / "in.json", Path(td) / "g.json", Path(td) / "m.json"
+            src.write_text(json.dumps(data))
+            common = [str(src), "--top", "top", "-o", str(out), "--metrics", str(metrics)]
+            self.assertEqual(boolean_graph.main(common), 0)
+            self.assertEqual(json.loads(metrics.read_text())["high_fanout_nodes"], [])
+            self.assertEqual(boolean_graph.main([*common, "--high-fanout", "3"]), 0)
+            self.assertEqual(json.loads(metrics.read_text())["high_fanout_nodes"],
+                             [{"name": "a", "kind": "INPUT", "fanout": 3}])
+            self.assertEqual(json.loads(metrics.read_text())["fanout_histogram"], {"0": 2, "1": 1, "3": 1})
+
     def test_vector_bits_named_with_hdl_index(self) -> None:
         data = fake_yosys_json(
             cells={"b0": {"type": "$_NOT_", "connections": {"A": [2], "Y": [12]}},
