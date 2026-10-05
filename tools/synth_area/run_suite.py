@@ -50,7 +50,7 @@ import suite_evidence
 from bool_area import purge_outputs
 
 TABLE_COLS = ("gate_total", "dff", "edge_total", "max_depth", "depth_reg2reg", "depth_in2reg", "depth_reg2out",
-              "depth_in2out", "max_fanout", "mapped_cell_total", "mapped_cell_area")
+              "depth_in2out", "max_fanout", "high_fanout_count", "mapped_cell_total", "mapped_cell_area")
 
 
 def metrics_schema_error(metrics: object) -> str | None:
