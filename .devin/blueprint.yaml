@@ -1,6 +1,6 @@
 # https://docs.devin.ai/onboard-devin/environment-yaml
 # Devin environment for this Yosys fork + tools/synth_area (SystemVerilog -> Boolean graph -> ASAP7 area).
-# One-time setup (e.g., install system tools, global CLIs).
+# One-time setup (e.g., install system tools, global CLIs)One-time setup (e.g., install system tools, global CLIs).
 initialize: |
   # Yosys build deps. CMake >= 3.28 is required and Ubuntu 22.04 ships 3.22, so CMake comes from PyPI via uv.
   sudo apt-get update -qq
@@ -19,7 +19,13 @@ initialize: |
   # sv2v v0.0.13: second SystemVerilog frontend used by tools/synth_area (slang is built into yosys).
   curl -fsSL https://github.com/zachjs/sv2v/releases/download/v0.0.13/sv2v-Linux.zip -o /tmp/sv2v.zip
   unzip -o -j /tmp/sv2v.zip 'sv2v-Linux/sv2v' -d "$HOME/.local/bin" && chmod +x "$HOME/.local/bin/sv2v"
-# Install project dependencies (runs during builds, surfaced to agent at session start).
+  # Formal: SymbiYosys + EQY (installed to ~/.local/bin) and z3 for SBY smtbmc. Used for FIFO equivalence miters.
+  sudo apt-get install -y -qq z3
+  [ -d "$HOME/sby-src" ] || git clone --depth 1 https://github.com/YosysHQ/sby.git "$HOME/sby-src"
+  [ -d "$HOME/eqy-src" ] || git clone --depth 1 https://github.com/YosysHQ/eqy.git "$HOME/eqy-src"
+  make -C "$HOME/sby-src" install PREFIX="$HOME/.local"
+  make -C "$HOME/eqy-src" install PREFIX="$HOME/.local"
+# Install project dependencies (runs during builds, surfaced to agent at session startstall project dependencies (runs during builds, surfaced to agent at session start).
 maintenance: |
   git submodule update --init --recursive
   cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release \
