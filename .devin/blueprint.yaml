@@ -25,12 +25,14 @@ initialize: |
   [ -d "$HOME/eqy-src" ] || git clone --depth 1 https://github.com/YosysHQ/eqy.git "$HOME/eqy-src"
   make -C "$HOME/sby-src" install PREFIX="$HOME/.local"
   make -C "$HOME/eqy-src" install PREFIX="$HOME/.local"
-# Install project dependencies (runs during builds, surfaced to agent at session startstall project dependencies (runs during builds, surfaced to agent at session start).
+# Install project dependencies (runs during builds, surfaced to agent at session start).
 maintenance: |
   git submodule update --init --recursive
   cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache . \
     && cmake --build build -j"$(nproc)"
+  # Put this build on PATH so sby/eqy (and anything else calling `yosys`) use it.
+  mkdir -p "$HOME/.local/bin" && for t in yosys yosys-abc yosys-smtbmc yosys-witness yosys-config yosys-filterlib; do ln -sf "$PWD/build/$t" "$HOME/.local/bin/$t"; done
   pre-commit install
 knowledge:
   - name: test
